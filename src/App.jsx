@@ -1782,15 +1782,24 @@ function QuickMemoModal({ candidate, close, onSave }) {
     close();
   };
 
+  // 모바일 Bottom Sheet 동작 시 입력 중 ESC 처리
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') close();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [close]);
+
   return (
-    <div className="modalBack" onClick={close}>
+    <div className="sheetBackdrop" onClick={close}>
       <div className="sheet" onClick={(e) => e.stopPropagation()} style={{ maxHeight: '85vh', display: 'flex', flexDirection: 'column' }}>
         <div className="sheetHead">
           <div className="avatarBox">
             <Avatar candidate={candidate} size="sm" />
             <div>
               <h3 style={{ fontSize: '15px', fontWeight: 700 }}>{candidate.name || '후보'} · 빠른 기록</h3>
-              <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-3)' }}>오늘의 관계 흐름을 가볍게 누적해보세요.</p>
+              <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-3)' }}>오늘의 관계 흐름을 가볍게 남겨보세요.</p>
             </div>
           </div>
           <button className="close" onClick={close}>×</button>
@@ -1803,7 +1812,7 @@ function QuickMemoModal({ candidate, close, onSave }) {
             <Field label="다음 확인점" textarea value={form.nextCheck} onChange={(v) => update('nextCheck', v)} placeholder="다음에 스치듯 관찰해 볼 포인트" rows={2} />
           </div>
           <button className="primary" onClick={handleSave} style={{ width: '100%', marginTop: '20px', padding: '14px', fontSize: '14px', fontWeight: 700, borderRadius: '12px' }}>
-            ⚡️ 관찰 기록 누적 저장
+            ⚡️ 기록 저장
           </button>
         </div>
       </div>
