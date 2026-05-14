@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { MoreVertical, X, Pencil, Trash2, Clipboard, ChevronDown, ChevronUp, Plus } from 'lucide-react';
 import './App.css';
 
 const STORAGE_KEY = 'rungak_lab_vite_v1';
@@ -72,28 +71,6 @@ const feelingOptions = [
   { value: 'weird', label: '이상했음' },
   { value: 'sure', label: '확신이 생김' },
 ];
-
-const checkStatusOptions = [
-  { value: 'unchecked', label: '미확인', color: 'gray' },
-  { value: 'pass', label: 'Pass', color: 'green' },
-  { value: 'fail', label: 'Fail', color: 'red' },
-  { value: 'hold', label: '보류', color: 'amber' },
-  { value: 'watch', label: '추가 관찰', color: 'blue' },
-];
-
-function migrateTextToItems(text, type = 'fixed') {
-  if (!text || typeof text !== 'string') return [];
-  return text
-    .split('\n')
-    .map(line => line.replace(/^[•\-\*]\s*/, '').trim())
-    .filter(Boolean)
-    .map((line, idx) => ({
-      id: Date.now() - Math.floor(Math.random() * 100000) - idx,
-      text: line,
-      ...(type === 'check' ? { status: 'unchecked' } : {})
-    }));
-}
-
 const signalOptions = [
   { code: 'keptPromise', label: '약속을 지킴', score: 2, tone: 'green' },
   { code: 'remembered', label: '내 말을 기억함', score: 2, tone: 'green' },
@@ -264,13 +241,6 @@ const emptyCandidate = {
   yellow: [],
   red: [],
   timeline: [],
-  // 신규 UX 데이터 구조
-  quickNoteSummary: '',
-  quickNoteGood: '',
-  quickNoteConcern: '',
-  quickNoteNextCheck: '',
-  fixedObservationMemo: '',
-  dateTimeline: [],
 };
 
 const sampleCandidates = [
@@ -517,8 +487,7 @@ function analyze(candidate) {
   }, 0);
   
   const bonusPenalty = clamp(greenScore + yellowScore + redScore + importantVerified * 1.5 + moneyVerified * 1.5, -18, 10);
-  const currentTimeline = candidate.dateTimeline || candidate.timeline || [];
-  const flowScore = timelineScore(currentTimeline, redList);
+  const flowScore = timelineScore(candidate.timeline || [], redList);
   const preScore = Math.round(conditionScore + relationScore + trustScore + realityScore + bonusPenalty + flowScore);
   const totalScore = clamp(Math.min(preScore, scoreCap), 0, 100);
   
@@ -573,26 +542,20 @@ function optLabel(options, value) {
   return options.find((item) => item.value === value)?.label || value || '미확인';
 }
 function createForm(candidate) {
-  const currentTimeline = candidate?.dateTimeline || candidate?.timeline || [];
-  const currentMemo = candidate?.fixedObservationMemo !== undefined ? candidate.fixedObservationMemo : (candidate?.observationMemo || '');
   return {
     ...emptyCandidate,
     ...candidate,
-    quickNoteSummary: candidate?.quickNoteSummary || '',
-    quickNoteGood: candidate?.quickNoteGood || '',
-    quickNoteConcern: candidate?.quickNoteConcern || '',
-    quickNoteNextCheck: candidate?.quickNoteNextCheck || '',
-    fixedObservationMemo: currentMemo,
-    dateTimeline: currentTimeline,
     verified: { ...(candidate?.verified || {}) },
     relation: { ...defaultRelation, ...(candidate?.relation || {}) },
     emotionalBond: { ...defaultEmotionalBond, ...(candidate?.emotionalBond || {}) },
     energyTags: [...(candidate?.energyTags || [])],
     personalityTags: [...(candidate?.personalityTags || [])],
     observationNotes: candidate?.observationNotes || '',
+    observationMemo: candidate?.observationMemo || '',
     green: [...(candidate?.green || [])],
     yellow: [...(candidate?.yellow || [])],
     red: [...(candidate?.red || [])],
+    timeline: [...(candidate?.timeline || [])],
   };
 }
 function candidateMarkdown(candidate, report) {
@@ -612,41 +575,14 @@ function candidateMarkdown(candidate, report) {
   const energyTagsText = (candidate.energyTags || []).map(id => energyTagOptions.find(t => t.id === id)?.label).filter(Boolean).join(', ') || '선택 없음';
   const personalityTagsText = (candidate.personalityTags || []).map(id => personalityTypeTags.find(t => t.id === id)?.label).filter(Boolean).join(', ') || '선택 없음';
 
-  const currentTimeline = candidate.dateTimeline || candidate.timeline || [];
-  const timelines = currentTimeline.length
-    ? currentTimeline.map((event) => {
+  const timelines = (candidate.timeline || []).length
+    ? candidate.timeline.map((event) => {
         const type = optLabel(timelineTypeOptions, event.type);
         const feeling = optLabel(feelingOptions, event.feeling);
         const notes = bulletLines(event.notes).map((line) => `  - ${line}`).join('\n') || '  - 기록 없음';
         const selected = (event.signals || []).map((code) => signalByCode(code)?.label).filter(Boolean).join(', ') || '없음';
         return [`### ${event.date || '날짜 미상'} · ${type} · ${feeling}`, notes, `- 행동 신호: ${selected}`].join('\n');
       }).join('\n\n')
-    : '기록 없음';
-
-  const quickNotesHistory = (candidate.quickNotes || []).length
-    ? candidate.quickNotes.map((note) => {
-        const dateStr = new Date(note.createdAt).toISOString().replace('T', ' ').slice(0, 16);
-        const lines = [
-          `### ${dateStr}`,
-          note.summary ? `- 한 줄 메모: ${note.summary}` : '',
-          note.good ? `- 좋았던 점: ${note.good}` : '',
-          note.concern ? `- 찝찝했던 점: ${note.concern}` : '',
-          note.nextCheck ? `- 다음 확인점: ${note.nextCheck}` : ''
-        ].filter(Boolean);
-        return lines.join('\n');
-      }).join('\n\n')
-    : '기록 없음';
-
-  const observationChecksMarkdown = (candidate.observationChecks || []).length
-    ? candidate.observationChecks.map(item => {
-        const opt = checkStatusOptions.find(o => o.value === (item.status || 'unchecked'));
-        const statusLabel = opt ? opt.label : '미확인';
-        return `- [${statusLabel}] ${item.text}`;
-      }).join('\n')
-    : '기록 없음';
-
-  const fixedObservationItemsMarkdown = (candidate.fixedObservationItems || []).length
-    ? candidate.fixedObservationItems.map(item => `- ${item.text}`).join('\n')
     : '기록 없음';
 
   return [
@@ -660,10 +596,7 @@ function candidateMarkdown(candidate, report) {
     `- 요약: ${report.label}`,
     `- 코멘트: ${report.comments[0]}`,
     '',
-    '## 2. 빠른 기록 히스토리',
-    quickNotesHistory,
-    '',
-    '## 3. 기본 프로필',
+    '## 2. 기본 프로필',
     `- 이름/별명: ${candidate.name || '미확인'}`,
     `- 캐릭터 유형: ${character?.label || '미스터리형'}`,
     `- 인간 유형 태그: ${personalityTagsText}`,
@@ -674,17 +607,17 @@ function candidateMarkdown(candidate, report) {
     `- 만난 경로: ${candidate.route || '미확인'}`,
     `- 첫인상 메모: ${candidate.memo || '없음'}`,
     '',
-    '## 4. 정서적 결 (Emotional Bond)',
+    '## 3. 정서적 결 (Emotional Bond)',
     '> 대화 밀도, 정서 에너지, 가치관 결합도를 관찰합니다.',
     emotionalBondSection,
     '',
-    '## 5. 관계 에너지 방향',
+    '## 4. 관계 에너지 방향',
     `> 이 사람이 나에게 유발하는 에너지: ${energyTagsText}`,
     '',
-    '## 6. 대화/태도 관찰 (0=미검증, 상태형 항목 포함)',
+    '## 5. 대화/태도 관찰 (0=미검증, 상태형 항목 포함)',
     relation,
     '',
-    '## 7. 조건/스펙',
+    '## 6. 조건/스펙',
     `- 키: ${candidate.height ? `${candidate.height}cm` : '미확인'}`,
     `- 자산: ${optionLabel(assetOptions, candidate.asset)}`,
     `- 연봉: ${optionLabel(incomeOptions, candidate.income)}`,
@@ -694,79 +627,24 @@ function candidateMarkdown(candidate, report) {
     `- 흡연/음주: ${candidate.smoking || '미확인'} / ${candidate.drinking || '미확인'}`,
     `- 점수 합계: 조건 ${report.conditionScore}/40 | 대화/태도 ${report.relationScore}/30 | 정보확인 ${report.trustScore}/15 | 지속가능성 ${report.realityScore}/10`,
     '',
-    '## 8. 플래그 (관찰된 신호)',
+    '## 7. 플래그 (관찰된 신호)',
     `- 🟢 그린플래그: ${(candidate.green || []).join(' / ') || '없음'}`,
     `- 🟡 옐로우플래그: ${(candidate.yellow || []).join(' / ') || '없음'}`,
     `- 🔴 레드플래그: ${(candidate.red || []).join(' / ') || '없음'}`,
     '',
-    '## 9. 타임라인 (관계 흐름 기록)',
+    '## 8. 타임라인 (관계 흐름 기록)',
     timelines,
     '',
-    '## 10. 관찰 검증 리스트',
-    observationChecksMarkdown,
+    '## 9. 관찰 포인트 메모',
+    candidate.observationNotes || '없음',
     '',
-    '## 11. 배경 정보 리스트',
-    fixedObservationItemsMarkdown,
+    '## 10. 관찰 메모',
+    candidate.observationMemo || '기록 없음',
     '',
     '---',
     '> LLM 활용 제안: 위 리포트를 기반으로 "이 관계가 나에게 지속 가능한 구조인가"를 함께 분석해주세요.',
     '',
   ].join('\n');
-}
-
-function getScoreStatusLabel(score) {
-  const s = Number(score || 0);
-  if (s === 0) return { label: '미검증', color: 'gray' };
-  if (s <= 3) return { label: '주의', color: 'red' };
-  if (s <= 6) return { label: '관찰중', color: 'amber' };
-  if (s <= 8) return { label: '안정적', color: 'blue' };
-  return { label: '매우 좋음', color: 'green' };
-}
-
-function Chevron({ isOpen }) {
-  return (
-    <svg 
-      style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease' }}
-      width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-    >
-      <polyline points="6 9 12 15 18 9"></polyline>
-    </svg>
-  );
-}
-
-function DetailAccordion({ title, subtitle, children, defaultOpen = false, onEdit }) {
-  const [open, setOpen] = useState(defaultOpen);
-  return (
-    <Card className="accordion">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', padding: '16px 20px', cursor: 'pointer' }} onClick={() => setOpen(!open)}>
-        <div style={{ flex: 1, paddingRight: '12px' }}>
-          <b style={{ display: 'block', fontSize: '15px', fontWeight: 700, color: 'var(--text-1)' }}>{title}</b>
-          {subtitle && <span style={{ display: 'block', marginTop: '4px', fontSize: '11px', color: 'var(--text-3)', fontWeight: 500, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{subtitle}</span>}
-        </div>
-        <div className="section-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {onEdit && (
-            <button 
-              type="button"
-              title="이 섹션 수정"
-              onClick={(e) => { e.stopPropagation(); onEdit(); setOpen(true); }}
-              className="iconButton"
-              style={{ width: '28px', height: '28px', background: 'var(--surface)', border: '1px solid var(--divider)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-2)' }}
-            >
-              <Pencil size={14} />
-            </button>
-          )}
-          <div style={{ display: 'flex', alignItems: 'center', width: '24px', justifyContent: 'center', color: 'var(--text-2)' }}>
-            {open ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-          </div>
-        </div>
-      </div>
-      {open && (
-        <div className="accordionBody" style={{ padding: '16px 20px', background: 'var(--surface)', borderTop: '1px solid var(--divider)' }}>
-          {children}
-        </div>
-      )}
-    </Card>
-  );
 }
 
 function Avatar({ candidate, size = 'md' }) {
@@ -797,64 +675,6 @@ function SelectField({ label, value, onChange, children }) {
     <label className="field selectField">
       <span>{label}</span>
       <select value={value} onChange={(e) => onChange(e.target.value)}>{children}</select>
-    </label>
-  );
-}
-
-function BulletTextarea({ label, value, onChange, placeholder, rows = 3 }) {
-  const handleKeyDown = (e) => {
-    if (e.nativeEvent.isComposing) {
-      return;
-    }
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      const cursorPosition = e.target.selectionStart;
-      const textBefore = value.substring(0, cursorPosition);
-      const textAfter = value.substring(cursorPosition);
-      
-      const lines = textBefore.split('\n');
-      const currentLine = lines[lines.length - 1];
-      
-      if (currentLine === '• ') {
-        const newValue = textBefore.substring(0, textBefore.length - 2) + '\n' + textAfter;
-        onChange(newValue);
-        setTimeout(() => { e.target.selectionStart = e.target.selectionEnd = cursorPosition - 1; }, 0);
-        return;
-      }
-      
-      const newValue = textBefore + '\n• ' + textAfter;
-      onChange(newValue);
-      setTimeout(() => { e.target.selectionStart = e.target.selectionEnd = cursorPosition + 3; }, 0);
-    } else if (e.key === 'Backspace') {
-      const cursorPosition = e.target.selectionStart;
-      if (cursorPosition >= 2) {
-        const textBefore = value.substring(0, cursorPosition);
-        if (textBefore.endsWith('\n• ')) {
-          e.preventDefault();
-          const newValue = textBefore.substring(0, textBefore.length - 3) + '\n' + value.substring(cursorPosition);
-          onChange(newValue);
-          setTimeout(() => { e.target.selectionStart = e.target.selectionEnd = cursorPosition - 2; }, 0);
-        } else if (textBefore === '• ') {
-          e.preventDefault();
-          onChange(value.substring(2));
-          setTimeout(() => { e.target.selectionStart = e.target.selectionEnd = 0; }, 0);
-        }
-      }
-    }
-  };
-
-  const handleChange = (e) => {
-    let newValue = e.target.value;
-    if (value === '' && newValue.length === 1 && newValue !== '•') {
-      newValue = '• ' + newValue;
-    }
-    onChange(newValue);
-  };
-
-  return (
-    <label className="field">
-      {label && <span>{label}</span>}
-      <textarea rows={rows} value={value} onChange={handleChange} onKeyDown={handleKeyDown} placeholder={placeholder} style={{ lineHeight: 1.6 }} />
     </label>
   );
 }
@@ -909,7 +729,7 @@ function ScoreCard({ title, value, max, desc }) {
   const level = scoreLevel(percent);
   return <Card className="scoreCard"><div className="scoreHead"><div><p>{title}</p><strong>{value}<small>/{max}</small></strong></div><div className="right"><Badge color={level.color}>{level.label}</Badge><em>{percent}%</em></div></div><div className="bar"><i className={`tone-bg-${level.color}`} style={{ width: `${percent}%` }} /></div>{desc && <small className="desc">{desc}</small>}</Card>;
 }
-function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
+function Home({ candidates, openCandidate, goAdd, openGuide }) {
   const mapped = candidates.map(candidate => {
     const report = analyze(candidate);
     return { candidate, report };
@@ -994,44 +814,15 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
       {candidates.slice().reverse().map((candidate) => {
         const report = analyze(candidate);
         return (
-          <div key={candidate.id} style={{ position: 'relative', marginBottom: '10px' }}>
-            <button className="candidateCard" onClick={() => openCandidate(candidate)} style={{ paddingRight: '80px', width: '100%', display: 'flex', margin: 0 }}>
-              <Avatar candidate={candidate} size="sm" />
-              <div style={{ textAlign: 'left' }}>
-                <h3>{candidate.name || '무명의 후보'}</h3>
-                <p>{report.age || '나이 미상'}세 · {candidate.job || '직업 미상'} · {candidate.location || '거주지 미입력'}</p>
-                <Badge color={report.color}>{report.verdict}</Badge>
-              </div>
-              <strong className={`scoreText-${report.color}`} style={{ position: 'absolute', right: '16px', top: '16px' }}>{report.totalScore}<small>점</small></strong>
-            </button>
-            <button 
-              className="quickMemoCardBtn"
-              onClick={(e) => {
-                e.stopPropagation();
-                openQuickMemo(candidate);
-              }}
-              style={{
-                position: 'absolute',
-                right: '14px',
-                bottom: '14px',
-                width: '32px',
-                height: '32px',
-                borderRadius: '8px',
-                background: 'var(--bg)',
-                border: '1px solid var(--divider)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '13px',
-                cursor: 'pointer',
-                zIndex: 2,
-                boxShadow: '0 2px 4px rgba(0,0,0,0.04)'
-              }}
-              title="빠른 메모"
-            >
-              📝
-            </button>
-          </div>
+          <button className="candidateCard" key={candidate.id} onClick={() => openCandidate(candidate)}>
+            <Avatar candidate={candidate} size="sm" />
+            <div>
+              <h3>{candidate.name || '무명의 후보'}</h3>
+              <p>{report.age || '나이 미상'}세 · {candidate.job || '직업 미상'} · {candidate.location || '거주지 미입력'}</p>
+              <Badge color={report.color}>{report.verdict}</Badge>
+            </div>
+            <strong className={`scoreText-${report.color}`}>{report.totalScore}<small>점</small></strong>
+          </button>
         );
       })}
     </section>
@@ -1211,9 +1002,9 @@ function ObservationSection({ notes, onChange, memo = '', onMemoChange }) {
   const addPoint = (point) => {
     const current = notes.trim();
     if (!current) {
-      onChange('• ' + point);
+      onChange(point);
     } else if (!current.includes(point)) {
-      onChange(current + '\n• ' + point);
+      onChange(current + '\n' + point);
     }
   };
 
@@ -1234,21 +1025,23 @@ function ObservationSection({ notes, onChange, memo = '', onMemoChange }) {
           </button>
         ))}
       </div>
-      <BulletTextarea 
+      <Field 
         label="다음에 관찰할 내용 기록" 
+        textarea 
         value={notes} 
         onChange={onChange} 
-        placeholder="다음 만남에서 확인하고 싶은 점을 가볍게 기록해보세요."
+        placeholder="예: 바쁜 시기에도 대화 밀도가 유지되는지, 말과 행동이 일치하는지 등 관찰할 포인트를 기록하세요."
       />
       {onMemoChange && (
         <>
           <div className="sectionDivider" style={{ margin: '20px 0 16px 0' }} />
-          <BulletTextarea 
-            label="고정 관찰 메모" 
+          <Field 
+            label="관찰 메모" 
+            textarea 
             rows={6}
             value={memo} 
             onChange={onMemoChange} 
-            placeholder="대화 흐름이나 반복되는 행동 패턴을 남겨보세요."
+            placeholder="관계 흐름, 공개 정보, 인터뷰 요약, 개인적 인상, 추가 관찰 포인트 등을 수동으로 적어두세요."
           />
         </>
       )}
@@ -1299,23 +1092,6 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
         <strong>{report.totalScore}</strong>
       </div>
       
-      <Card className="accordion">
-        <button type="button" onClick={() => setOpen(open === 'quicknote' ? '' : 'quicknote')}>
-          <div><b>빠른 기록 Quick Note</b><span>한 줄 메모, 좋았던 점, 다음에 확인할 점</span></div>
-          <em>{open === 'quicknote' ? '닫기' : '열기'}</em>
-        </button>
-        {open === 'quicknote' && (
-          <div className="accordionBody">
-            <div className="formStack">
-              <Field label="한 줄 메모" value={form.quickNoteSummary || ''} onChange={(v) => update('quickNoteSummary', v)} placeholder="최근의 전반적인 감상을 짧게 적어보세요." />
-              <Field label="좋았던 점" textarea value={form.quickNoteGood || ''} onChange={(v) => update('quickNoteGood', v)} placeholder="만남이나 연락 과정에서 긍정적이었던 부분" />
-              <Field label="찝찝했던 점" textarea value={form.quickNoteConcern || ''} onChange={(v) => update('quickNoteConcern', v)} placeholder="마음에 걸리거나 명확히 짚고 넘어가야 할 부분" />
-              <Field label="다음에 확인할 점" textarea value={form.quickNoteNextCheck || ''} onChange={(v) => update('quickNoteNextCheck', v)} placeholder="다음 소통에서 눈여겨봐야 할 점" />
-            </div>
-          </div>
-        )}
-      </Card>
-
       <Card className="accordion">
         <button type="button" onClick={() => setOpen(open === 'profile' ? '' : 'profile')}>
           <div><b>프로필 & 유형</b><span>캐릭터, 이름, 인간 유형 태그</span></div>
@@ -1390,7 +1166,7 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
 
       <Card className="accordion">
         <button type="button" onClick={() => setOpen(open === 'observation' ? '' : 'observation')}>
-          <div><b>고정 관찰 메모 Fixed Observation Memo</b><span>장기 분석, 인터뷰 요약, 배경 정보</span></div>
+          <div><b>관찰 계획 & 메모</b><span>향후 관찰할 점과 누적 메모</span></div>
           <em>{open === 'observation' ? '닫기' : '열기'}</em>
         </button>
         {open === 'observation' && (
@@ -1398,8 +1174,8 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
             <ObservationSection 
               notes={form.observationNotes || ''}
               onChange={(val) => update('observationNotes', val)}
-              memo={form.fixedObservationMemo || ''}
-              onMemoChange={(val) => update('fixedObservationMemo', val)}
+              memo={form.observationMemo || ''}
+              onMemoChange={(val) => update('observationMemo', val)}
             />
           </div>
         )}
@@ -1512,20 +1288,11 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
           <FlagGroup title="레드플래그" color="red" items={redFlags} selected={form.red} toggle={(label) => toggleList('red', label)}/>
           
           <div className="sectionDivider" style={{ margin: '24px 0' }} />
-          <div className="sectionLabel" style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-1)', marginBottom: '12px' }}>빠른 기록 Quick Note</div>
-          <div className="formStack">
-            <Field label="한 줄 메모" value={form.quickNoteSummary || ''} onChange={(v) => update('quickNoteSummary', v)} placeholder="최근의 감상을 짧게 적어보세요." />
-            <Field label="좋았던 점" textarea value={form.quickNoteGood || ''} onChange={(v) => update('quickNoteGood', v)} placeholder="좋았던 부분" />
-            <Field label="찝찝했던 점" textarea value={form.quickNoteConcern || ''} onChange={(v) => update('quickNoteConcern', v)} placeholder="마음에 걸리는 부분" />
-            <Field label="다음에 확인할 점" textarea value={form.quickNoteNextCheck || ''} onChange={(v) => update('quickNoteNextCheck', v)} placeholder="다음 만남에서 확인할 점" />
-          </div>
-
-          <div className="sectionDivider" style={{ margin: '24px 0' }} />
           <ObservationSection 
             notes={form.observationNotes || ''}
             onChange={(val) => update('observationNotes', val)}
-            memo={form.fixedObservationMemo || ''}
-            onMemoChange={(val) => update('fixedObservationMemo', val)}
+            memo={form.observationMemo || ''}
+            onMemoChange={(val) => update('observationMemo', val)}
           />
 
           <div className="sectionDivider" style={{ margin: '24px 0' }} />
@@ -1547,8 +1314,7 @@ function TimelineSection({ candidate, report, saveTimeline }) {
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState({ date: todayValue(), type: 'date', feeling: 'neutral', notes: '', signals: [] });
-  const currentTimeline = candidate.dateTimeline || candidate.timeline || [];
-  const events = [...currentTimeline].sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+  const events = [...(candidate.timeline || [])].sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
   const tone = report.flowScore > 0 ? 'green' : report.flowScore < 0 ? 'red' : 'gray';
 
   function update(key, value) { setDraft((prev) => ({ ...prev, [key]: value })); }
@@ -1562,7 +1328,7 @@ function TimelineSection({ candidate, report, saveTimeline }) {
 
   function removeEvent(id) {
     if (!window.confirm('이 기록을 삭제할까요?')) return;
-    const nextList = currentTimeline.filter((e) => e.id !== id);
+    const nextList = (candidate.timeline || []).filter((e) => e.id !== id);
     saveTimeline(candidate.id, nextList);
   }
 
@@ -1571,9 +1337,9 @@ function TimelineSection({ candidate, report, saveTimeline }) {
     const suggestions = suggestedSignals(draft.notes).filter((code) => !draft.signals.includes(code));
     let finalTimeline = [];
     if (editingId) {
-      finalTimeline = currentTimeline.map((ev) => ev.id === editingId ? { ...draft, suggestedSignals: suggestions, updatedAt: new Date().toISOString() } : ev);
+      finalTimeline = (candidate.timeline || []).map((ev) => ev.id === editingId ? { ...draft, suggestedSignals: suggestions, updatedAt: new Date().toISOString() } : ev);
     } else {
-      finalTimeline = [...currentTimeline, { ...draft, suggestedSignals: suggestions, id: Date.now(), createdAt: new Date().toISOString() }];
+      finalTimeline = [...(candidate.timeline || []), { ...draft, suggestedSignals: suggestions, id: Date.now(), createdAt: new Date().toISOString() }];
     }
     saveTimeline(candidate.id, finalTimeline);
     setDraft({ date: todayValue(), type: 'date', feeling: 'neutral', notes: '', signals: [] });
@@ -1588,36 +1354,14 @@ function TimelineSection({ candidate, report, saveTimeline }) {
   }
 
   return (
-    <div className="timeline" style={{ border: 'none', padding: 0, background: 'transparent', boxShadow: 'none', margin: 0 }}>
-      <div className="timelineHead" style={{ marginTop: 0, paddingTop: 0 }}>
-        <div><p style={{ margin: 0, color: 'var(--text-3)', fontSize: '12px' }}>점수에는 직접 고른 신호만 반영해요.</p></div>
+    <Card className="timeline">
+      <div className="timelineHead">
+        <div><h3>타임라인</h3><p>점수에는 직접 고른 신호만 반영해요.</p></div>
         <div>
           <Badge color={tone}>흐름 {report.flowScore > 0 ? '+' : ''}{report.flowScore}</Badge>
+          {!adding && <button onClick={() => setAdding(true)}>+ 기록</button>}
         </div>
       </div>
-
-      {!adding && (
-        <button 
-          className="primary" 
-          style={{ 
-            width: '100%', 
-            padding: '13px', 
-            marginTop: '6px', 
-            marginBottom: '14px', 
-            borderRadius: '12px', 
-            fontSize: '13.5px', 
-            fontWeight: 700, 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            gap: '6px',
-            cursor: 'pointer'
-          }}
-          onClick={() => setAdding(true)}
-        >
-          + 새로운 관계 흐름 기록하기
-        </button>
-      )}
       
       {adding && (
         <div className="timelineForm">
@@ -1656,9 +1400,7 @@ function TimelineSection({ candidate, report, saveTimeline }) {
       )}
 
       {events.length === 0 ? (
-        <div style={{ padding: '24px 16px', background: 'var(--bg)', borderRadius: '10px', color: 'var(--text-3)', fontSize: '13px', lineHeight: 1.5, textAlign: 'center', border: '1px dashed var(--divider)' }}>
-          아직 실제 만남 전 단계입니다.<br/>실제 데이트 이후부터 시간 흐름 기반 기록을 시작합니다.
-        </div>
+        <div className="empty">아직 기록된 흐름이 없어요.</div>
       ) : (
         events.map((event) => (
           <div key={event.id} className="timelineEvent">
@@ -1688,386 +1430,16 @@ function TimelineSection({ candidate, report, saveTimeline }) {
           </div>
         ))
       )}
-    </div>
+    </Card>
   );
 }
-function EditableMemoSection({ value, onSave, placeholder }) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [draft, setDraft] = useState(value || '');
-
-  useEffect(() => {
-    setDraft(value || '');
-  }, [value]);
-
-  const handleSave = () => {
-    onSave(draft);
-    setIsEditing(false);
-  };
-
-  if (isEditing) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <BulletTextarea 
-          value={draft} 
-          onChange={setDraft} 
-          placeholder={placeholder} 
-          rows={5}
-        />
-        <div className="twoButtons">
-          <button onClick={() => setIsEditing(false)}>취소</button>
-          <button className="primary" onClick={handleSave}>저장</button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div style={{ position: 'relative', padding: '14px', background: 'var(--bg)', borderRadius: '10px' }}>
-      <p style={{ whiteSpace: 'pre-wrap', margin: 0, fontSize: '13.5px', lineHeight: 1.6, color: 'var(--text-body)', paddingRight: '60px' }}>
-        {value || placeholder}
-      </p>
-      <button 
-        onClick={() => setIsEditing(true)} 
-        style={{ 
-          position: 'absolute', 
-          top: '12px', 
-          right: '12px', 
-          background: 'var(--surface)', 
-          border: '1px solid var(--divider)', 
-          borderRadius: '6px',
-          color: 'var(--blue)', 
-          fontSize: '11px', 
-          fontWeight: 600, 
-          padding: '4px 8px',
-          cursor: 'pointer',
-          boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
-        }}
-      >
-        기록하기
-      </button>
-    </div>
-  );
-}
-function QuickMemoModal({ candidate, close, onSave }) {
-  const [form, setForm] = useState({ summary: '', good: '', concern: '', nextCheck: '' });
-  const update = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
-  
-  const handleSave = () => {
-    if (!form.summary && !form.good && !form.concern && !form.nextCheck) {
-      close();
-      return;
-    }
-    const newMemo = {
-      id: Date.now(),
-      createdAt: new Date().toISOString(),
-      summary: form.summary,
-      good: form.good,
-      concern: form.concern,
-      nextCheck: form.nextCheck
-    };
-    onSave(candidate.id, newMemo);
-    close();
-  };
-
-  // 모바일 Bottom Sheet 동작 시 입력 중 ESC 처리
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') close();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [close]);
-
-  return (
-    <div className="sheetBackdrop" onClick={close}>
-      <div className="sheet" onClick={(e) => e.stopPropagation()} style={{ maxHeight: '85vh', display: 'flex', flexDirection: 'column' }}>
-        <div className="sheetHeader">
-          <Avatar candidate={candidate} size="sm" />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-            <h2 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>
-              {candidate.name || '무명의 후보'} · 빠른 기록
-            </h2>
-            <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-2)' }}>
-              오늘의 관계 흐름을 가볍게 남겨보세요.
-            </p>
-          </div>
-          <button className="close" onClick={close} style={{ marginLeft: 'auto' }}>×</button>
-        </div>
-        <div className="sheetBody" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', paddingBottom: '20px', gap: '10px' }}>
-          <div className="formStack">
-            <Field label="한 줄 메모" value={form.summary} onChange={(v) => update('summary', v)} placeholder="오늘 있었던 일을 짧게 요약하세요." />
-            <Field label="좋았던 점" textarea value={form.good} onChange={(v) => update('good', v)} placeholder="소소하게나마 마음에 든 점" rows={2} />
-            <Field label="찝찝했던 점" textarea value={form.concern} onChange={(v) => update('concern', v)} placeholder="약간 걸리는 기분이나 신호" rows={2} />
-            <Field label="다음 확인점" textarea value={form.nextCheck} onChange={(v) => update('nextCheck', v)} placeholder="다음에 스치듯 관찰해 볼 포인트" rows={2} />
-          </div>
-          <button className="primary" onClick={handleSave} style={{ width: '100%', marginTop: '20px', padding: '14px', fontSize: '14px', fontWeight: 700, borderRadius: '12px' }}>
-            ⚡️ 기록 저장
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-function DynamicListSection({ items = [], type, onChange }) {
-  const [isAdding, setIsAdding] = useState(false);
-  const [draftText, setDraftText] = useState('');
-  const [editingId, setEditingId] = useState(null);
-  const [editDraft, setEditDraft] = useState('');
-
-  const handleAdd = () => {
-    if (!draftText.trim()) return;
-    const newItems = migrateTextToItems(draftText, type);
-    onChange([...items, ...newItems]);
-    setDraftText('');
-    setIsAdding(false);
-  };
-
-  const handleUpdate = (id, newText) => {
-    const clean = newText.trim();
-    if (!clean) {
-      handleDelete(id);
-      return;
-    }
-    onChange(items.map(item => item.id === id ? { ...item, text: clean } : item));
-    setEditingId(null);
-    setEditDraft('');
-  };
-
-  const handleDelete = (id) => {
-    if (window.confirm('이 항목을 삭제하시겠습니까?')) {
-      onChange(items.filter(item => item.id !== id));
-    }
-  };
-
-  const handleUpdateStatus = (id, nextStatus) => {
-    onChange(items.map(item => item.id === id ? { ...item, status: nextStatus } : item));
-  };
-
-  const startEdit = (item) => {
-    setEditingId(item.id);
-    setEditDraft(item.text);
-  };
-
-  const isCheck = type === 'check';
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-      {!isAdding && (
-        <button 
-          className="primary" 
-          style={{ width: '100%', padding: '12px', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}
-          onClick={() => setIsAdding(true)}
-        >
-          + {isCheck ? '새로운 검증 체크리스트 기록' : '배경 정보 및 성향 기록'}
-        </button>
-      )}
-
-      {isAdding && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: 'var(--surface)', padding: '14px', borderRadius: '12px', border: '1px solid var(--divider)', boxShadow: 'var(--shadow-sm)' }}>
-          <BulletTextarea 
-            value={draftText} 
-            onChange={setDraftText} 
-            placeholder={isCheck 
-              ? "다음 만남에서 확인할 행동/가치관을 입력하세요.\n(줄바꿈으로 여러 행 입력 시 각각 개별 항목으로 저장됩니다.)"
-              : "이 사람에 대한 변하지 않는 배경 정보나 특징을 입력하세요.\n(줄바꿈으로 여러 행 입력 시 각각 개별 항목으로 저장됩니다.)"
-            }
-            rows={4}
-          />
-          <div className="twoButtons">
-            <button onClick={() => setIsAdding(false)}>취소</button>
-            <button className="primary" onClick={handleAdd}>일괄 등록</button>
-          </div>
-        </div>
-      )}
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        {items.length === 0 ? (
-          <div style={{ padding: '20px', background: 'var(--bg)', borderRadius: '10px', textAlign: 'center', color: 'var(--text-3)', fontSize: '13px' }}>
-            등록된 정보가 없습니다.
-          </div>
-        ) : (
-          items.map(item => (
-            <div key={item.id} style={{ background: 'var(--bg)', padding: '12px 14px', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '8px', border: '1px solid rgba(0,0,0,0.02)' }}>
-              {editingId === item.id ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
-                  <textarea 
-                    className="textarea" 
-                    value={editDraft} 
-                    onChange={(e) => setEditDraft(e.target.value)} 
-                    onKeyDown={(e) => {
-                      if (e.nativeEvent.isComposing) return;
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleUpdate(item.id, editDraft);
-                      }
-                      if (e.key === 'Escape') {
-                        setEditingId(null);
-                      }
-                    }}
-                    style={{ width: '100%', padding: '8px', fontSize: '13px', borderRadius: '6px', border: '1px solid var(--blue-border)', outline: 'none' }}
-                    rows={2}
-                    autoFocus
-                  />
-                  <div className="twoButtons">
-                    <button onClick={() => setEditingId(null)}>취소</button>
-                    <button className="primary" onClick={() => handleUpdate(item.id, editDraft)}>저장</button>
-                  </div>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', alignItems: 'flex-start' }}>
-                    <p 
-                      onClick={() => startEdit(item)}
-                      style={{ 
-                        margin: 0, 
-                        fontSize: '13.5px', 
-                        lineHeight: 1.6, 
-                        color: 'var(--text-body)', 
-                        whiteSpace: 'pre-wrap', 
-                        flex: 1, 
-                        cursor: 'pointer',
-                        transition: 'color 0.15s ease'
-                      }}
-                      title="클릭하여 수정"
-                      onMouseEnter={(e) => e.target.style.color = 'var(--blue)'}
-                      onMouseLeave={(e) => e.target.style.color = 'var(--text-body)'}
-                    >
-                      {item.text}
-                    </p>
-                    <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-                      <button onClick={() => handleDelete(item.id)} style={{ border: 'none', background: 'none', color: 'var(--red)', fontSize: '11px', fontWeight: 600, cursor: 'pointer', padding: 0 }}>삭제</button>
-                    </div>
-                  </div>
-                  
-                  {isCheck && (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '2px', borderTop: '1px dashed rgba(0,0,0,0.04)', paddingTop: '8px' }}>
-                      {checkStatusOptions.map(opt => {
-                        const isSelected = (item.status || 'unchecked') === opt.value;
-                        return (
-                          <button
-                            key={opt.value}
-                            onClick={() => handleUpdateStatus(item.id, opt.value)}
-                            style={{
-                              fontSize: '10px',
-                              padding: '4px 7px',
-                              borderRadius: '5px',
-                              border: isSelected ? `1px solid var(--${opt.color}-border)` : '1px solid var(--divider)',
-                              background: isSelected ? `var(--${opt.color}-light)` : 'var(--surface)',
-                              color: isSelected ? `var(--${opt.color})` : 'var(--text-3)',
-                              fontWeight: isSelected ? 800 : 500,
-                              cursor: 'pointer',
-                              transition: 'all 0.1s ease'
-                            }}
-                          >
-                            {opt.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          ))
-        )}
-      </div>
-    </div>
-  );
-}
-function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField }) {
+function DetailModal({ candidate, close, edit, remove, saveTimeline }) {
   const report = analyze(candidate);
   const [copied, setCopied] = useState(false);
-  const markdownText = candidateMarkdown(candidate, report);
-  const [isAddingQuickMemo, setIsAddingQuickMemo] = useState(false);
-  const [quickMemoForm, setQuickMemoForm] = useState({ summary: '', good: '', concern: '', nextCheck: '' });
-  const [showMenu, setShowMenu] = useState(false);
-  const [editingNoteId, setEditingNoteId] = useState(null);
-  const [editingNoteForm, setEditingNoteForm] = useState({ summary: '', good: '', concern: '', nextCheck: '' });
-  const [activeTab, setActiveTab] = useState('summary'); // 'summary' | 'observe' | 'chat' | 'spec' | 'record'
-  const [editingSection, setEditingSection] = useState(null);
-  const [sectionForm, setSectionForm] = useState(null);
-
-  const startSectionEdit = (sectionId) => {
-    if (editingSection && editingSection !== sectionId) {
-      if (!window.confirm('편집 중인 내용이 있습니다. 무시하고 다른 항목을 편집하시겠습니까?')) return;
-    }
-    setEditingSection(sectionId);
-    if (sectionId === 'emotional') setSectionForm({ energyTags: candidate.energyTags || [], emotionalBond: candidate.emotionalBond || {} });
-    if (sectionId === 'relation') setSectionForm({ relation: candidate.relation || {} });
-    if (sectionId === 'profile') setSectionForm({
-      name: candidate.name || '', age: candidate.age || '', birthDate: candidate.birthDate || '',
-      mbti: candidate.mbti || '', job: candidate.job || '', route: candidate.route || '', memo: candidate.memo || ''
-    });
-    if (sectionId === 'condition') setSectionForm({
-      height: candidate.height || '', asset: candidate.asset || '', income: candidate.income || '',
-      marriageHistory: candidate.marriageHistory || '', children: candidate.children || '', housing: candidate.housing || '',
-      smoking: candidate.smoking || '', drinking: candidate.drinking || ''
-    });
-  };
-
-  const cancelSectionEdit = () => { setEditingSection(null); setSectionForm(null); };
-
-  const saveSectionEdit = () => {
-    if (!sectionForm) return;
-    updateField(candidate.id, sectionForm);
-    setEditingSection(null);
-  };
-
-  const startEditNote = (note) => {
-    setEditingNoteId(note.id);
-    setEditingNoteForm({
-      summary: note.summary || '',
-      good: note.good || '',
-      concern: note.concern || '',
-      nextCheck: note.nextCheck || ''
-    });
-  };
-
-  const handleUpdateQuickNote = (noteId) => {
-    if (!editingNoteForm.summary && !editingNoteForm.good && !editingNoteForm.concern && !editingNoteForm.nextCheck) {
-      handleDeleteQuickNote(noteId);
-      return;
-    }
-    const updatedList = (candidate.quickNotes || []).map(n => n.id === noteId ? { ...n, ...editingNoteForm } : n);
-    updateField(candidate.id, 'quickNotes', updatedList);
-    setEditingNoteId(null);
-  };
-
-  const handleDeleteQuickNote = (noteId) => {
-    if (window.confirm('이 빠른 기록 메모를 삭제하시겠습니까?')) {
-      const updatedList = (candidate.quickNotes || []).filter(n => n.id !== noteId);
-      updateField(candidate.id, 'quickNotes', updatedList);
-      setEditingNoteId(null);
-    }
-  };
-
-  const handleSaveInlineQuickMemo = () => {
-    if (!quickMemoForm.summary && !quickMemoForm.good && !quickMemoForm.concern && !quickMemoForm.nextCheck) {
-      setIsAddingQuickMemo(false);
-      return;
-    }
-    const newMemo = {
-      id: Date.now(),
-      createdAt: new Date().toISOString(),
-      summary: quickMemoForm.summary,
-      good: quickMemoForm.good,
-      concern: quickMemoForm.concern,
-      nextCheck: quickMemoForm.nextCheck
-    };
-    const nextNotes = [newMemo, ...(candidate.quickNotes || [])];
-    updateField(candidate.id, 'quickNotes', nextNotes);
-    setQuickMemoForm({ summary: '', good: '', concern: '', nextCheck: '' });
-    setIsAddingQuickMemo(false);
-  };
-  
   async function copy() {
-    try { 
-      await navigator.clipboard.writeText(markdownText); 
-      setCopied(true); 
-      setTimeout(() => setCopied(false), 1300); 
-    } catch { setCopied(false); }
+    const text = candidateMarkdown(candidate, report);
+    try { await navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1300); } catch { setCopied(false); }
   }
-  
   return (
     <div className="sheetBackdrop" onClick={close}>
       <div className="sheet" onClick={(e) => e.stopPropagation()}>
@@ -2082,54 +1454,18 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
               })}
             </div>
             <h2>
-              {candidate.name || '무명의 후보'}
+              {candidate.name || '무명의 후보'}{' '}
+              <button onClick={() => edit(candidate)}>
+                <Icon type="edit" />
+              </button>
             </h2>
             <p>
               {report.age || '나이 미상'}세 · {candidate.job || '직업 미상'} · {candidate.location || '거주지 미상'}
             </p>
           </div>
-          <div className="detail-header-actions" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
-            <button 
-              className="iconButton"
-              onClick={() => setShowMenu(!showMenu)}
-              title="후보 전체 관리"
-              style={{ background: 'transparent', border: 'none', color: 'var(--text-2)', cursor: 'pointer', display: 'flex', padding: '4px' }}
-            >
-              <MoreVertical size={20} />
-            </button>
-            {showMenu && (
-              <div style={{
-                position: 'absolute',
-                top: '38px',
-                right: '0',
-                background: 'var(--surface)',
-                border: '1px solid var(--divider)',
-                boxShadow: 'var(--shadow-md)',
-                borderRadius: '10px',
-                zIndex: 999,
-                minWidth: '160px',
-                overflow: 'hidden',
-                display: 'flex',
-                flexDirection: 'column'
-              }}>
-                <button onClick={() => { edit(candidate); setShowMenu(false); }} style={{ padding: '12px 14px', fontSize: '13px', border: 'none', background: 'none', textAlign: 'left', color: 'var(--text-body)', cursor: 'pointer', borderBottom: '1px solid var(--divider)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Pencil size={14} /> 전체 상세 정보 편집
-                </button>
-                <button onClick={() => { copy(); setShowMenu(false); }} style={{ padding: '12px 14px', fontSize: '13px', border: 'none', background: 'none', textAlign: 'left', color: 'var(--text-body)', cursor: 'pointer', borderBottom: '1px solid var(--divider)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Clipboard size={14} /> 마크다운 전체 복사
-                </button>
-                <button onClick={() => { if (window.confirm('정말 이 후보 정보를 삭제하시겠습니까?')) { remove(candidate.id); close(); } setShowMenu(false); }} style={{ padding: '12px 14px', fontSize: '13px', border: 'none', background: 'none', textAlign: 'left', color: 'var(--red)', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Trash2 size={14} /> 이 후보 기록 삭제
-                </button>
-              </div>
-            )}
-            <button className="iconButton" onClick={close} style={{ background: 'transparent', border: 'none', color: 'var(--text-2)', cursor: 'pointer', display: 'flex', padding: '4px' }}>
-              <X size={20} />
-            </button>
-          </div>
+          <button className="close" onClick={close}>×</button>
         </div>
-        <main className="sheetBody">
-          {/* 관계 관찰 요약 (기본 노출 - 펼쳐진 상태) */}
+        <main className="sheetBody space-y-6">
           <Card className={`final ${scoreTone(report.color).className}`}>
             <div>
               <Badge color={report.color}>{scoreTone(report.color).label}</Badge>
@@ -2157,425 +1493,123 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
             </button>
           </Card>
 
-          {/* 🌟 5분할 탭 네비게이션 바 */}
-          <div style={{ 
-            display: 'flex', 
-            gap: '4px', 
-            overflowX: 'auto', 
-            paddingBottom: '4px', 
-            borderBottom: '1px solid var(--divider)', 
-            marginBottom: '16px',
-            whiteSpace: 'nowrap',
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-            WebkitOverflowScrolling: 'touch'
-          }}>
-            {[
-              { id: 'summary', label: '요약', icon: '📊' },
-              { id: 'observe', label: '관찰', icon: '🔍' },
-              { id: 'chat', label: '대화·정서', icon: '💬' },
-              { id: 'spec', label: '조건', icon: '⚖️' },
-              { id: 'record', label: '기록', icon: '📖' }
-            ].map(t => {
-              const isActive = activeTab === t.id;
-              return (
-                <button
-                  key={t.id}
-                  onClick={() => setActiveTab(t.id)}
-                  style={{
-                    padding: '10px 14px',
-                    fontSize: '13.5px',
-                    fontWeight: isActive ? 800 : 600,
-                    border: 'none',
-                    background: 'none',
-                    color: isActive ? 'var(--blue)' : 'var(--text-3)',
-                    borderBottom: isActive ? '2.5px solid var(--blue)' : '2.5px solid transparent',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    transition: 'all 0.15s ease',
-                    flexShrink: 0,
-                    marginBottom: '-1px'
-                  }}
-                >
-                  <span>{t.icon}</span>
-                  {t.label}
-                </button>
-              );
-            })}
-          </div>
+          {candidate.observationNotes && (
+            <Card style={{ borderLeft: '4px solid var(--blue)' }}>
+              <h3>👀 향후 관찰 계획</h3>
+              <p style={{ whiteSpace: 'pre-wrap', marginTop: '8px', fontSize: '13.5px', lineHeight: 1.6, color: 'var(--text-body)' }}>
+                {candidate.observationNotes}
+              </p>
+            </Card>
+          )}
 
-          {/* 탭별 컨텐츠 출력 그룹 */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            {/* 1) 요약 탭 */}
-            {activeTab === 'summary' && (
-              <>
-                <DetailAccordion title="관계 에너지 방향" subtitle="이 관계가 나에게 유발하는 에너지" defaultOpen={true}>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                    {(candidate.energyTags || []).map(id => {
-                      const tag = energyTagOptions.find(t => t.id === id);
-                      return tag ? <Badge key={id} color={tag.tone}>{tag.emoji} {tag.label}</Badge> : null;
-                    })}
-                    {(!candidate.energyTags || candidate.energyTags.length === 0) && (
-                      <span style={{ fontSize: '12.5px', color: 'var(--text-3)' }}>지정된 에너지 태그가 없습니다.</span>
-                    )}
+          <Card style={{ borderLeft: '4px solid var(--blue)' }}>
+            <h3>📝 관찰 메모</h3>
+            <p style={{ whiteSpace: 'pre-wrap', marginTop: '8px', fontSize: '13.5px', lineHeight: 1.6, color: 'var(--text-body)' }}>
+              {candidate.observationMemo || '기록 없음'}
+            </p>
+          </Card>
+
+          <Card>
+            <h3>정서적 결 & 에너지</h3>
+            <p style={{ fontSize: '11px', color: 'var(--text-3)', marginBottom: '10px' }}>나에게 유발하는 감정 방향성과 대화 밀도</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '14px' }}>
+              {(candidate.energyTags || []).map(id => {
+                const tag = energyTagOptions.find(t => t.id === id);
+                return tag ? <Badge key={id} color={tag.tone}>{tag.emoji} {tag.label}</Badge> : null;
+              })}
+              {(!candidate.energyTags || candidate.energyTags.length === 0) && (
+                <span style={{ fontSize: '12px', color: 'var(--text-3)' }}>지정된 에너지 태그가 없습니다.</span>
+              )}
+            </div>
+            
+            <div className="infoGrid">
+              {emotionalBondItems.map(item => {
+                const val = candidate.emotionalBond?.[item.key] ?? 5;
+                return (
+                  <div key={item.key} className="info" style={{ padding: '10px' }}>
+                    <small style={{ fontSize: '10px' }}>{item.label}</small>
+                    <b style={{ fontSize: '13px' }}>{val}/10</b>
                   </div>
-                </DetailAccordion>
+                );
+              })}
+            </div>
+          </Card>
 
-                <DetailAccordion title="플래그 (관찰된 신호)" subtitle="그린/옐로우/레드 플래그 모아보기" defaultOpen={true}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <TimelineSection candidate={candidate} report={report} saveTimeline={saveTimeline} />
+
+          <Card>
+            <h3>대화 & 태도 관찰</h3>
+            <p style={{ fontSize: '11px', color: 'var(--text-3)', marginBottom: '12px' }}>행동 일치도, 소통 템포 등 실제 패턴 관찰 상태</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {relationItems.map(item => {
+                const val = candidate.relation?.[item.key] ?? 5;
+                const isStatus = statusTypeKeys.includes(item.key);
+                const statusInfo = isStatus ? getStatusLabel(val) : null;
+                return (
+                  <div key={item.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: 'var(--surface)', borderRadius: '12px', border: '1px solid var(--divider)' }}>
                     <div>
-                      <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--green)', marginBottom: '6px' }}>🟢 그린 플래그</div>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                        {(candidate.green || []).length > 0 ? candidate.green.map(f => <Badge key={f} color="green">{f}</Badge>) : <span style={{ fontSize: '12px', color: 'var(--text-3)' }}>기록 없음</span>}
-                      </div>
+                      <b style={{ fontSize: '13.5px', color: 'var(--text-1)' }}>{item.label}</b>
+                      <p style={{ margin: '2px 0 0 0', fontSize: '11px', color: 'var(--text-3)' }}>{item.desc}</p>
                     </div>
-                    <div style={{ borderTop: '1px solid var(--divider)', paddingTop: '10px' }}>
-                      <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--amber)', marginBottom: '6px' }}>🟡 옐로우 플래그</div>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                        {(candidate.yellow || []).length > 0 ? candidate.yellow.map(f => <Badge key={f} color="amber">{f}</Badge>) : <span style={{ fontSize: '12px', color: 'var(--text-3)' }}>기록 없음</span>}
-                      </div>
-                    </div>
-                    <div style={{ borderTop: '1px solid var(--divider)', paddingTop: '10px' }}>
-                      <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--red)', marginBottom: '6px' }}>🔴 레드 플래그</div>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                        {(candidate.red || []).length > 0 ? candidate.red.map(f => <Badge key={f} color="red">{f}</Badge>) : <span style={{ fontSize: '12px', color: 'var(--text-3)' }}>기록 없음</span>}
-                      </div>
+                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                      {isStatus && statusInfo && <Badge color={statusInfo.color}>{statusInfo.label}</Badge>}
+                      <b style={{ fontSize: '14px', fontFamily: 'var(--font-display)' }}>{val}</b>
                     </div>
                   </div>
-                </DetailAccordion>
-              </>
-            )}
+                );
+              })}
+            </div>
+          </Card>
 
-            {/* 2) 관찰 탭 */}
-            {activeTab === 'observe' && (
-              <>
-                <DetailAccordion title="빠른 기록 히스토리" subtitle="날짜 기반 한줄평 및 관찰 메모 누적 기록" defaultOpen={true}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {!isAddingQuickMemo && (
-                      <button 
-                        className="primary" 
-                        style={{ width: '100%', padding: '12px', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}
-                        onClick={() => setIsAddingQuickMemo(true)}
-                      >
-                        + 새로운 빠른 기록 작성
-                      </button>
-                    )}
-
-                    {isAddingQuickMemo && (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: 'var(--surface)', padding: '14px', borderRadius: '12px', border: '1px solid var(--divider)', boxShadow: 'var(--shadow-sm)' }}>
-                        <Field label="한 줄 메모" value={quickMemoForm.summary} onChange={(v) => setQuickMemoForm(p => ({...p, summary: v}))} placeholder="오늘 있었던 일을 짧게 요약하세요." />
-                        <Field label="좋았던 점" textarea value={quickMemoForm.good} onChange={(v) => setQuickMemoForm(p => ({...p, good: v}))} placeholder="소소하게나마 마음에 든 점" rows={2} />
-                        <Field label="찝찝했던 점" textarea value={quickMemoForm.concern} onChange={(v) => setQuickMemoForm(p => ({...p, concern: v}))} placeholder="약간 걸리는 기분이나 신호" rows={2} />
-                        <Field label="다음 확인점" textarea value={quickMemoForm.nextCheck} onChange={(v) => setQuickMemoForm(p => ({...p, nextCheck: v}))} placeholder="다음에 스치듯 관찰해 볼 포인트" rows={2} />
-                        <div className="twoButtons" style={{ marginTop: '4px' }}>
-                          <button onClick={() => setIsAddingQuickMemo(false)}>취소</button>
-                          <button className="primary" onClick={handleSaveInlineQuickMemo}>⚡️ 기록 누적</button>
-                        </div>
-                      </div>
-                    )}
-
-                    {(candidate.quickNotes || []).length === 0 ? (
-                      <div style={{ padding: '20px', background: 'var(--bg)', borderRadius: '10px', color: 'var(--text-3)', fontSize: '13px', textAlign: 'center' }}>
-                        아직 누적된 빠른 기록이 없습니다.<br/>목록의 📝 버튼을 통해 가볍게 남겨보세요.
-                      </div>
-                    ) : (
-                      candidate.quickNotes.map((note) => {
-                        const isEditing = editingNoteId === note.id;
-                        return (
-                          <div 
-                            key={note.id} 
-                            style={{ 
-                              background: 'var(--bg)', 
-                              padding: '14px', 
-                              borderRadius: '10px', 
-                              fontSize: '13px', 
-                              border: isEditing ? '1px solid var(--blue-border)' : '1px solid rgba(0,0,0,0.03)',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: '8px',
-                              cursor: isEditing ? 'default' : 'pointer',
-                              transition: 'all 0.15s ease'
-                            }}
-                            onClick={() => { if (!isEditing) startEditNote(note); }}
-                            title={isEditing ? "" : "클릭하여 이 기록 즉시 수정/삭제"}
-                          >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--divider)', paddingBottom: '6px', pointerEvents: 'auto' }}>
-                              <span style={{ color: 'var(--blue)', fontSize: '11px', fontWeight: 700 }}>
-                                ⚡️ {new Date(note.createdAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                              </span>
-                              {!isEditing && (
-                                <button 
-                                  onClick={(e) => { e.stopPropagation(); handleDeleteQuickNote(note.id); }}
-                                  style={{ border: 'none', background: 'none', color: 'var(--red)', fontSize: '11px', fontWeight: 600, cursor: 'pointer', padding: 0 }}
-                                >
-                                  삭제
-                                </button>
-                              )}
-                            </div>
-                            
-                            {isEditing ? (
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '4px' }} onClick={(e) => e.stopPropagation()}>
-                                <Field label="한 줄 메모" value={editingNoteForm.summary} onChange={(v) => setEditingNoteForm(p => ({...p, summary: v}))} placeholder="한 줄 요약" />
-                                <Field label="좋았던 점" textarea value={editingNoteForm.good} onChange={(v) => setEditingNoteForm(p => ({...p, good: v}))} placeholder="좋았던 점" rows={2} />
-                                <Field label="찝찝했던 점" textarea value={editingNoteForm.concern} onChange={(v) => setEditingNoteForm(p => ({...p, concern: v}))} placeholder="찝찝했던 점" rows={2} />
-                                <Field label="다음 확인점" textarea value={editingNoteForm.nextCheck} onChange={(v) => setEditingNoteForm(p => ({...p, nextCheck: v}))} placeholder="다음 확인" rows={2} />
-                                <div className="twoButtons" style={{ marginTop: '4px' }}>
-                                  <button onClick={() => setEditingNoteId(null)}>취소</button>
-                                  <button className="primary" onClick={() => handleUpdateQuickNote(note.id)}>변경 저장</button>
-                                </div>
-                              </div>
-                            ) : (
-                              <>
-                                {note.summary && <p style={{ margin: '4px 0 0 0', color: 'var(--text-1)', fontWeight: 700, fontSize: '13.5px' }}>“{note.summary}”</p>}
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '12.5px', borderTop: note.summary ? '1px dashed rgba(0,0,0,0.05)' : 'none', paddingTop: note.summary ? '8px' : '0' }}>
-                                  {note.good && <div style={{ color: 'var(--text-body)' }}><b style={{ color: 'var(--green)', marginRight: '4px' }}>🟢 좋았던 점:</b> {note.good}</div>}
-                                  {note.concern && <div style={{ color: 'var(--text-body)' }}><b style={{ color: 'var(--red)', marginRight: '4px' }}>🟠 찝찝했던 점:</b> {note.concern}</div>}
-                                  {note.nextCheck && <div style={{ color: 'var(--text-body)' }}><b style={{ color: 'var(--blue)', marginRight: '4px' }}>👀 다음 확인:</b> {note.nextCheck}</div>}
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                </DetailAccordion>
-
-                <DetailAccordion title="관찰 검증 리스트" subtitle="다음 만남에서 확인할 체크리스트 및 Pass/Fail 기록" defaultOpen={true}>
-                  <DynamicListSection 
-                    items={candidate.observationChecks || []}
-                    type="check"
-                    onChange={(newArr) => updateField(candidate.id, 'observationChecks', newArr)}
-                  />
-                </DetailAccordion>
-
-                <DetailAccordion title="배경 정보 리스트" subtitle="성향, 가치관 및 변하지 않는 히스토리" defaultOpen={true}>
-                  <DynamicListSection 
-                    items={candidate.fixedObservationItems || []}
-                    type="fixed"
-                    onChange={(newArr) => updateField(candidate.id, 'fixedObservationItems', newArr)}
-                  />
-                </DetailAccordion>
-              </>
-            )}
-
-            {/* 3) 대화·정서 탭 */}
-            {activeTab === 'chat' && (
-              <>
-                <DetailAccordion title="정서적 결" subtitle="대화 밀도 및 감정 피로도" defaultOpen={true} onEdit={() => startSectionEdit('emotional')}>
-                  {editingSection === 'emotional' ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                      <div style={{ marginBottom: '4px' }}>
-                        <TagPickerGroup 
-                          title="나에게 유발하는 관계 에너지"
-                          tags={energyTagOptions}
-                          selected={sectionForm.energyTags || []}
-                          onToggle={(tags) => setSectionForm(p => ({...p, energyTags: tags}))}
-                          maxSelect={3}
-                        />
-                      </div>
-                      <EmotionalBondSliders form={sectionForm} updateEmotionalBond={(key, val) => setSectionForm(p => ({...p, emotionalBond: {...p.emotionalBond, [key]: val}}))} />
-                      <div className="twoButtons" style={{ marginTop: '10px' }}>
-                        <button onClick={cancelSectionEdit}>취소</button>
-                        <button className="primary" onClick={saveSectionEdit}>변경 저장</button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="infoGrid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-                      {emotionalBondItems.map(item => {
-                        const val = candidate.emotionalBond?.[item.key] ?? 5;
-                        const stat = getScoreStatusLabel(val);
-                        return (
-                          <div key={item.key} className="info" style={{ padding: '10px', borderRadius: '10px', border: '1px solid var(--divider)', display: 'flex', flexDirection: 'column', justifyContent: 'center', background: 'var(--surface)', boxSizing: 'border-box' }}>
-                            <small style={{ fontSize: '10px', color: 'var(--text-3)', marginBottom: '3px', display: 'block' }}>{item.label}</small>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              <b style={{ fontSize: '13.5px', color: 'var(--text-1)' }}>{val}/10</b>
-                              <Badge color={stat.color} style={{ fontSize: '9px', padding: '1px 4px' }}>{stat.label}</Badge>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </DetailAccordion>
-
-                <DetailAccordion title="대화/태도 세부 점수" subtitle="말과 행동 일치, 소통 템포 상세" defaultOpen={true} onEdit={() => startSectionEdit('relation')}>
-                  {editingSection === 'relation' ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                      <RelationSliders form={sectionForm} updateRelation={(key, val) => setSectionForm(p => ({...p, relation: {...p.relation, [key]: val}}))} />
-                      <div className="twoButtons" style={{ marginTop: '10px' }}>
-                        <button onClick={cancelSectionEdit}>취소</button>
-                        <button className="primary" onClick={saveSectionEdit}>변경 저장</button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {relationItems.map(item => {
-                        const val = candidate.relation?.[item.key] ?? 5;
-                        const isStatus = statusTypeKeys.includes(item.key);
-                        const statusInfo = isStatus ? getStatusLabel(val) : null;
-                        return (
-                          <div key={item.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: 'var(--surface)', borderRadius: '10px', border: '1px solid var(--divider)' }}>
-                            <div>
-                              <b style={{ fontSize: '13.5px', color: 'var(--text-1)' }}>{item.label}</b>
-                              <p style={{ margin: '2px 0 0 0', fontSize: '11px', color: 'var(--text-3)' }}>{item.desc}</p>
-                            </div>
-                            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                              {isStatus && statusInfo ? (
-                                <Badge color={statusInfo.color}>{statusInfo.label}</Badge>
-                              ) : (
-                                (() => {
-                                  const stat = getScoreStatusLabel(val);
-                                  return <Badge color={stat.color} style={{ fontSize: '9px', padding: '2px 5px' }}>{stat.label}</Badge>;
-                                })()
-                              )}
-                              <b style={{ fontSize: '14px', fontFamily: 'var(--font-display)', color: 'var(--blue)' }}>{val}</b>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </DetailAccordion>
-              </>
-            )}
-
-            {/* 4) 조건 탭 */}
-            {activeTab === 'spec' && (
-              <>
-                <DetailAccordion title="기본 프로필" subtitle="기본 신원 및 첫인상 메모" defaultOpen={true} onEdit={() => startSectionEdit('profile')}>
-                  {editingSection === 'profile' ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      <Field label="이름" value={sectionForm.name} onChange={(v) => setSectionForm(p => ({...p, name: v}))} />
-                      <Field label="나이" type="number" value={sectionForm.age} onChange={(v) => setSectionForm(p => ({...p, age: v}))} />
-                      <Field label="생년월일" value={sectionForm.birthDate} onChange={(v) => setSectionForm(p => ({...p, birthDate: v}))} />
-                      <Field label="MBTI" value={sectionForm.mbti} onChange={(v) => setSectionForm(p => ({...p, mbti: v}))} />
-                      <Field label="직업" value={sectionForm.job} onChange={(v) => setSectionForm(p => ({...p, job: v}))} />
-                      <Field label="만난 경로" value={sectionForm.route} onChange={(v) => setSectionForm(p => ({...p, route: v}))} />
-                      <Field label="첫인상 메모" textarea value={sectionForm.memo} onChange={(v) => setSectionForm(p => ({...p, memo: v}))} rows={3} />
-                      <div className="twoButtons" style={{ marginTop: '10px' }}>
-                        <button onClick={cancelSectionEdit}>취소</button>
-                        <button className="primary" onClick={saveSectionEdit}>변경 저장</button>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginBottom: '12px' }}>
-                        <div style={{ padding: '10px', border: '1px solid var(--divider)', borderRadius: '10px', background: 'var(--bg)' }}>
-                          <small style={{ fontSize: '10px', color: 'var(--text-3)', display: 'block' }}>이름</small>
-                          <b style={{ fontSize: '13px', color: 'var(--text-1)' }}>{candidate.name || '미확인'}</b>
-                        </div>
-                        <div style={{ padding: '10px', border: '1px solid var(--divider)', borderRadius: '10px', background: 'var(--bg)' }}>
-                          <small style={{ fontSize: '10px', color: 'var(--text-3)', display: 'block' }}>나이</small>
-                          <b style={{ fontSize: '13px', color: 'var(--text-1)' }}>{report.age || candidate.age || '미확인'}세</b>
-                        </div>
-                        <div style={{ padding: '10px', border: '1px solid var(--divider)', borderRadius: '10px', background: 'var(--bg)' }}>
-                          <small style={{ fontSize: '10px', color: 'var(--text-3)', display: 'block' }}>생년월일</small>
-                          <b style={{ fontSize: '13px', color: 'var(--text-1)' }}>{candidate.birthDate || '미확인'}</b>
-                        </div>
-                        <div style={{ padding: '10px', border: '1px solid var(--divider)', borderRadius: '10px', background: 'var(--bg)' }}>
-                          <small style={{ fontSize: '10px', color: 'var(--text-3)', display: 'block' }}>MBTI</small>
-                          <b style={{ fontSize: '13px', color: 'var(--text-1)' }}>{candidate.mbti || '미확인'}</b>
-                        </div>
-                        <div style={{ padding: '10px', border: '1px solid var(--divider)', borderRadius: '10px', background: 'var(--bg)' }}>
-                          <small style={{ fontSize: '10px', color: 'var(--text-3)', display: 'block' }}>직업</small>
-                          <b style={{ fontSize: '13px', color: 'var(--text-1)' }}>{candidate.job || '미확인'}</b>
-                        </div>
-                        <div style={{ padding: '10px', border: '1px solid var(--divider)', borderRadius: '10px', background: 'var(--bg)' }}>
-                          <small style={{ fontSize: '10px', color: 'var(--text-3)', display: 'block' }}>만난 경로</small>
-                          <b style={{ fontSize: '13px', color: 'var(--text-1)' }}>{candidate.route || '미확인'}</b>
-                        </div>
-                      </div>
-                      <div style={{ padding: '12px', background: 'var(--surface)', border: '1px solid var(--divider)', borderRadius: '10px' }}>
-                        <small style={{ display: 'block', fontSize: '10px', color: 'var(--text-3)', marginBottom: '4px' }}>첫인상 메모</small>
-                        <p style={{ fontSize: '13px', color: 'var(--text-body)', margin: 0, whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>{candidate.memo || '기록된 첫인상이 없습니다.'}</p>
-                      </div>
-                    </>
-                  )}
-                </DetailAccordion>
-
-                <DetailAccordion title="조건/스펙" subtitle="키, 돈, 주거 형태 등 하드웨어 점수" defaultOpen={true} onEdit={() => startSectionEdit('condition')}>
-                  {editingSection === 'condition' ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      <Field label="키 (cm)" type="number" value={sectionForm.height} onChange={(v) => setSectionForm(p => ({...p, height: v}))} />
-                      <SelectField label="자산" value={sectionForm.asset} onChange={(v) => setSectionForm(p => ({...p, asset: v}))}>
-                        {assetOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                      </SelectField>
-                      <SelectField label="연봉" value={sectionForm.income} onChange={(v) => setSectionForm(p => ({...p, income: v}))}>
-                        {incomeOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                      </SelectField>
-                      <SelectField label="결혼이력" value={sectionForm.marriageHistory} onChange={(v) => setSectionForm(p => ({...p, marriageHistory: v}))}>
-                        {marriageOptions.map(o => <option key={o} value={o}>{o}</option>)}
-                      </SelectField>
-                      <SelectField label="자녀유무" value={sectionForm.children} onChange={(v) => setSectionForm(p => ({...p, children: v}))}>
-                        {childrenOptions.map(o => <option key={o} value={o}>{o}</option>)}
-                      </SelectField>
-                      <Field label="주거형태" value={sectionForm.housing} onChange={(v) => setSectionForm(p => ({...p, housing: v}))} />
-                      <SelectField label="흡연" value={sectionForm.smoking} onChange={(v) => setSectionForm(p => ({...p, smoking: v}))}>
-                        {smokingOptions.map(o => <option key={o} value={o}>{o}</option>)}
-                      </SelectField>
-                      <SelectField label="음주" value={sectionForm.drinking} onChange={(v) => setSectionForm(p => ({...p, drinking: v}))}>
-                        {drinkingOptions.map(o => <option key={o} value={o}>{o}</option>)}
-                      </SelectField>
-                      <div className="twoButtons" style={{ marginTop: '10px' }}>
-                        <button onClick={cancelSectionEdit}>취소</button>
-                        <button className="primary" onClick={saveSectionEdit}>변경 저장</button>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="scoreGrid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '14px' }}>
-                        <ScoreCard title="조건/스펙" value={report.conditionScore} max={40} desc="키·돈·직업처럼 확인 가능한 조건" />
-                        <ScoreCard title="정보 확인도" value={report.trustScore} max={15} desc="말로 들은 정보가 확인됐는지" />
-                        <ScoreCard title="지속 가능성" value={report.realityScore} max={10} desc="거리·생활 리듬·현실 행동" />
-                      </div>
-                      <div className="infoGrid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginBottom: '14px' }}>
-                        <Info label="키" value={candidate.height ? `${candidate.height}cm` : '미확인'} checked={verified(candidate, 'height')} />
-                        <Info label="자산" value={optionLabel(assetOptions, candidate.asset)} checked={verified(candidate, 'asset')} />
-                        <Info label="연봉" value={optionLabel(incomeOptions, candidate.income)} checked={verified(candidate, 'income')} />
-                        <Info label="결혼" value={candidate.marriageHistory} checked={verified(candidate, 'marriageHistory')} />
-                        <Info label="자녀" value={candidate.children} checked={verified(candidate, 'children')} />
-                        <Info label="주거" value={candidate.housing} checked={verified(candidate, 'housing')} />
-                        <Info label="흡연/음주" value={`${candidate.smoking} · ${candidate.drinking}`} />
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px solid var(--divider)', paddingTop: '12px' }}>
-                        <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-2)', marginBottom: '2px' }}>조건 상세 세부 분포</span>
-                        {report.rows.map((row) => (
-                          <div className="rowScore" key={row.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', fontSize: '12.5px' }}>
-                            <span style={{ minWidth: '90px', fontSize: '12px', color: 'var(--text-2)' }}>{row.label}</span>
-                            <div className="bar" style={{ flex: 1, height: '5px', background: 'var(--divider)', borderRadius: '3px', overflow: 'hidden', margin: 0 }}>
-                              <i style={{ display: 'block', height: '100%', background: 'var(--blue)', width: `${(row.raw / row.max) * 100}%` }} />
-                            </div>
-                            <b style={{ minWidth: '45px', textAlign: 'right', fontSize: '12px', color: 'var(--text-1)' }}>{row.raw.toFixed(1)}/{row.max}</b>
-                          </div>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </DetailAccordion>
-              </>
-            )}
-
-            {/* 5) 기록 탭 */}
-            {activeTab === 'record' && (
-              <>
-                {(candidate.timeline || []).length === 0 ? (
-                  <div style={{ padding: '30px 20px', background: 'var(--surface)', borderRadius: '12px', border: '1px dashed var(--divider)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', color: 'var(--text-3)', fontSize: '13.5px', lineHeight: 1.6 }}>
-                    <div style={{ fontSize: '28px', marginBottom: '10px' }}>⏳</div>
-                    <strong>아직 실제 만남 전 단계입니다.</strong>
-                    <p style={{ margin: '4px 0 16px 0', fontSize: '12.5px', color: 'var(--text-3)' }}>실제 데이트 이후부터 시간 흐름 기반 기록을 시작합니다.</p>
-                    <div style={{ width: '100%', textAlign: 'left' }}>
-                      <TimelineSection candidate={candidate} report={report} saveTimeline={saveTimeline} />
-                    </div>
-                  </div>
-                ) : (
-                  <TimelineSection candidate={candidate} report={report} saveTimeline={saveTimeline} />
-                )}
-              </>
-            )}
+          <div className="scoreGrid">
+            <ScoreCard title="조건/스펙" value={report.conditionScore} max={40} desc="키·돈·직업처럼 확인 가능한 조건" />
+            <ScoreCard title="대화/태도" value={report.relationScore} max={30} desc="말이 통하는지, 행동이 있는지" />
+            <ScoreCard title="정보 확인도" value={report.trustScore} max={15} desc="말로 들은 정보가 확인됐는지" />
+            <ScoreCard title="지속 가능성" value={report.realityScore} max={10} desc="거리·생활 리듬·현실 행동" />
           </div>
+
+          <Card>
+            <h3>핵심 조건</h3>
+            <div className="infoGrid">
+              <Info label="키" value={candidate.height ? `${candidate.height}cm` : '미확인'} checked={verified(candidate, 'height')} />
+              <Info label="자산" value={optionLabel(assetOptions, candidate.asset)} checked={verified(candidate, 'asset')} />
+              <Info label="연봉" value={optionLabel(incomeOptions, candidate.income)} checked={verified(candidate, 'income')} />
+              <Info label="생년월일" value={candidate.birthDate || '미확인'} checked={verified(candidate, 'birthDate')} />
+              <Info label="결혼" value={candidate.marriageHistory} checked={verified(candidate, 'marriageHistory')} />
+              <Info label="자녀" value={candidate.children} checked={verified(candidate, 'children')} />
+              <Info label="주거" value={candidate.housing} checked={verified(candidate, 'housing')} />
+              <Info label="흡연/음주" value={`${candidate.smoking} · ${candidate.drinking}`} />
+            </div>
+          </Card>
+
+          <Card>
+            <h3>조건 점수 상세</h3>
+            {report.rows.map((row) => (
+              <div className="rowScore" key={row.key}>
+                <div>
+                  <span>{row.label}</span>
+                  <b>{row.raw.toFixed(1)}/{row.max}</b>
+                </div>
+                <div className="bar">
+                  <i style={{ width: `${(row.raw / row.max) * 100}%` }} />
+                </div>
+              </div>
+            ))}
+          </Card>
+
+          <Card>
+            <h3>첫인상 메모</h3>
+            <p style={{ fontSize: '13.5px', lineHeight: 1.6, color: 'var(--text-body)' }}>{candidate.memo || '기록된 첫인상이 없습니다.'}</p>
+          </Card>
+          
+          <button
+            className="danger"
+            onClick={() => {
+              if (window.confirm(`${candidate.name || '이 후보'} 정보를 삭제할까요?`)) remove(candidate.id);
+            }}
+          >
+            후보 삭제하기
+          </button>
         </main>
       </div>
     </div>
@@ -2711,38 +1745,12 @@ export default function App() {
   const [candidates, setCandidates] = useState(() => {
     try {
       const saved = window.localStorage.getItem(STORAGE_KEY);
-      const parsed = saved ? JSON.parse(saved) : sampleCandidates;
-      if (!Array.isArray(parsed)) return sampleCandidates;
-      return parsed.map(c => ({
-        ...emptyCandidate,
-        ...c,
-        fixedObservationMemo: c.fixedObservationMemo !== undefined ? c.fixedObservationMemo : (c.observationMemo || ''),
-        dateTimeline: c.dateTimeline || c.timeline || [],
-        quickNoteSummary: c.quickNoteSummary || '',
-        quickNoteGood: c.quickNoteGood || '',
-        quickNoteConcern: c.quickNoteConcern || '',
-        quickNoteNextCheck: c.quickNoteNextCheck || '',
-        quickNotes: c.quickNotes || (
-          (c.quickNoteSummary || c.quickNoteGood || c.quickNoteConcern || c.quickNoteNextCheck)
-            ? [{
-                id: Date.now() - Math.floor(Math.random() * 100000),
-                createdAt: c.updatedAt || new Date().toISOString(),
-                summary: c.quickNoteSummary || '',
-                good: c.quickNoteGood || '',
-                concern: c.quickNoteConcern || '',
-                nextCheck: c.quickNoteNextCheck || ''
-              }]
-            : []
-        ),
-        observationChecks: c.observationChecks || migrateTextToItems(c.observationNotes || '', 'check'),
-        fixedObservationItems: c.fixedObservationItems || migrateTextToItems(c.fixedObservationMemo || c.observationMemo || '', 'fixed'),
-      }));
+      return saved ? JSON.parse(saved) : sampleCandidates;
     } catch { return sampleCandidates; }
   });
   const [selected, setSelected] = useState(null);
   const [editing, setEditing] = useState(null);
   const [guideOpen, setGuideOpen] = useState(false);
-  const [quickMemoCandidate, setQuickMemoCandidate] = useState(null);
 
   useEffect(() => { try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(candidates)); } catch {} }, [candidates]);
 
@@ -2756,45 +1764,13 @@ export default function App() {
   }
   function remove(id) { setCandidates((prev) => prev.filter((item) => item.id !== id)); setSelected(null); }
   function saveTimeline(candidateId, timelineList) {
-    setCandidates((prev) => {
-      const next = prev.map((item) => {
-        if (item.id !== candidateId) return item;
-        return { ...item, timeline: timelineList, dateTimeline: timelineList, updatedAt: new Date().toISOString() };
-      });
-      const tgt = next.find((i) => i.id === candidateId);
-      if (tgt) setSelected(tgt);
-      return next;
-    });
-  }
-  function addQuickMemo(candidateId, memoObj) {
-    setCandidates((prev) => {
-      const next = prev.map((item) => {
-        if (item.id !== candidateId) return item;
-        const existingMemos = item.quickNotes || [];
-        return { 
-          ...item, 
-          quickNotes: [memoObj, ...existingMemos],
-          updatedAt: new Date().toISOString() 
-        };
-      });
-      const tgt = next.find((i) => i.id === candidateId);
-      if (tgt) setSelected(tgt);
-      return next;
-    });
-  }
-  function updateCandidateField(candidateId, fieldName, value) {
-    setCandidates((prev) => {
-      const next = prev.map((item) => {
-        if (item.id !== candidateId) return item;
-        if (typeof fieldName === 'object' && fieldName !== null) {
-          return { ...item, ...fieldName, updatedAt: new Date().toISOString() };
-        }
-        return { ...item, [fieldName]: value, updatedAt: new Date().toISOString() };
-      });
-      const tgt = next.find((i) => i.id === candidateId);
-      if (tgt) setSelected(tgt);
-      return next;
-    });
+    let updated = null;
+    setCandidates((prev) => prev.map((item) => {
+      if (item.id !== candidateId) return item;
+      updated = { ...item, timeline: timelineList, updatedAt: new Date().toISOString() };
+      return updated;
+    }));
+    if (updated) setSelected(updated);
   }
   function startEdit(candidate) { setEditing(candidate); setSelected(null); setTab('add'); }
 
@@ -2859,5 +1835,5 @@ export default function App() {
     event.target.value = '';
   }
 
-  return <div className="app"><div className="phone"><main>{tab === 'home' && <Home candidates={candidates} openCandidate={setSelected} goAdd={() => { setEditing(null); setTab('add'); }} openGuide={() => setGuideOpen(true)} openQuickMemo={setQuickMemoCandidate}/>} {tab === 'add' && <AddCandidate initialCandidate={editing} onSave={save} onCancel={() => { setEditing(null); setTab('home'); }}/>}</main>{tab === 'home' && <FloatingAdd onClick={() => { setEditing(null); setTab('add'); }}/>} {selected && <DetailModal candidate={selected} close={() => setSelected(null)} edit={startEdit} remove={remove} saveTimeline={saveTimeline} updateField={updateCandidateField}/>} {quickMemoCandidate && <QuickMemoModal candidate={quickMemoCandidate} close={() => setQuickMemoCandidate(null)} onSave={addQuickMemo} />} {guideOpen && <GuideModal close={() => setGuideOpen(false)} onExport={exportData} onImport={importData}/>}</div></div>;
+  return <div className="app"><div className="phone"><main>{tab === 'home' && <Home candidates={candidates} openCandidate={setSelected} goAdd={() => { setEditing(null); setTab('add'); }} openGuide={() => setGuideOpen(true)}/>} {tab === 'add' && <AddCandidate initialCandidate={editing} onSave={save} onCancel={() => { setEditing(null); setTab('home'); }}/>}</main>{tab === 'home' && <FloatingAdd onClick={() => { setEditing(null); setTab('add'); }}/>} {selected && <DetailModal candidate={selected} close={() => setSelected(null)} edit={startEdit} remove={remove} saveTimeline={saveTimeline}/>} {guideOpen && <GuideModal close={() => setGuideOpen(false)} onExport={exportData} onImport={importData}/>}</div></div>;
 }

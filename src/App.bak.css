@@ -708,45 +708,19 @@ p { margin: 0; }
 }
 
 /* ─── BUTTONS ────────────────────────────────────────── */
-.btn, .primary, .secondary, .danger, .uploadButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  border-radius: 12px;
-  padding: 14px 16px;
-  font-weight: 700;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  border: none;
-  background: none;
-}
-
 .primary {
   background: var(--blue) !important;
   color: #fff !important;
-  border: 1px solid transparent !important;
 }
-.primary:hover { opacity: 0.9; }
-
-.secondary, .uploadButton, .twoButtons button:not(.primary) {
-  background: var(--bg);
-  border: 1px solid var(--divider);
-  color: var(--text-1);
-}
-.secondary:hover, .uploadButton:hover, .twoButtons button:not(.primary):hover { background: var(--divider); }
-
-.danger {
-  background: var(--red-light);
-  border: 1px solid var(--red-border);
-  color: var(--red-text);
-}
-.danger:hover { background: var(--red-border); }
 
 .full {
   width: 100%;
   margin-top: 20px;
+  border-radius: 14px;
+  padding: 16px;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.01em;
 }
 
 .twoButtons {
@@ -755,25 +729,25 @@ p { margin: 0; }
   gap: 10px;
   margin-top: 16px;
 }
-.twoButtons button, .twoButtons .uploadButton, .stickyActions button {
-  width: 100%;
+
+.twoButtons button,
+.twoButtons .uploadButton,
+.stickyActions button {
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--divider);
+  color: var(--text-1);
+  padding: 15px;
+  font-weight: 700;
+  font-size: 15px;
+  text-align: center;
 }
 
-.iconButton {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  color: var(--text-2);
-  border: none;
+.uploadButton {
   cursor: pointer;
-  transition: background 0.15s ease;
-}
-.iconButton:hover {
-  background: rgba(0,0,0,0.05);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .notice {
@@ -1024,13 +998,6 @@ p { margin: 0; }
 
 .sheetBody {
   padding: 12px 16px 40px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.sheetBody > .card {
-  margin-bottom: 0 !important;
 }
 
 /* ─── FINAL CARD ─────────────────────────────────────── */
