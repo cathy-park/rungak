@@ -998,6 +998,13 @@ p { margin: 0; }
 
 .sheetBody {
   padding: 12px 16px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sheetBody > .card {
+  margin-bottom: 0 !important;
 }
 
 /* ─── FINAL CARD ─────────────────────────────────────── */

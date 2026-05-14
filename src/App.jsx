@@ -1552,7 +1552,7 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline }) {
           </div>
           <button className="close" onClick={close}>×</button>
         </div>
-        <main className="sheetBody" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <main className="sheetBody">
           {/* 관계 관찰 요약 (기본 노출 - 펼쳐진 상태) */}
           <Card className={`final ${scoreTone(report.color).className}`}>
             <div>
