@@ -2077,20 +2077,20 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
       <div className="sheet" onClick={(e) => e.stopPropagation()}>
         <div className="sheetHeader">
           <Avatar candidate={candidate} size="sm" />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <h2 style={{ margin: 0 }}>
+              {candidate.name || '무명의 후보'}
+            </h2>
+            <p style={{ margin: 0 }}>
+              {report.age || '나이 미상'}세 · {candidate.job || '직업 미상'} · {candidate.location || '거주지 미상'}
+            </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '2px' }}>
               <Badge color={report.color}>{report.verdict}</Badge>
               {(candidate.personalityTags || []).map(id => {
                 const tag = personalityTypeTags.find(t => t.id === id);
                 return tag ? <Badge key={id} color="blue">{tag.emoji} {tag.label}</Badge> : null;
               })}
             </div>
-            <h2>
-              {candidate.name || '무명의 후보'}
-            </h2>
-            <p>
-              {report.age || '나이 미상'}세 · {candidate.job || '직업 미상'} · {candidate.location || '거주지 미상'}
-            </p>
           </div>
           <div className="detail-header-actions" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
             <button 
