@@ -1794,15 +1794,17 @@ function QuickMemoModal({ candidate, close, onSave }) {
   return (
     <div className="sheetBackdrop" onClick={close}>
       <div className="sheet" onClick={(e) => e.stopPropagation()} style={{ maxHeight: '85vh', display: 'flex', flexDirection: 'column' }}>
-        <div className="sheetHead">
-          <div className="avatarBox">
-            <Avatar candidate={candidate} size="sm" />
-            <div>
-              <h3 style={{ fontSize: '15px', fontWeight: 700 }}>{candidate.name || '후보'} · 빠른 기록</h3>
-              <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-3)' }}>오늘의 관계 흐름을 가볍게 남겨보세요.</p>
-            </div>
+        <div className="sheetHeader">
+          <Avatar candidate={candidate} size="sm" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <h2 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>
+              {candidate.name || '무명의 후보'} · 빠른 기록
+            </h2>
+            <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-2)' }}>
+              오늘의 관계 흐름을 가볍게 남겨보세요.
+            </p>
           </div>
-          <button className="close" onClick={close}>×</button>
+          <button className="close" onClick={close} style={{ marginLeft: 'auto' }}>×</button>
         </div>
         <div className="sheetBody" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', paddingBottom: '20px', gap: '10px' }}>
           <div className="formStack">
