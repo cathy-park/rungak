@@ -71,6 +71,28 @@ const feelingOptions = [
   { value: 'weird', label: '이상했음' },
   { value: 'sure', label: '확신이 생김' },
 ];
+
+const checkStatusOptions = [
+  { value: 'unchecked', label: '미확인', color: 'gray' },
+  { value: 'pass', label: 'Pass', color: 'green' },
+  { value: 'fail', label: 'Fail', color: 'red' },
+  { value: 'hold', label: '보류', color: 'amber' },
+  { value: 'watch', label: '추가 관찰', color: 'blue' },
+];
+
+function migrateTextToItems(text, type = 'fixed') {
+  if (!text || typeof text !== 'string') return [];
+  return text
+    .split('\n')
+    .map(line => line.replace(/^[•\-\*]\s*/, '').trim())
+    .filter(Boolean)
+    .map((line, idx) => ({
+      id: Date.now() - Math.floor(Math.random() * 100000) - idx,
+      text: line,
+      ...(type === 'check' ? { status: 'unchecked' } : {})
+    }));
+}
+
 const signalOptions = [
   { code: 'keptPromise', label: '약속을 지킴', score: 2, tone: 'green' },
   { code: 'remembered', label: '내 말을 기억함', score: 2, tone: 'green' },
@@ -614,6 +636,18 @@ function candidateMarkdown(candidate, report) {
       }).join('\n\n')
     : '기록 없음';
 
+  const observationChecksMarkdown = (candidate.observationChecks || []).length
+    ? candidate.observationChecks.map(item => {
+        const opt = checkStatusOptions.find(o => o.value === (item.status || 'unchecked'));
+        const statusLabel = opt ? opt.label : '미확인';
+        return `- [${statusLabel}] ${item.text}`;
+      }).join('\n')
+    : '기록 없음';
+
+  const fixedObservationItemsMarkdown = (candidate.fixedObservationItems || []).length
+    ? candidate.fixedObservationItems.map(item => `- ${item.text}`).join('\n')
+    : '기록 없음';
+
   return [
     `# 런각 연구소 관계 구조 리포트: ${candidate.name || '무명의 후보'}`,
     '',
@@ -667,11 +701,11 @@ function candidateMarkdown(candidate, report) {
     '## 9. 타임라인 (관계 흐름 기록)',
     timelines,
     '',
-    '## 10. 관찰 포인트 메모',
-    candidate.observationNotes || '없음',
+    '## 10. 관찰 검증 리스트',
+    observationChecksMarkdown,
     '',
-    '## 11. 고정 관찰 메모 (Fixed Observation Memo)',
-    candidate.fixedObservationMemo || candidate.observationMemo || '기록 없음',
+    '## 11. 배경 정보 리스트',
+    fixedObservationItemsMarkdown,
     '',
     '---',
     '> LLM 활용 제안: 위 리포트를 기반으로 "이 관계가 나에게 지속 가능한 구조인가"를 함께 분석해주세요.',
@@ -1606,7 +1640,7 @@ function TimelineSection({ candidate, report, saveTimeline }) {
       )}
 
       {events.length === 0 ? (
-        <div className="empty" style={{ padding: '24px 16px', color: 'var(--text-3)', fontSize: '13px', lineHeight: 1.5, wordBreak: 'keep-all' }}>
+        <div style={{ padding: '24px 16px', background: 'var(--bg)', borderRadius: '10px', color: 'var(--text-3)', fontSize: '13px', lineHeight: 1.5, textAlign: 'center', border: '1px dashed var(--divider)' }}>
           아직 실제 만남 전 단계입니다.<br/>실제 데이트 이후부터 시간 흐름 기반 기록을 시작합니다.
         </div>
       ) : (
@@ -1743,6 +1777,142 @@ function QuickMemoModal({ candidate, close, onSave }) {
             ⚡️ 관찰 기록 누적 저장
           </button>
         </div>
+      </div>
+    </div>
+  );
+}
+function DynamicListSection({ items = [], type, onChange }) {
+  const [isAdding, setIsAdding] = useState(false);
+  const [draftText, setDraftText] = useState('');
+  const [editingId, setEditingId] = useState(null);
+  const [editDraft, setEditDraft] = useState('');
+
+  const handleAdd = () => {
+    if (!draftText.trim()) return;
+    const newItems = migrateTextToItems(draftText, type);
+    onChange([...items, ...newItems]);
+    setDraftText('');
+    setIsAdding(false);
+  };
+
+  const handleUpdate = (id, newText) => {
+    onChange(items.map(item => item.id === id ? { ...item, text: newText } : item));
+    setEditingId(null);
+    setEditDraft('');
+  };
+
+  const handleDelete = (id) => {
+    if (window.confirm('이 항목을 삭제하시겠습니까?')) {
+      onChange(items.filter(item => item.id !== id));
+    }
+  };
+
+  const handleUpdateStatus = (id, nextStatus) => {
+    onChange(items.map(item => item.id === id ? { ...item, status: nextStatus } : item));
+  };
+
+  const startEdit = (item) => {
+    setEditingId(item.id);
+    setEditDraft(item.text);
+  };
+
+  const isCheck = type === 'check';
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      {!isAdding && (
+        <button 
+          className="primary" 
+          style={{ width: '100%', padding: '12px', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}
+          onClick={() => setIsAdding(true)}
+        >
+          + {isCheck ? '새로운 검증 체크리스트 기록' : '배경 정보 및 성향 기록'}
+        </button>
+      )}
+
+      {isAdding && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: 'var(--surface)', padding: '14px', borderRadius: '12px', border: '1px solid var(--divider)', boxShadow: 'var(--shadow-sm)' }}>
+          <BulletTextarea 
+            value={draftText} 
+            onChange={setDraftText} 
+            placeholder={isCheck 
+              ? "다음 만남에서 확인할 행동/가치관을 입력하세요.\n(줄바꿈으로 여러 행 입력 시 각각 개별 항목으로 저장됩니다.)"
+              : "이 사람에 대한 변하지 않는 배경 정보나 특징을 입력하세요.\n(줄바꿈으로 여러 행 입력 시 각각 개별 항목으로 저장됩니다.)"
+            }
+            rows={4}
+          />
+          <div className="twoButtons">
+            <button onClick={() => setIsAdding(false)}>취소</button>
+            <button className="primary" onClick={handleAdd}>일괄 등록</button>
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {items.length === 0 ? (
+          <div style={{ padding: '20px', background: 'var(--bg)', borderRadius: '10px', textAlign: 'center', color: 'var(--text-3)', fontSize: '13px' }}>
+            등록된 정보가 없습니다.
+          </div>
+        ) : (
+          items.map(item => (
+            <div key={item.id} style={{ background: 'var(--bg)', padding: '12px 14px', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '8px', border: '1px solid rgba(0,0,0,0.02)' }}>
+              {editingId === item.id ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                  <textarea 
+                    className="textarea" 
+                    value={editDraft} 
+                    onChange={(e) => setEditDraft(e.target.value)} 
+                    style={{ width: '100%', padding: '8px', fontSize: '13px', borderRadius: '6px', border: '1px solid var(--divider)' }}
+                    rows={2}
+                  />
+                  <div className="twoButtons">
+                    <button onClick={() => setEditingId(null)}>취소</button>
+                    <button className="primary" onClick={() => handleUpdate(item.id, editDraft)}>저장</button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', alignItems: 'flex-start' }}>
+                    <p style={{ margin: 0, fontSize: '13.5px', lineHeight: 1.6, color: 'var(--text-body)', whiteSpace: 'pre-wrap', flex: 1 }}>
+                      {item.text}
+                    </p>
+                    <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                      <button onClick={() => startEdit(item)} style={{ border: 'none', background: 'none', color: 'var(--blue)', fontSize: '11px', fontWeight: 600, cursor: 'pointer', padding: 0 }}>수정</button>
+                      <button onClick={() => handleDelete(item.id)} style={{ border: 'none', background: 'none', color: 'var(--red)', fontSize: '11px', fontWeight: 600, cursor: 'pointer', padding: 0 }}>삭제</button>
+                    </div>
+                  </div>
+                  
+                  {isCheck && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '2px', borderTop: '1px dashed rgba(0,0,0,0.04)', paddingTop: '8px' }}>
+                      {checkStatusOptions.map(opt => {
+                        const isSelected = (item.status || 'unchecked') === opt.value;
+                        return (
+                          <button
+                            key={opt.value}
+                            onClick={() => handleUpdateStatus(item.id, opt.value)}
+                            style={{
+                              fontSize: '10px',
+                              padding: '4px 7px',
+                              borderRadius: '5px',
+                              border: isSelected ? `1px solid var(--${opt.color}-border)` : '1px solid var(--divider)',
+                              background: isSelected ? `var(--${opt.color}-light)` : 'var(--surface)',
+                              color: isSelected ? `var(--${opt.color})` : 'var(--text-3)',
+                              fontWeight: isSelected ? 800 : 500,
+                              cursor: 'pointer',
+                              transition: 'all 0.1s ease'
+                            }}
+                          >
+                            {opt.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
@@ -1991,21 +2161,21 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
             </div>
           </DetailAccordion>
 
-          {/* 8. 관찰 포인트 (기본 접힘) */}
-          <DetailAccordion title="관찰 포인트" subtitle="다음 만남에서 집중 관찰/검증할 목록" defaultOpen={false}>
-            <EditableMemoSection 
-              value={candidate.observationNotes}
-              onSave={(val) => updateField(candidate.id, 'observationNotes', val)}
-              placeholder="다음 만남에서 확인하고 싶은 점을 가볍게 기록해보세요."
+          {/* 8. 관찰 검증 리스트 (기본 접힘) */}
+          <DetailAccordion title="관찰 검증 리스트" subtitle="다음 만남에서 확인할 체크리스트 및 Pass/Fail 기록" defaultOpen={false}>
+            <DynamicListSection 
+              items={candidate.observationChecks || []}
+              type="check"
+              onChange={(newArr) => updateField(candidate.id, 'observationChecks', newArr)}
             />
           </DetailAccordion>
 
-          {/* 9. 고정 관찰 메모 (기본 접힘) */}
-          <DetailAccordion title="고정 관찰 메모" subtitle="장기 분석 및 변하지 않는 배경 정보" defaultOpen={false}>
-            <EditableMemoSection 
-              value={candidate.fixedObservationMemo || candidate.observationMemo}
-              onSave={(val) => updateField(candidate.id, 'fixedObservationMemo', val)}
-              placeholder="대화 흐름이나 반복되는 행동 패턴을 남겨보세요."
+          {/* 9. 배경 정보 리스트 (기본 접힘) */}
+          <DetailAccordion title="배경 정보 리스트" subtitle="성향, 가치관 및 변하지 않는 히스토리" defaultOpen={false}>
+            <DynamicListSection 
+              items={candidate.fixedObservationItems || []}
+              type="fixed"
+              onChange={(newArr) => updateField(candidate.id, 'fixedObservationItems', newArr)}
             />
           </DetailAccordion>
 
@@ -2191,6 +2361,8 @@ export default function App() {
               }]
             : []
         ),
+        observationChecks: c.observationChecks || migrateTextToItems(c.observationNotes || '', 'check'),
+        fixedObservationItems: c.fixedObservationItems || migrateTextToItems(c.fixedObservationMemo || c.observationMemo || '', 'fixed'),
       }));
     } catch { return sampleCandidates; }
   });
