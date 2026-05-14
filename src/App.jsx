@@ -1491,9 +1491,31 @@ function TimelineSection({ candidate, report, saveTimeline }) {
         <div><p style={{ margin: 0, color: 'var(--text-3)', fontSize: '12px' }}>점수에는 직접 고른 신호만 반영해요.</p></div>
         <div>
           <Badge color={tone}>흐름 {report.flowScore > 0 ? '+' : ''}{report.flowScore}</Badge>
-          {!adding && <button onClick={() => setAdding(true)}>+ 기록</button>}
         </div>
       </div>
+
+      {!adding && (
+        <button 
+          className="primary" 
+          style={{ 
+            width: '100%', 
+            padding: '13px', 
+            marginTop: '6px', 
+            marginBottom: '14px', 
+            borderRadius: '12px', 
+            fontSize: '13.5px', 
+            fontWeight: 700, 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            gap: '6px',
+            cursor: 'pointer'
+          }}
+          onClick={() => setAdding(true)}
+        >
+          + 새로운 관계 흐름 기록하기
+        </button>
+      )}
       
       {adding && (
         <div className="timelineForm">
@@ -1567,7 +1589,64 @@ function TimelineSection({ candidate, report, saveTimeline }) {
     </div>
   );
 }
-function DetailModal({ candidate, close, edit, remove, saveTimeline }) {
+function EditableMemoSection({ value, onSave, placeholder }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [draft, setDraft] = useState(value || '');
+
+  useEffect(() => {
+    setDraft(value || '');
+  }, [value]);
+
+  const handleSave = () => {
+    onSave(draft);
+    setIsEditing(false);
+  };
+
+  if (isEditing) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <BulletTextarea 
+          value={draft} 
+          onChange={setDraft} 
+          placeholder={placeholder} 
+          rows={5}
+        />
+        <div className="twoButtons">
+          <button onClick={() => setIsEditing(false)}>취소</button>
+          <button className="primary" onClick={handleSave}>저장</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ position: 'relative', padding: '14px', background: 'var(--bg)', borderRadius: '10px' }}>
+      <p style={{ whiteSpace: 'pre-wrap', margin: 0, fontSize: '13.5px', lineHeight: 1.6, color: 'var(--text-body)', paddingRight: '60px' }}>
+        {value || placeholder}
+      </p>
+      <button 
+        onClick={() => setIsEditing(true)} 
+        style={{ 
+          position: 'absolute', 
+          top: '12px', 
+          right: '12px', 
+          background: 'var(--surface)', 
+          border: '1px solid var(--divider)', 
+          borderRadius: '6px',
+          color: 'var(--blue)', 
+          fontSize: '11px', 
+          fontWeight: 600, 
+          padding: '4px 8px',
+          cursor: 'pointer',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+        }}
+      >
+        기록하기
+      </button>
+    </div>
+  );
+}
+function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField }) {
   const report = analyze(candidate);
   const [copied, setCopied] = useState(false);
   const markdownText = candidateMarkdown(candidate, report);
@@ -1799,20 +1878,20 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline }) {
 
           {/* 8. 관찰 포인트 (기본 접힘) */}
           <DetailAccordion title="관찰 포인트" subtitle="다음 만남에서 집중 관찰/검증할 목록" defaultOpen={false}>
-            <div style={{ padding: '14px', background: 'var(--bg)', borderRadius: '10px' }}>
-              <p style={{ whiteSpace: 'pre-wrap', margin: 0, fontSize: '13.5px', lineHeight: 1.6, color: 'var(--text-body)' }}>
-                {candidate.observationNotes || '다음 만남에서 확인하고 싶은 점을 가볍게 기록해보세요.'}
-              </p>
-            </div>
+            <EditableMemoSection 
+              value={candidate.observationNotes}
+              onSave={(val) => updateField(candidate.id, 'observationNotes', val)}
+              placeholder="다음 만남에서 확인하고 싶은 점을 가볍게 기록해보세요."
+            />
           </DetailAccordion>
 
           {/* 9. 고정 관찰 메모 (기본 접힘) */}
           <DetailAccordion title="고정 관찰 메모" subtitle="장기 분석 및 변하지 않는 배경 정보" defaultOpen={false}>
-            <div style={{ padding: '14px', background: 'var(--bg)', borderRadius: '10px' }}>
-              <p style={{ whiteSpace: 'pre-wrap', margin: 0, fontSize: '13.5px', lineHeight: 1.6, color: 'var(--text-body)' }}>
-                {candidate.fixedObservationMemo || candidate.observationMemo || '대화 흐름이나 반복되는 행동 패턴을 남겨보세요.'}
-              </p>
-            </div>
+            <EditableMemoSection 
+              value={candidate.fixedObservationMemo || candidate.observationMemo}
+              onSave={(val) => updateField(candidate.id, 'fixedObservationMemo', val)}
+              placeholder="대화 흐름이나 반복되는 행동 패턴을 남겨보세요."
+            />
           </DetailAccordion>
 
           {/* 10. 타임라인 (기본 접힘) */}
@@ -2012,6 +2091,15 @@ export default function App() {
     }));
     if (updated) setSelected(updated);
   }
+  function updateCandidateField(candidateId, fieldName, value) {
+    let updated = null;
+    setCandidates((prev) => prev.map((item) => {
+      if (item.id !== candidateId) return item;
+      updated = { ...item, [fieldName]: value, updatedAt: new Date().toISOString() };
+      return updated;
+    }));
+    if (updated) setSelected(updated);
+  }
   function startEdit(candidate) { setEditing(candidate); setSelected(null); setTab('add'); }
 
   async function exportData() {
@@ -2075,5 +2163,5 @@ export default function App() {
     event.target.value = '';
   }
 
-  return <div className="app"><div className="phone"><main>{tab === 'home' && <Home candidates={candidates} openCandidate={setSelected} goAdd={() => { setEditing(null); setTab('add'); }} openGuide={() => setGuideOpen(true)}/>} {tab === 'add' && <AddCandidate initialCandidate={editing} onSave={save} onCancel={() => { setEditing(null); setTab('home'); }}/>}</main>{tab === 'home' && <FloatingAdd onClick={() => { setEditing(null); setTab('add'); }}/>} {selected && <DetailModal candidate={selected} close={() => setSelected(null)} edit={startEdit} remove={remove} saveTimeline={saveTimeline}/>} {guideOpen && <GuideModal close={() => setGuideOpen(false)} onExport={exportData} onImport={importData}/>}</div></div>;
+  return <div className="app"><div className="phone"><main>{tab === 'home' && <Home candidates={candidates} openCandidate={setSelected} goAdd={() => { setEditing(null); setTab('add'); }} openGuide={() => setGuideOpen(true)}/>} {tab === 'add' && <AddCandidate initialCandidate={editing} onSave={save} onCancel={() => { setEditing(null); setTab('home'); }}/>}</main>{tab === 'home' && <FloatingAdd onClick={() => { setEditing(null); setTab('add'); }}/>} {selected && <DetailModal candidate={selected} close={() => setSelected(null)} edit={startEdit} remove={remove} saveTimeline={saveTimeline} updateField={updateCandidateField}/>} {guideOpen && <GuideModal close={() => setGuideOpen(false)} onExport={exportData} onImport={importData}/>}</div></div>;
 }
