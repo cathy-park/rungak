@@ -241,6 +241,13 @@ const emptyCandidate = {
   yellow: [],
   red: [],
   timeline: [],
+  // 신규 UX 데이터 구조
+  quickNoteSummary: '',
+  quickNoteGood: '',
+  quickNoteConcern: '',
+  quickNoteNextCheck: '',
+  fixedObservationMemo: '',
+  dateTimeline: [],
 };
 
 const sampleCandidates = [
@@ -487,7 +494,8 @@ function analyze(candidate) {
   }, 0);
   
   const bonusPenalty = clamp(greenScore + yellowScore + redScore + importantVerified * 1.5 + moneyVerified * 1.5, -18, 10);
-  const flowScore = timelineScore(candidate.timeline || [], redList);
+  const currentTimeline = candidate.dateTimeline || candidate.timeline || [];
+  const flowScore = timelineScore(currentTimeline, redList);
   const preScore = Math.round(conditionScore + relationScore + trustScore + realityScore + bonusPenalty + flowScore);
   const totalScore = clamp(Math.min(preScore, scoreCap), 0, 100);
   
@@ -542,20 +550,26 @@ function optLabel(options, value) {
   return options.find((item) => item.value === value)?.label || value || '미확인';
 }
 function createForm(candidate) {
+  const currentTimeline = candidate?.dateTimeline || candidate?.timeline || [];
+  const currentMemo = candidate?.fixedObservationMemo !== undefined ? candidate.fixedObservationMemo : (candidate?.observationMemo || '');
   return {
     ...emptyCandidate,
     ...candidate,
+    quickNoteSummary: candidate?.quickNoteSummary || '',
+    quickNoteGood: candidate?.quickNoteGood || '',
+    quickNoteConcern: candidate?.quickNoteConcern || '',
+    quickNoteNextCheck: candidate?.quickNoteNextCheck || '',
+    fixedObservationMemo: currentMemo,
+    dateTimeline: currentTimeline,
     verified: { ...(candidate?.verified || {}) },
     relation: { ...defaultRelation, ...(candidate?.relation || {}) },
     emotionalBond: { ...defaultEmotionalBond, ...(candidate?.emotionalBond || {}) },
     energyTags: [...(candidate?.energyTags || [])],
     personalityTags: [...(candidate?.personalityTags || [])],
     observationNotes: candidate?.observationNotes || '',
-    observationMemo: candidate?.observationMemo || '',
     green: [...(candidate?.green || [])],
     yellow: [...(candidate?.yellow || [])],
     red: [...(candidate?.red || [])],
-    timeline: [...(candidate?.timeline || [])],
   };
 }
 function candidateMarkdown(candidate, report) {
@@ -575,8 +589,9 @@ function candidateMarkdown(candidate, report) {
   const energyTagsText = (candidate.energyTags || []).map(id => energyTagOptions.find(t => t.id === id)?.label).filter(Boolean).join(', ') || '선택 없음';
   const personalityTagsText = (candidate.personalityTags || []).map(id => personalityTypeTags.find(t => t.id === id)?.label).filter(Boolean).join(', ') || '선택 없음';
 
-  const timelines = (candidate.timeline || []).length
-    ? candidate.timeline.map((event) => {
+  const currentTimeline = candidate.dateTimeline || candidate.timeline || [];
+  const timelines = currentTimeline.length
+    ? currentTimeline.map((event) => {
         const type = optLabel(timelineTypeOptions, event.type);
         const feeling = optLabel(feelingOptions, event.feeling);
         const notes = bulletLines(event.notes).map((line) => `  - ${line}`).join('\n') || '  - 기록 없음';
@@ -596,7 +611,13 @@ function candidateMarkdown(candidate, report) {
     `- 요약: ${report.label}`,
     `- 코멘트: ${report.comments[0]}`,
     '',
-    '## 2. 기본 프로필',
+    '## 2. Quick Note (최근 빠른 기록)',
+    `- 한 줄 메모: ${candidate.quickNoteSummary || '없음'}`,
+    `- 좋았던 점: ${candidate.quickNoteGood || '없음'}`,
+    `- 찝찝했던 점: ${candidate.quickNoteConcern || '없음'}`,
+    `- 다음에 확인할 점: ${candidate.quickNoteNextCheck || '없음'}`,
+    '',
+    '## 3. 기본 프로필',
     `- 이름/별명: ${candidate.name || '미확인'}`,
     `- 캐릭터 유형: ${character?.label || '미스터리형'}`,
     `- 인간 유형 태그: ${personalityTagsText}`,
@@ -607,17 +628,17 @@ function candidateMarkdown(candidate, report) {
     `- 만난 경로: ${candidate.route || '미확인'}`,
     `- 첫인상 메모: ${candidate.memo || '없음'}`,
     '',
-    '## 3. 정서적 결 (Emotional Bond)',
+    '## 4. 정서적 결 (Emotional Bond)',
     '> 대화 밀도, 정서 에너지, 가치관 결합도를 관찰합니다.',
     emotionalBondSection,
     '',
-    '## 4. 관계 에너지 방향',
+    '## 5. 관계 에너지 방향',
     `> 이 사람이 나에게 유발하는 에너지: ${energyTagsText}`,
     '',
-    '## 5. 대화/태도 관찰 (0=미검증, 상태형 항목 포함)',
+    '## 6. 대화/태도 관찰 (0=미검증, 상태형 항목 포함)',
     relation,
     '',
-    '## 6. 조건/스펙',
+    '## 7. 조건/스펙',
     `- 키: ${candidate.height ? `${candidate.height}cm` : '미확인'}`,
     `- 자산: ${optionLabel(assetOptions, candidate.asset)}`,
     `- 연봉: ${optionLabel(incomeOptions, candidate.income)}`,
@@ -627,24 +648,55 @@ function candidateMarkdown(candidate, report) {
     `- 흡연/음주: ${candidate.smoking || '미확인'} / ${candidate.drinking || '미확인'}`,
     `- 점수 합계: 조건 ${report.conditionScore}/40 | 대화/태도 ${report.relationScore}/30 | 정보확인 ${report.trustScore}/15 | 지속가능성 ${report.realityScore}/10`,
     '',
-    '## 7. 플래그 (관찰된 신호)',
+    '## 8. 플래그 (관찰된 신호)',
     `- 🟢 그린플래그: ${(candidate.green || []).join(' / ') || '없음'}`,
     `- 🟡 옐로우플래그: ${(candidate.yellow || []).join(' / ') || '없음'}`,
     `- 🔴 레드플래그: ${(candidate.red || []).join(' / ') || '없음'}`,
     '',
-    '## 8. 타임라인 (관계 흐름 기록)',
+    '## 9. 타임라인 (관계 흐름 기록)',
     timelines,
     '',
-    '## 9. 관찰 포인트 메모',
+    '## 10. 관찰 포인트 메모',
     candidate.observationNotes || '없음',
     '',
-    '## 10. 관찰 메모',
-    candidate.observationMemo || '기록 없음',
+    '## 11. 고정 관찰 메모 (Fixed Observation Memo)',
+    candidate.fixedObservationMemo || candidate.observationMemo || '기록 없음',
     '',
     '---',
     '> LLM 활용 제안: 위 리포트를 기반으로 "이 관계가 나에게 지속 가능한 구조인가"를 함께 분석해주세요.',
     '',
   ].join('\n');
+}
+
+function Chevron({ isOpen }) {
+  return (
+    <svg 
+      style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease' }}
+      width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+    >
+      <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+  );
+}
+
+function DetailAccordion({ title, subtitle, children, defaultOpen = false }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <Card className="accordion">
+      <button type="button" onClick={() => setOpen(!open)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', padding: '16px 20px', textAlign: 'left', border: 'none', background: 'none', cursor: 'pointer' }}>
+        <div>
+          <b style={{ display: 'block', fontSize: '15px', fontWeight: 700, color: 'var(--text-1)' }}>{title}</b>
+          {subtitle && <span style={{ display: 'block', marginTop: '4px', fontSize: '11px', color: 'var(--text-3)', fontWeight: 500 }}>{subtitle}</span>}
+        </div>
+        <Chevron isOpen={open} />
+      </button>
+      {open && (
+        <div className="accordionBody" style={{ padding: '16px 20px', background: 'var(--surface)', borderTop: '1px solid var(--divider)' }}>
+          {children}
+        </div>
+      )}
+    </Card>
+  );
 }
 
 function Avatar({ candidate, size = 'md' }) {
@@ -1093,6 +1145,23 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
       </div>
       
       <Card className="accordion">
+        <button type="button" onClick={() => setOpen(open === 'quicknote' ? '' : 'quicknote')}>
+          <div><b>빠른 기록 Quick Note</b><span>한 줄 메모, 좋았던 점, 다음에 확인할 점</span></div>
+          <em>{open === 'quicknote' ? '닫기' : '열기'}</em>
+        </button>
+        {open === 'quicknote' && (
+          <div className="accordionBody">
+            <div className="formStack">
+              <Field label="한 줄 메모" value={form.quickNoteSummary || ''} onChange={(v) => update('quickNoteSummary', v)} placeholder="최근의 전반적인 감상을 짧게 적어보세요." />
+              <Field label="좋았던 점" textarea value={form.quickNoteGood || ''} onChange={(v) => update('quickNoteGood', v)} placeholder="만남이나 연락 과정에서 긍정적이었던 부분" />
+              <Field label="찝찝했던 점" textarea value={form.quickNoteConcern || ''} onChange={(v) => update('quickNoteConcern', v)} placeholder="마음에 걸리거나 명확히 짚고 넘어가야 할 부분" />
+              <Field label="다음에 확인할 점" textarea value={form.quickNoteNextCheck || ''} onChange={(v) => update('quickNoteNextCheck', v)} placeholder="다음 소통에서 눈여겨봐야 할 점" />
+            </div>
+          </div>
+        )}
+      </Card>
+
+      <Card className="accordion">
         <button type="button" onClick={() => setOpen(open === 'profile' ? '' : 'profile')}>
           <div><b>프로필 & 유형</b><span>캐릭터, 이름, 인간 유형 태그</span></div>
           <em>{open === 'profile' ? '닫기' : '열기'}</em>
@@ -1166,7 +1235,7 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
 
       <Card className="accordion">
         <button type="button" onClick={() => setOpen(open === 'observation' ? '' : 'observation')}>
-          <div><b>관찰 계획 & 메모</b><span>향후 관찰할 점과 누적 메모</span></div>
+          <div><b>고정 관찰 메모 Fixed Observation Memo</b><span>장기 분석, 인터뷰 요약, 배경 정보</span></div>
           <em>{open === 'observation' ? '닫기' : '열기'}</em>
         </button>
         {open === 'observation' && (
@@ -1174,8 +1243,8 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
             <ObservationSection 
               notes={form.observationNotes || ''}
               onChange={(val) => update('observationNotes', val)}
-              memo={form.observationMemo || ''}
-              onMemoChange={(val) => update('observationMemo', val)}
+              memo={form.fixedObservationMemo || ''}
+              onMemoChange={(val) => update('fixedObservationMemo', val)}
             />
           </div>
         )}
@@ -1288,11 +1357,20 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
           <FlagGroup title="레드플래그" color="red" items={redFlags} selected={form.red} toggle={(label) => toggleList('red', label)}/>
           
           <div className="sectionDivider" style={{ margin: '24px 0' }} />
+          <div className="sectionLabel" style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-1)', marginBottom: '12px' }}>빠른 기록 Quick Note</div>
+          <div className="formStack">
+            <Field label="한 줄 메모" value={form.quickNoteSummary || ''} onChange={(v) => update('quickNoteSummary', v)} placeholder="최근의 감상을 짧게 적어보세요." />
+            <Field label="좋았던 점" textarea value={form.quickNoteGood || ''} onChange={(v) => update('quickNoteGood', v)} placeholder="좋았던 부분" />
+            <Field label="찝찝했던 점" textarea value={form.quickNoteConcern || ''} onChange={(v) => update('quickNoteConcern', v)} placeholder="마음에 걸리는 부분" />
+            <Field label="다음에 확인할 점" textarea value={form.quickNoteNextCheck || ''} onChange={(v) => update('quickNoteNextCheck', v)} placeholder="다음 만남에서 확인할 점" />
+          </div>
+
+          <div className="sectionDivider" style={{ margin: '24px 0' }} />
           <ObservationSection 
             notes={form.observationNotes || ''}
             onChange={(val) => update('observationNotes', val)}
-            memo={form.observationMemo || ''}
-            onMemoChange={(val) => update('observationMemo', val)}
+            memo={form.fixedObservationMemo || ''}
+            onMemoChange={(val) => update('fixedObservationMemo', val)}
           />
 
           <div className="sectionDivider" style={{ margin: '24px 0' }} />
@@ -1314,7 +1392,8 @@ function TimelineSection({ candidate, report, saveTimeline }) {
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState({ date: todayValue(), type: 'date', feeling: 'neutral', notes: '', signals: [] });
-  const events = [...(candidate.timeline || [])].sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+  const currentTimeline = candidate.dateTimeline || candidate.timeline || [];
+  const events = [...currentTimeline].sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
   const tone = report.flowScore > 0 ? 'green' : report.flowScore < 0 ? 'red' : 'gray';
 
   function update(key, value) { setDraft((prev) => ({ ...prev, [key]: value })); }
@@ -1328,7 +1407,7 @@ function TimelineSection({ candidate, report, saveTimeline }) {
 
   function removeEvent(id) {
     if (!window.confirm('이 기록을 삭제할까요?')) return;
-    const nextList = (candidate.timeline || []).filter((e) => e.id !== id);
+    const nextList = currentTimeline.filter((e) => e.id !== id);
     saveTimeline(candidate.id, nextList);
   }
 
@@ -1337,9 +1416,9 @@ function TimelineSection({ candidate, report, saveTimeline }) {
     const suggestions = suggestedSignals(draft.notes).filter((code) => !draft.signals.includes(code));
     let finalTimeline = [];
     if (editingId) {
-      finalTimeline = (candidate.timeline || []).map((ev) => ev.id === editingId ? { ...draft, suggestedSignals: suggestions, updatedAt: new Date().toISOString() } : ev);
+      finalTimeline = currentTimeline.map((ev) => ev.id === editingId ? { ...draft, suggestedSignals: suggestions, updatedAt: new Date().toISOString() } : ev);
     } else {
-      finalTimeline = [...(candidate.timeline || []), { ...draft, suggestedSignals: suggestions, id: Date.now(), createdAt: new Date().toISOString() }];
+      finalTimeline = [...currentTimeline, { ...draft, suggestedSignals: suggestions, id: Date.now(), createdAt: new Date().toISOString() }];
     }
     saveTimeline(candidate.id, finalTimeline);
     setDraft({ date: todayValue(), type: 'date', feeling: 'neutral', notes: '', signals: [] });
@@ -1400,7 +1479,9 @@ function TimelineSection({ candidate, report, saveTimeline }) {
       )}
 
       {events.length === 0 ? (
-        <div className="empty">아직 기록된 흐름이 없어요.</div>
+        <div className="empty" style={{ padding: '24px 16px', color: 'var(--text-3)', fontSize: '13px', lineHeight: 1.5, wordBreak: 'keep-all' }}>
+          아직 실제 만남 전 단계입니다.<br/>실제 데이트 이후부터 시간 흐름 기반 기록을 시작합니다.
+        </div>
       ) : (
         events.map((event) => (
           <div key={event.id} className="timelineEvent">
@@ -1436,10 +1517,16 @@ function TimelineSection({ candidate, report, saveTimeline }) {
 function DetailModal({ candidate, close, edit, remove, saveTimeline }) {
   const report = analyze(candidate);
   const [copied, setCopied] = useState(false);
+  const markdownText = candidateMarkdown(candidate, report);
+  
   async function copy() {
-    const text = candidateMarkdown(candidate, report);
-    try { await navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1300); } catch { setCopied(false); }
+    try { 
+      await navigator.clipboard.writeText(markdownText); 
+      setCopied(true); 
+      setTimeout(() => setCopied(false), 1300); 
+    } catch { setCopied(false); }
   }
+  
   return (
     <div className="sheetBackdrop" onClick={close}>
       <div className="sheet" onClick={(e) => e.stopPropagation()}>
@@ -1465,7 +1552,8 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline }) {
           </div>
           <button className="close" onClick={close}>×</button>
         </div>
-        <main className="sheetBody space-y-6">
+        <main className="sheetBody" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* 관계 관찰 요약 (기본 노출 - 펼쳐진 상태) */}
           <Card className={`final ${scoreTone(report.color).className}`}>
             <div>
               <Badge color={report.color}>{scoreTone(report.color).label}</Badge>
@@ -1493,117 +1581,205 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline }) {
             </button>
           </Card>
 
-          {candidate.observationNotes && (
-            <Card style={{ borderLeft: '4px solid var(--blue)' }}>
-              <h3>👀 향후 관찰 계획</h3>
-              <p style={{ whiteSpace: 'pre-wrap', marginTop: '8px', fontSize: '13.5px', lineHeight: 1.6, color: 'var(--text-body)' }}>
-                {candidate.observationNotes}
-              </p>
-            </Card>
-          )}
+          {/* 1. 빠른 기록 Quick Note (기본 펼침) */}
+          <DetailAccordion title="빠른 기록 Quick Note" subtitle="한 줄 메모 및 최근 특이사항" defaultOpen={true}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ padding: '12px', background: 'var(--bg)', borderRadius: '10px', border: '1px solid var(--divider)' }}>
+                <small style={{ display: 'block', fontSize: '10px', color: 'var(--text-3)', marginBottom: '4px', fontWeight: 700 }}>💡 한 줄 메모</small>
+                <p style={{ fontSize: '13.5px', color: 'var(--text-1)', margin: 0, fontWeight: 600 }}>{candidate.quickNoteSummary || '기록 없음'}</p>
+              </div>
+              <div className="grid2">
+                <div style={{ padding: '10px 12px', background: 'var(--green-light)', borderRadius: '10px', border: '1px solid var(--green-border)' }}>
+                  <small style={{ display: 'block', fontSize: '10px', color: 'var(--green)', marginBottom: '4px', fontWeight: 700 }}>🟢 좋았던 점</small>
+                  <p style={{ fontSize: '12.5px', color: 'var(--text-body)', margin: 0, whiteSpace: 'pre-wrap' }}>{candidate.quickNoteGood || '기록 없음'}</p>
+                </div>
+                <div style={{ padding: '10px 12px', background: 'var(--red-light)', borderRadius: '10px', border: '1px solid var(--red-border)' }}>
+                  <small style={{ display: 'block', fontSize: '10px', color: 'var(--red)', marginBottom: '4px', fontWeight: 700 }}>🔴 찝찝했던 점</small>
+                  <p style={{ fontSize: '12.5px', color: 'var(--text-body)', margin: 0, whiteSpace: 'pre-wrap' }}>{candidate.quickNoteConcern || '기록 없음'}</p>
+                </div>
+              </div>
+              <div style={{ padding: '12px', background: 'var(--blue-light)', borderRadius: '10px', border: '1px solid var(--blue-border)' }}>
+                <small style={{ display: 'block', fontSize: '10px', color: 'var(--blue)', marginBottom: '4px', fontWeight: 700 }}>🔍 다음에 확인할 점</small>
+                <p style={{ fontSize: '12.5px', color: 'var(--text-body)', margin: 0, whiteSpace: 'pre-wrap' }}>{candidate.quickNoteNextCheck || '기록 없음'}</p>
+              </div>
+            </div>
+          </DetailAccordion>
 
-          <Card style={{ borderLeft: '4px solid var(--blue)' }}>
-            <h3>📝 관찰 메모</h3>
-            <p style={{ whiteSpace: 'pre-wrap', marginTop: '8px', fontSize: '13.5px', lineHeight: 1.6, color: 'var(--text-body)' }}>
-              {candidate.observationMemo || '기록 없음'}
-            </p>
-          </Card>
+          {/* 2. 정서적 결 (기본 펼침) */}
+          <DetailAccordion title="정서적 결" subtitle="대화 밀도 및 감정 피로도" defaultOpen={true}>
+            <div className="infoGrid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+              {emotionalBondItems.map(item => {
+                const val = candidate.emotionalBond?.[item.key] ?? 5;
+                return (
+                  <div key={item.key} className="info" style={{ padding: '10px', borderRadius: '10px', border: '1px solid var(--divider)', display: 'flex', flexDirection: 'column', justifyContent: 'center', background: 'var(--surface)', boxSizing: 'border-box' }}>
+                    <small style={{ fontSize: '10px', color: 'var(--text-3)', marginBottom: '3px', display: 'block' }}>{item.label}</small>
+                    <b style={{ fontSize: '13.5px', color: 'var(--text-1)' }}>{val}/10</b>
+                  </div>
+                );
+              })}
+            </div>
+          </DetailAccordion>
 
-          <Card>
-            <h3>정서적 결 & 에너지</h3>
-            <p style={{ fontSize: '11px', color: 'var(--text-3)', marginBottom: '10px' }}>나에게 유발하는 감정 방향성과 대화 밀도</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '14px' }}>
+          {/* 3. 관계 에너지 방향 (기본 펼침) */}
+          <DetailAccordion title="관계 에너지 방향" subtitle="이 관계가 나에게 유발하는 에너지" defaultOpen={true}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
               {(candidate.energyTags || []).map(id => {
                 const tag = energyTagOptions.find(t => t.id === id);
                 return tag ? <Badge key={id} color={tag.tone}>{tag.emoji} {tag.label}</Badge> : null;
               })}
               {(!candidate.energyTags || candidate.energyTags.length === 0) && (
-                <span style={{ fontSize: '12px', color: 'var(--text-3)' }}>지정된 에너지 태그가 없습니다.</span>
+                <span style={{ fontSize: '12.5px', color: 'var(--text-3)' }}>지정된 에너지 태그가 없습니다.</span>
               )}
             </div>
-            
-            <div className="infoGrid">
-              {emotionalBondItems.map(item => {
-                const val = candidate.emotionalBond?.[item.key] ?? 5;
-                return (
-                  <div key={item.key} className="info" style={{ padding: '10px' }}>
-                    <small style={{ fontSize: '10px' }}>{item.label}</small>
-                    <b style={{ fontSize: '13px' }}>{val}/10</b>
-                  </div>
-                );
-              })}
+          </DetailAccordion>
+
+          {/* 4. 플래그 (기본 펼침) */}
+          <DetailAccordion title="플래그 (관찰된 신호)" subtitle="그린/옐로우/레드 플래그 모아보기" defaultOpen={true}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--green)', marginBottom: '6px' }}>🟢 그린 플래그</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {(candidate.green || []).length > 0 ? candidate.green.map(f => <Badge key={f} color="green">{f}</Badge>) : <span style={{ fontSize: '12px', color: 'var(--text-3)' }}>기록 없음</span>}
+                </div>
+              </div>
+              <div style={{ borderTop: '1px solid var(--divider)', paddingTop: '10px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--amber)', marginBottom: '6px' }}>🟡 옐로우 플래그</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {(candidate.yellow || []).length > 0 ? candidate.yellow.map(f => <Badge key={f} color="amber">{f}</Badge>) : <span style={{ fontSize: '12px', color: 'var(--text-3)' }}>기록 없음</span>}
+                </div>
+              </div>
+              <div style={{ borderTop: '1px solid var(--divider)', paddingTop: '10px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--red)', marginBottom: '6px' }}>🔴 레드 플래그</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {(candidate.red || []).length > 0 ? candidate.red.map(f => <Badge key={f} color="red">{f}</Badge>) : <span style={{ fontSize: '12px', color: 'var(--text-3)' }}>기록 없음</span>}
+                </div>
+              </div>
             </div>
-          </Card>
+          </DetailAccordion>
 
-          <TimelineSection candidate={candidate} report={report} saveTimeline={saveTimeline} />
+          {/* 5. 기본 프로필 (기본 접힘) */}
+          <DetailAccordion title="기본 프로필" subtitle="기본 신원 및 첫인상 메모" defaultOpen={false}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginBottom: '12px' }}>
+              <div style={{ padding: '10px', border: '1px solid var(--divider)', borderRadius: '10px', background: 'var(--bg)' }}>
+                <small style={{ fontSize: '10px', color: 'var(--text-3)', display: 'block' }}>이름</small>
+                <b style={{ fontSize: '13px', color: 'var(--text-1)' }}>{candidate.name || '미확인'}</b>
+              </div>
+              <div style={{ padding: '10px', border: '1px solid var(--divider)', borderRadius: '10px', background: 'var(--bg)' }}>
+                <small style={{ fontSize: '10px', color: 'var(--text-3)', display: 'block' }}>나이</small>
+                <b style={{ fontSize: '13px', color: 'var(--text-1)' }}>{report.age || candidate.age || '미확인'}세</b>
+              </div>
+              <div style={{ padding: '10px', border: '1px solid var(--divider)', borderRadius: '10px', background: 'var(--bg)' }}>
+                <small style={{ fontSize: '10px', color: 'var(--text-3)', display: 'block' }}>생년월일</small>
+                <b style={{ fontSize: '13px', color: 'var(--text-1)' }}>{candidate.birthDate || '미확인'}</b>
+              </div>
+              <div style={{ padding: '10px', border: '1px solid var(--divider)', borderRadius: '10px', background: 'var(--bg)' }}>
+                <small style={{ fontSize: '10px', color: 'var(--text-3)', display: 'block' }}>MBTI</small>
+                <b style={{ fontSize: '13px', color: 'var(--text-1)' }}>{candidate.mbti || '미확인'}</b>
+              </div>
+              <div style={{ padding: '10px', border: '1px solid var(--divider)', borderRadius: '10px', background: 'var(--bg)' }}>
+                <small style={{ fontSize: '10px', color: 'var(--text-3)', display: 'block' }}>직업</small>
+                <b style={{ fontSize: '13px', color: 'var(--text-1)' }}>{candidate.job || '미확인'}</b>
+              </div>
+              <div style={{ padding: '10px', border: '1px solid var(--divider)', borderRadius: '10px', background: 'var(--bg)' }}>
+                <small style={{ fontSize: '10px', color: 'var(--text-3)', display: 'block' }}>만난 경로</small>
+                <b style={{ fontSize: '13px', color: 'var(--text-1)' }}>{candidate.route || '미확인'}</b>
+              </div>
+            </div>
+            <div style={{ padding: '12px', background: 'var(--surface)', border: '1px solid var(--divider)', borderRadius: '10px' }}>
+              <small style={{ display: 'block', fontSize: '10px', color: 'var(--text-3)', marginBottom: '4px' }}>첫인상 메모</small>
+              <p style={{ fontSize: '13px', color: 'var(--text-body)', margin: 0, whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>{candidate.memo || '기록된 첫인상이 없습니다.'}</p>
+            </div>
+          </DetailAccordion>
 
-          <Card>
-            <h3>대화 & 태도 관찰</h3>
-            <p style={{ fontSize: '11px', color: 'var(--text-3)', marginBottom: '12px' }}>행동 일치도, 소통 템포 등 실제 패턴 관찰 상태</p>
+          {/* 6. 조건/스펙 (기본 접힘) */}
+          <DetailAccordion title="조건/스펙" subtitle="키, 돈, 주거 형태 등 하드웨어 점수" defaultOpen={false}>
+            <div className="scoreGrid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '14px' }}>
+              <ScoreCard title="조건/스펙" value={report.conditionScore} max={40} desc="키·돈·직업처럼 확인 가능한 조건" />
+              <ScoreCard title="정보 확인도" value={report.trustScore} max={15} desc="말로 들은 정보가 확인됐는지" />
+              <ScoreCard title="지속 가능성" value={report.realityScore} max={10} desc="거리·생활 리듬·현실 행동" />
+            </div>
+            <div className="infoGrid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginBottom: '14px' }}>
+              <Info label="키" value={candidate.height ? `${candidate.height}cm` : '미확인'} checked={verified(candidate, 'height')} />
+              <Info label="자산" value={optionLabel(assetOptions, candidate.asset)} checked={verified(candidate, 'asset')} />
+              <Info label="연봉" value={optionLabel(incomeOptions, candidate.income)} checked={verified(candidate, 'income')} />
+              <Info label="결혼" value={candidate.marriageHistory} checked={verified(candidate, 'marriageHistory')} />
+              <Info label="자녀" value={candidate.children} checked={verified(candidate, 'children')} />
+              <Info label="주거" value={candidate.housing} checked={verified(candidate, 'housing')} />
+              <Info label="흡연/음주" value={`${candidate.smoking} · ${candidate.drinking}`} />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px solid var(--divider)', paddingTop: '12px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-2)', marginBottom: '2px' }}>조건 상세 세부 분포</span>
+              {report.rows.map((row) => (
+                <div className="rowScore" key={row.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', fontSize: '12.5px' }}>
+                  <span style={{ minWidth: '90px', fontSize: '12px', color: 'var(--text-2)' }}>{row.label}</span>
+                  <div className="bar" style={{ flex: 1, height: '5px', background: 'var(--divider)', borderRadius: '3px', overflow: 'hidden', margin: 0 }}>
+                    <i style={{ display: 'block', height: '100%', background: 'var(--blue)', width: `${(row.raw / row.max) * 100}%` }} />
+                  </div>
+                  <b style={{ minWidth: '45px', textAlign: 'right', fontSize: '12px', color: 'var(--text-1)' }}>{row.raw.toFixed(1)}/{row.max}</b>
+                </div>
+              ))}
+            </div>
+          </DetailAccordion>
+
+          {/* 7. 대화/태도 세부 점수 (기본 접힘) */}
+          <DetailAccordion title="대화/태도 세부 점수" subtitle="말과 행동 일치, 소통 템포 상세" defaultOpen={false}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {relationItems.map(item => {
                 const val = candidate.relation?.[item.key] ?? 5;
                 const isStatus = statusTypeKeys.includes(item.key);
                 const statusInfo = isStatus ? getStatusLabel(val) : null;
                 return (
-                  <div key={item.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: 'var(--surface)', borderRadius: '12px', border: '1px solid var(--divider)' }}>
+                  <div key={item.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: 'var(--surface)', borderRadius: '10px', border: '1px solid var(--divider)' }}>
                     <div>
                       <b style={{ fontSize: '13.5px', color: 'var(--text-1)' }}>{item.label}</b>
                       <p style={{ margin: '2px 0 0 0', fontSize: '11px', color: 'var(--text-3)' }}>{item.desc}</p>
                     </div>
                     <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                       {isStatus && statusInfo && <Badge color={statusInfo.color}>{statusInfo.label}</Badge>}
-                      <b style={{ fontSize: '14px', fontFamily: 'var(--font-display)' }}>{val}</b>
+                      <b style={{ fontSize: '14px', fontFamily: 'var(--font-display)', color: 'var(--blue)' }}>{val}</b>
                     </div>
                   </div>
                 );
               })}
             </div>
-          </Card>
+          </DetailAccordion>
 
-          <div className="scoreGrid">
-            <ScoreCard title="조건/스펙" value={report.conditionScore} max={40} desc="키·돈·직업처럼 확인 가능한 조건" />
-            <ScoreCard title="대화/태도" value={report.relationScore} max={30} desc="말이 통하는지, 행동이 있는지" />
-            <ScoreCard title="정보 확인도" value={report.trustScore} max={15} desc="말로 들은 정보가 확인됐는지" />
-            <ScoreCard title="지속 가능성" value={report.realityScore} max={10} desc="거리·생활 리듬·현실 행동" />
-          </div>
-
-          <Card>
-            <h3>핵심 조건</h3>
-            <div className="infoGrid">
-              <Info label="키" value={candidate.height ? `${candidate.height}cm` : '미확인'} checked={verified(candidate, 'height')} />
-              <Info label="자산" value={optionLabel(assetOptions, candidate.asset)} checked={verified(candidate, 'asset')} />
-              <Info label="연봉" value={optionLabel(incomeOptions, candidate.income)} checked={verified(candidate, 'income')} />
-              <Info label="생년월일" value={candidate.birthDate || '미확인'} checked={verified(candidate, 'birthDate')} />
-              <Info label="결혼" value={candidate.marriageHistory} checked={verified(candidate, 'marriageHistory')} />
-              <Info label="자녀" value={candidate.children} checked={verified(candidate, 'children')} />
-              <Info label="주거" value={candidate.housing} checked={verified(candidate, 'housing')} />
-              <Info label="흡연/음주" value={`${candidate.smoking} · ${candidate.drinking}`} />
+          {/* 8. 관찰 포인트 (기본 접힘) */}
+          <DetailAccordion title="관찰 포인트" subtitle="다음 만남에서 집중 관찰/검증할 목록" defaultOpen={false}>
+            <div style={{ padding: '12px', background: 'var(--surface)', borderLeft: '4px solid var(--blue)', borderRadius: '8px' }}>
+              <p style={{ whiteSpace: 'pre-wrap', margin: 0, fontSize: '13.5px', lineHeight: 1.6, color: 'var(--text-body)' }}>
+                {candidate.observationNotes || '등록된 향후 관찰 계획이 없습니다.'}
+              </p>
             </div>
-          </Card>
+          </DetailAccordion>
 
-          <Card>
-            <h3>조건 점수 상세</h3>
-            {report.rows.map((row) => (
-              <div className="rowScore" key={row.key}>
-                <div>
-                  <span>{row.label}</span>
-                  <b>{row.raw.toFixed(1)}/{row.max}</b>
-                </div>
-                <div className="bar">
-                  <i style={{ width: `${(row.raw / row.max) * 100}%` }} />
-                </div>
-              </div>
-            ))}
-          </Card>
+          {/* 9. 고정 관찰 메모 (기본 접힘) */}
+          <DetailAccordion title="고정 관찰 메모" subtitle="장기 분석 및 변하지 않는 배경 정보" defaultOpen={false}>
+            <div style={{ padding: '12px', background: 'var(--surface)', borderLeft: '4px solid var(--blue)', borderRadius: '8px' }}>
+              <p style={{ whiteSpace: 'pre-wrap', margin: 0, fontSize: '13.5px', lineHeight: 1.6, color: 'var(--text-body)' }}>
+                {candidate.fixedObservationMemo || candidate.observationMemo || '기록 없음'}
+              </p>
+            </div>
+          </DetailAccordion>
 
-          <Card>
-            <h3>첫인상 메모</h3>
-            <p style={{ fontSize: '13.5px', lineHeight: 1.6, color: 'var(--text-body)' }}>{candidate.memo || '기록된 첫인상이 없습니다.'}</p>
-          </Card>
-          
+          {/* 10. 타임라인 (기본 접힘) */}
+          <DetailAccordion title="실제 만남 타임라인" subtitle="데이트 이후 시간 흐름 기반 누적 기록" defaultOpen={false}>
+            <TimelineSection candidate={candidate} report={report} saveTimeline={saveTimeline} />
+          </DetailAccordion>
+
+          {/* 11. Markdown 미리보기 (기본 접힘) */}
+          <DetailAccordion title="Markdown 미리보기" subtitle="내보내기 및 외부 연동용 텍스트 뷰" defaultOpen={false}>
+            <pre style={{ background: 'var(--bg)', padding: '12px', borderRadius: '10px', fontSize: '11px', overflowX: 'auto', whiteSpace: 'pre-wrap', maxHeight: '250px', border: '1px solid var(--divider)', fontFamily: 'monospace', color: 'var(--text-body)', margin: 0 }}>
+              {markdownText}
+            </pre>
+            <button className="copyButton" onClick={copy} style={{ marginTop: '10px' }}>
+              {copied ? '복사 완료!' : '마크다운 텍스트 전체 복사'}
+            </button>
+          </DetailAccordion>
+
           <button
             className="danger"
+            style={{ marginTop: '12px', background: 'none', color: 'var(--red-text)', border: '1px solid var(--red-border)' }}
             onClick={() => {
               if (window.confirm(`${candidate.name || '이 후보'} 정보를 삭제할까요?`)) remove(candidate.id);
             }}
@@ -1745,7 +1921,18 @@ export default function App() {
   const [candidates, setCandidates] = useState(() => {
     try {
       const saved = window.localStorage.getItem(STORAGE_KEY);
-      return saved ? JSON.parse(saved) : sampleCandidates;
+      const parsed = saved ? JSON.parse(saved) : sampleCandidates;
+      if (!Array.isArray(parsed)) return sampleCandidates;
+      return parsed.map(c => ({
+        ...emptyCandidate,
+        ...c,
+        fixedObservationMemo: c.fixedObservationMemo !== undefined ? c.fixedObservationMemo : (c.observationMemo || ''),
+        dateTimeline: c.dateTimeline || c.timeline || [],
+        quickNoteSummary: c.quickNoteSummary || '',
+        quickNoteGood: c.quickNoteGood || '',
+        quickNoteConcern: c.quickNoteConcern || '',
+        quickNoteNextCheck: c.quickNoteNextCheck || '',
+      }));
     } catch { return sampleCandidates; }
   });
   const [selected, setSelected] = useState(null);
@@ -1767,7 +1954,7 @@ export default function App() {
     let updated = null;
     setCandidates((prev) => prev.map((item) => {
       if (item.id !== candidateId) return item;
-      updated = { ...item, timeline: timelineList, updatedAt: new Date().toISOString() };
+      updated = { ...item, timeline: timelineList, dateTimeline: timelineList, updatedAt: new Date().toISOString() };
       return updated;
     }));
     if (updated) setSelected(updated);
