@@ -600,6 +600,20 @@ function candidateMarkdown(candidate, report) {
       }).join('\n\n')
     : '기록 없음';
 
+  const quickNotesHistory = (candidate.quickNotes || []).length
+    ? candidate.quickNotes.map((note) => {
+        const dateStr = new Date(note.createdAt).toISOString().replace('T', ' ').slice(0, 16);
+        const lines = [
+          `### ${dateStr}`,
+          note.summary ? `- 한 줄 메모: ${note.summary}` : '',
+          note.good ? `- 좋았던 점: ${note.good}` : '',
+          note.concern ? `- 찝찝했던 점: ${note.concern}` : '',
+          note.nextCheck ? `- 다음 확인점: ${note.nextCheck}` : ''
+        ].filter(Boolean);
+        return lines.join('\n');
+      }).join('\n\n')
+    : '기록 없음';
+
   return [
     `# 런각 연구소 관계 구조 리포트: ${candidate.name || '무명의 후보'}`,
     '',
@@ -611,11 +625,8 @@ function candidateMarkdown(candidate, report) {
     `- 요약: ${report.label}`,
     `- 코멘트: ${report.comments[0]}`,
     '',
-    '## 2. Quick Note (최근 빠른 기록)',
-    `- 한 줄 메모: ${candidate.quickNoteSummary || '없음'}`,
-    `- 좋았던 점: ${candidate.quickNoteGood || '없음'}`,
-    `- 찝찝했던 점: ${candidate.quickNoteConcern || '없음'}`,
-    `- 다음에 확인할 점: ${candidate.quickNoteNextCheck || '없음'}`,
+    '## 2. 빠른 기록 히스토리',
+    quickNotesHistory,
     '',
     '## 3. 기본 프로필',
     `- 이름/별명: ${candidate.name || '미확인'}`,
@@ -666,6 +677,15 @@ function candidateMarkdown(candidate, report) {
     '> LLM 활용 제안: 위 리포트를 기반으로 "이 관계가 나에게 지속 가능한 구조인가"를 함께 분석해주세요.',
     '',
   ].join('\n');
+}
+
+function getScoreStatusLabel(score) {
+  const s = Number(score || 0);
+  if (s === 0) return { label: '미검증', color: 'gray' };
+  if (s <= 3) return { label: '주의', color: 'red' };
+  if (s <= 6) return { label: '관찰중', color: 'amber' };
+  if (s <= 8) return { label: '안정적', color: 'blue' };
+  return { label: '매우 좋음', color: 'green' };
 }
 
 function Chevron({ isOpen }) {
@@ -839,7 +859,7 @@ function ScoreCard({ title, value, max, desc }) {
   const level = scoreLevel(percent);
   return <Card className="scoreCard"><div className="scoreHead"><div><p>{title}</p><strong>{value}<small>/{max}</small></strong></div><div className="right"><Badge color={level.color}>{level.label}</Badge><em>{percent}%</em></div></div><div className="bar"><i className={`tone-bg-${level.color}`} style={{ width: `${percent}%` }} /></div>{desc && <small className="desc">{desc}</small>}</Card>;
 }
-function Home({ candidates, openCandidate, goAdd, openGuide }) {
+function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
   const mapped = candidates.map(candidate => {
     const report = analyze(candidate);
     return { candidate, report };
@@ -924,15 +944,44 @@ function Home({ candidates, openCandidate, goAdd, openGuide }) {
       {candidates.slice().reverse().map((candidate) => {
         const report = analyze(candidate);
         return (
-          <button className="candidateCard" key={candidate.id} onClick={() => openCandidate(candidate)}>
-            <Avatar candidate={candidate} size="sm" />
-            <div>
-              <h3>{candidate.name || '무명의 후보'}</h3>
-              <p>{report.age || '나이 미상'}세 · {candidate.job || '직업 미상'} · {candidate.location || '거주지 미입력'}</p>
-              <Badge color={report.color}>{report.verdict}</Badge>
-            </div>
-            <strong className={`scoreText-${report.color}`}>{report.totalScore}<small>점</small></strong>
-          </button>
+          <div key={candidate.id} style={{ position: 'relative', marginBottom: '10px' }}>
+            <button className="candidateCard" onClick={() => openCandidate(candidate)} style={{ paddingRight: '80px', width: '100%', display: 'flex', margin: 0 }}>
+              <Avatar candidate={candidate} size="sm" />
+              <div style={{ textAlign: 'left' }}>
+                <h3>{candidate.name || '무명의 후보'}</h3>
+                <p>{report.age || '나이 미상'}세 · {candidate.job || '직업 미상'} · {candidate.location || '거주지 미입력'}</p>
+                <Badge color={report.color}>{report.verdict}</Badge>
+              </div>
+              <strong className={`scoreText-${report.color}`} style={{ position: 'absolute', right: '16px', top: '16px' }}>{report.totalScore}<small>점</small></strong>
+            </button>
+            <button 
+              className="quickMemoCardBtn"
+              onClick={(e) => {
+                e.stopPropagation();
+                openQuickMemo(candidate);
+              }}
+              style={{
+                position: 'absolute',
+                right: '14px',
+                bottom: '14px',
+                width: '32px',
+                height: '32px',
+                borderRadius: '8px',
+                background: 'var(--bg)',
+                border: '1px solid var(--divider)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '13px',
+                cursor: 'pointer',
+                zIndex: 2,
+                boxShadow: '0 2px 4px rgba(0,0,0,0.04)'
+              }}
+              title="빠른 메모"
+            >
+              📝
+            </button>
+          </div>
         );
       })}
     </section>
@@ -1649,6 +1698,55 @@ function EditableMemoSection({ value, onSave, placeholder }) {
     </div>
   );
 }
+function QuickMemoModal({ candidate, close, onSave }) {
+  const [form, setForm] = useState({ summary: '', good: '', concern: '', nextCheck: '' });
+  const update = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
+  
+  const handleSave = () => {
+    if (!form.summary && !form.good && !form.concern && !form.nextCheck) {
+      close();
+      return;
+    }
+    const newMemo = {
+      id: Date.now(),
+      createdAt: new Date().toISOString(),
+      summary: form.summary,
+      good: form.good,
+      concern: form.concern,
+      nextCheck: form.nextCheck
+    };
+    onSave(candidate.id, newMemo);
+    close();
+  };
+
+  return (
+    <div className="modalBack" onClick={close}>
+      <div className="sheet" onClick={(e) => e.stopPropagation()} style={{ maxHeight: '85vh', display: 'flex', flexDirection: 'column' }}>
+        <div className="sheetHead">
+          <div className="avatarBox">
+            <Avatar candidate={candidate} size="sm" />
+            <div>
+              <h3 style={{ fontSize: '15px', fontWeight: 700 }}>{candidate.name || '후보'} · 빠른 기록</h3>
+              <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-3)' }}>오늘의 관계 흐름을 가볍게 누적해보세요.</p>
+            </div>
+          </div>
+          <button className="close" onClick={close}>×</button>
+        </div>
+        <div className="sheetBody" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', paddingBottom: '20px', gap: '10px' }}>
+          <div className="formStack">
+            <Field label="한 줄 메모" value={form.summary} onChange={(v) => update('summary', v)} placeholder="오늘 있었던 일을 짧게 요약하세요." />
+            <Field label="좋았던 점" textarea value={form.good} onChange={(v) => update('good', v)} placeholder="소소하게나마 마음에 든 점" rows={2} />
+            <Field label="찝찝했던 점" textarea value={form.concern} onChange={(v) => update('concern', v)} placeholder="약간 걸리는 기분이나 신호" rows={2} />
+            <Field label="다음 확인점" textarea value={form.nextCheck} onChange={(v) => update('nextCheck', v)} placeholder="다음에 스치듯 관찰해 볼 포인트" rows={2} />
+          </div>
+          <button className="primary" onClick={handleSave} style={{ width: '100%', marginTop: '20px', padding: '14px', fontSize: '14px', fontWeight: 700, borderRadius: '12px' }}>
+            ⚡️ 관찰 기록 누적 저장
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField }) {
   const report = analyze(candidate);
   const [copied, setCopied] = useState(false);
@@ -1716,27 +1814,30 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
             </button>
           </Card>
 
-          {/* 1. 빠른 기록 Quick Note (기본 펼침) */}
-          <DetailAccordion title="빠른 기록 Quick Note" subtitle="한 줄 메모 및 최근 특이사항" defaultOpen={true}>
+          {/* 1. 빠른 기록 히스토리 (기본 펼침) */}
+          <DetailAccordion title="빠른 기록 히스토리" subtitle="날짜 기반 한줄평 및 관찰 메모 누적 기록" defaultOpen={true}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ padding: '12px', background: 'var(--bg)', borderRadius: '10px', border: '1px solid var(--divider)' }}>
-                <small style={{ display: 'block', fontSize: '10px', color: 'var(--text-3)', marginBottom: '4px', fontWeight: 700 }}>💡 한 줄 메모</small>
-                <p style={{ fontSize: '13.5px', color: 'var(--text-1)', margin: 0, fontWeight: 600 }}>{candidate.quickNoteSummary || '기록 없음'}</p>
-              </div>
-              <div className="grid2">
-                <div style={{ padding: '10px 12px', background: 'var(--green-light)', borderRadius: '10px', border: '1px solid var(--green-border)' }}>
-                  <small style={{ display: 'block', fontSize: '10px', color: 'var(--green)', marginBottom: '4px', fontWeight: 700 }}>🟢 좋았던 점</small>
-                  <p style={{ fontSize: '12.5px', color: 'var(--text-body)', margin: 0, whiteSpace: 'pre-wrap' }}>{candidate.quickNoteGood || '기록 없음'}</p>
+              {(candidate.quickNotes || []).length === 0 ? (
+                <div style={{ padding: '20px', background: 'var(--bg)', borderRadius: '10px', color: 'var(--text-3)', fontSize: '13px', textAlign: 'center' }}>
+                  아직 누적된 빠른 기록이 없습니다.<br/>목록의 📝 버튼을 통해 가볍게 남겨보세요.
                 </div>
-                <div style={{ padding: '10px 12px', background: 'var(--red-light)', borderRadius: '10px', border: '1px solid var(--red-border)' }}>
-                  <small style={{ display: 'block', fontSize: '10px', color: 'var(--red)', marginBottom: '4px', fontWeight: 700 }}>🔴 찝찝했던 점</small>
-                  <p style={{ fontSize: '12.5px', color: 'var(--text-body)', margin: 0, whiteSpace: 'pre-wrap' }}>{candidate.quickNoteConcern || '기록 없음'}</p>
-                </div>
-              </div>
-              <div style={{ padding: '12px', background: 'var(--blue-light)', borderRadius: '10px', border: '1px solid var(--blue-border)' }}>
-                <small style={{ display: 'block', fontSize: '10px', color: 'var(--blue)', marginBottom: '4px', fontWeight: 700 }}>🔍 다음에 확인할 점</small>
-                <p style={{ fontSize: '12.5px', color: 'var(--text-body)', margin: 0, whiteSpace: 'pre-wrap' }}>{candidate.quickNoteNextCheck || '기록 없음'}</p>
-              </div>
+              ) : (
+                candidate.quickNotes.map((note) => (
+                  <div key={note.id} style={{ background: 'var(--bg)', padding: '14px', borderRadius: '10px', fontSize: '13px', border: '1px solid rgba(0,0,0,0.03)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--divider)', paddingBottom: '6px', marginBottom: '8px' }}>
+                      <span style={{ color: 'var(--blue)', fontSize: '11px', fontWeight: 700 }}>
+                        ⚡️ {new Date(note.createdAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                    {note.summary && <p style={{ margin: '4px 0 8px 0', color: 'var(--text-1)', fontWeight: 700, fontSize: '13.5px' }}>“{note.summary}”</p>}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '12.5px', borderTop: note.summary ? '1px dashed rgba(0,0,0,0.05)' : 'none', paddingTop: note.summary ? '8px' : '0' }}>
+                      {note.good && <div style={{ color: 'var(--text-body)' }}><b style={{ color: 'var(--green)', marginRight: '4px' }}>🟢 좋았던 점:</b> {note.good}</div>}
+                      {note.concern && <div style={{ color: 'var(--text-body)' }}><b style={{ color: 'var(--red)', marginRight: '4px' }}>🟠 찝찝했던 점:</b> {note.concern}</div>}
+                      {note.nextCheck && <div style={{ color: 'var(--text-body)' }}><b style={{ color: 'var(--blue)', marginRight: '4px' }}>👀 다음 확인:</b> {note.nextCheck}</div>}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </DetailAccordion>
 
@@ -1745,10 +1846,14 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
             <div className="infoGrid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
               {emotionalBondItems.map(item => {
                 const val = candidate.emotionalBond?.[item.key] ?? 5;
+                const stat = getScoreStatusLabel(val);
                 return (
                   <div key={item.key} className="info" style={{ padding: '10px', borderRadius: '10px', border: '1px solid var(--divider)', display: 'flex', flexDirection: 'column', justifyContent: 'center', background: 'var(--surface)', boxSizing: 'border-box' }}>
                     <small style={{ fontSize: '10px', color: 'var(--text-3)', marginBottom: '3px', display: 'block' }}>{item.label}</small>
-                    <b style={{ fontSize: '13.5px', color: 'var(--text-1)' }}>{val}/10</b>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <b style={{ fontSize: '13.5px', color: 'var(--text-1)' }}>{val}/10</b>
+                      <Badge color={stat.color} style={{ fontSize: '9px', padding: '1px 4px' }}>{stat.label}</Badge>
+                    </div>
                   </div>
                 );
               })}
@@ -1870,7 +1975,14 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
                       <p style={{ margin: '2px 0 0 0', fontSize: '11px', color: 'var(--text-3)' }}>{item.desc}</p>
                     </div>
                     <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                      {isStatus && statusInfo && <Badge color={statusInfo.color}>{statusInfo.label}</Badge>}
+                      {isStatus && statusInfo ? (
+                        <Badge color={statusInfo.color}>{statusInfo.label}</Badge>
+                      ) : (
+                        (() => {
+                          const stat = getScoreStatusLabel(val);
+                          return <Badge color={stat.color} style={{ fontSize: '9px', padding: '2px 5px' }}>{stat.label}</Badge>;
+                        })()
+                      )}
                       <b style={{ fontSize: '14px', fontFamily: 'var(--font-display)', color: 'var(--blue)' }}>{val}</b>
                     </div>
                   </div>
@@ -2067,12 +2179,25 @@ export default function App() {
         quickNoteGood: c.quickNoteGood || '',
         quickNoteConcern: c.quickNoteConcern || '',
         quickNoteNextCheck: c.quickNoteNextCheck || '',
+        quickNotes: c.quickNotes || (
+          (c.quickNoteSummary || c.quickNoteGood || c.quickNoteConcern || c.quickNoteNextCheck)
+            ? [{
+                id: Date.now() - Math.floor(Math.random() * 100000),
+                createdAt: c.updatedAt || new Date().toISOString(),
+                summary: c.quickNoteSummary || '',
+                good: c.quickNoteGood || '',
+                concern: c.quickNoteConcern || '',
+                nextCheck: c.quickNoteNextCheck || ''
+              }]
+            : []
+        ),
       }));
     } catch { return sampleCandidates; }
   });
   const [selected, setSelected] = useState(null);
   const [editing, setEditing] = useState(null);
   const [guideOpen, setGuideOpen] = useState(false);
+  const [quickMemoCandidate, setQuickMemoCandidate] = useState(null);
 
   useEffect(() => { try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(candidates)); } catch {} }, [candidates]);
 
@@ -2093,6 +2218,22 @@ export default function App() {
       return updated;
     }));
     if (updated) setSelected(updated);
+  }
+  function addQuickMemo(candidateId, memoObj) {
+    let updated = null;
+    setCandidates((prev) => prev.map((item) => {
+      if (item.id !== candidateId) return item;
+      const existingMemos = item.quickNotes || [];
+      updated = { 
+        ...item, 
+        quickNotes: [memoObj, ...existingMemos],
+        updatedAt: new Date().toISOString() 
+      };
+      return updated;
+    }));
+    if (updated && selected && selected.id === candidateId) {
+      setSelected(updated);
+    }
   }
   function updateCandidateField(candidateId, fieldName, value) {
     let updated = null;
@@ -2166,5 +2307,5 @@ export default function App() {
     event.target.value = '';
   }
 
-  return <div className="app"><div className="phone"><main>{tab === 'home' && <Home candidates={candidates} openCandidate={setSelected} goAdd={() => { setEditing(null); setTab('add'); }} openGuide={() => setGuideOpen(true)}/>} {tab === 'add' && <AddCandidate initialCandidate={editing} onSave={save} onCancel={() => { setEditing(null); setTab('home'); }}/>}</main>{tab === 'home' && <FloatingAdd onClick={() => { setEditing(null); setTab('add'); }}/>} {selected && <DetailModal candidate={selected} close={() => setSelected(null)} edit={startEdit} remove={remove} saveTimeline={saveTimeline} updateField={updateCandidateField}/>} {guideOpen && <GuideModal close={() => setGuideOpen(false)} onExport={exportData} onImport={importData}/>}</div></div>;
+  return <div className="app"><div className="phone"><main>{tab === 'home' && <Home candidates={candidates} openCandidate={setSelected} goAdd={() => { setEditing(null); setTab('add'); }} openGuide={() => setGuideOpen(true)} openQuickMemo={setQuickMemoCandidate}/>} {tab === 'add' && <AddCandidate initialCandidate={editing} onSave={save} onCancel={() => { setEditing(null); setTab('home'); }}/>}</main>{tab === 'home' && <FloatingAdd onClick={() => { setEditing(null); setTab('add'); }}/>} {selected && <DetailModal candidate={selected} close={() => setSelected(null)} edit={startEdit} remove={remove} saveTimeline={saveTimeline} updateField={updateCandidateField}/>} {quickMemoCandidate && <QuickMemoModal candidate={quickMemoCandidate} close={() => setQuickMemoCandidate(null)} onSave={addQuickMemo} />} {guideOpen && <GuideModal close={() => setGuideOpen(false)} onExport={exportData} onImport={importData}/>}</div></div>;
 }
