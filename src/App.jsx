@@ -1921,6 +1921,27 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
   const report = analyze(candidate);
   const [copied, setCopied] = useState(false);
   const markdownText = candidateMarkdown(candidate, report);
+  const [isAddingQuickMemo, setIsAddingQuickMemo] = useState(false);
+  const [quickMemoForm, setQuickMemoForm] = useState({ summary: '', good: '', concern: '', nextCheck: '' });
+
+  const handleSaveInlineQuickMemo = () => {
+    if (!quickMemoForm.summary && !quickMemoForm.good && !quickMemoForm.concern && !quickMemoForm.nextCheck) {
+      setIsAddingQuickMemo(false);
+      return;
+    }
+    const newMemo = {
+      id: Date.now(),
+      createdAt: new Date().toISOString(),
+      summary: quickMemoForm.summary,
+      good: quickMemoForm.good,
+      concern: quickMemoForm.concern,
+      nextCheck: quickMemoForm.nextCheck
+    };
+    const nextNotes = [newMemo, ...(candidate.quickNotes || [])];
+    updateField(candidate.id, 'quickNotes', nextNotes);
+    setQuickMemoForm({ summary: '', good: '', concern: '', nextCheck: '' });
+    setIsAddingQuickMemo(false);
+  };
   
   async function copy() {
     try { 
@@ -1987,6 +2008,29 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
           {/* 1. 빠른 기록 히스토리 (기본 펼침) */}
           <DetailAccordion title="빠른 기록 히스토리" subtitle="날짜 기반 한줄평 및 관찰 메모 누적 기록" defaultOpen={true}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {!isAddingQuickMemo && (
+                <button 
+                  className="primary" 
+                  style={{ width: '100%', padding: '12px', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}
+                  onClick={() => setIsAddingQuickMemo(true)}
+                >
+                  + 새로운 빠른 기록 작성
+                </button>
+              )}
+
+              {isAddingQuickMemo && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: 'var(--surface)', padding: '14px', borderRadius: '12px', border: '1px solid var(--divider)', boxShadow: 'var(--shadow-sm)' }}>
+                  <Field label="한 줄 메모" value={quickMemoForm.summary} onChange={(v) => setQuickMemoForm(p => ({...p, summary: v}))} placeholder="오늘 있었던 일을 짧게 요약하세요." />
+                  <Field label="좋았던 점" textarea value={quickMemoForm.good} onChange={(v) => setQuickMemoForm(p => ({...p, good: v}))} placeholder="소소하게나마 마음에 든 점" rows={2} />
+                  <Field label="찝찝했던 점" textarea value={quickMemoForm.concern} onChange={(v) => setQuickMemoForm(p => ({...p, concern: v}))} placeholder="약간 걸리는 기분이나 신호" rows={2} />
+                  <Field label="다음 확인점" textarea value={quickMemoForm.nextCheck} onChange={(v) => setQuickMemoForm(p => ({...p, nextCheck: v}))} placeholder="다음에 스치듯 관찰해 볼 포인트" rows={2} />
+                  <div className="twoButtons" style={{ marginTop: '4px' }}>
+                    <button onClick={() => setIsAddingQuickMemo(false)}>취소</button>
+                    <button className="primary" onClick={handleSaveInlineQuickMemo}>⚡️ 기록 누적</button>
+                  </div>
+                </div>
+              )}
+
               {(candidate.quickNotes || []).length === 0 ? (
                 <div style={{ padding: '20px', background: 'var(--bg)', borderRadius: '10px', color: 'var(--text-3)', fontSize: '13px', textAlign: 'center' }}>
                   아직 누적된 빠른 기록이 없습니다.<br/>목록의 📝 버튼을 통해 가볍게 남겨보세요.
@@ -2383,38 +2427,42 @@ export default function App() {
   }
   function remove(id) { setCandidates((prev) => prev.filter((item) => item.id !== id)); setSelected(null); }
   function saveTimeline(candidateId, timelineList) {
-    let updated = null;
-    setCandidates((prev) => prev.map((item) => {
-      if (item.id !== candidateId) return item;
-      updated = { ...item, timeline: timelineList, dateTimeline: timelineList, updatedAt: new Date().toISOString() };
-      return updated;
-    }));
-    if (updated) setSelected(updated);
+    setCandidates((prev) => {
+      const next = prev.map((item) => {
+        if (item.id !== candidateId) return item;
+        return { ...item, timeline: timelineList, dateTimeline: timelineList, updatedAt: new Date().toISOString() };
+      });
+      const tgt = next.find((i) => i.id === candidateId);
+      if (tgt) setSelected(tgt);
+      return next;
+    });
   }
   function addQuickMemo(candidateId, memoObj) {
-    let updated = null;
-    setCandidates((prev) => prev.map((item) => {
-      if (item.id !== candidateId) return item;
-      const existingMemos = item.quickNotes || [];
-      updated = { 
-        ...item, 
-        quickNotes: [memoObj, ...existingMemos],
-        updatedAt: new Date().toISOString() 
-      };
-      return updated;
-    }));
-    if (updated && selected && selected.id === candidateId) {
-      setSelected(updated);
-    }
+    setCandidates((prev) => {
+      const next = prev.map((item) => {
+        if (item.id !== candidateId) return item;
+        const existingMemos = item.quickNotes || [];
+        return { 
+          ...item, 
+          quickNotes: [memoObj, ...existingMemos],
+          updatedAt: new Date().toISOString() 
+        };
+      });
+      const tgt = next.find((i) => i.id === candidateId);
+      if (tgt) setSelected(tgt);
+      return next;
+    });
   }
   function updateCandidateField(candidateId, fieldName, value) {
-    let updated = null;
-    setCandidates((prev) => prev.map((item) => {
-      if (item.id !== candidateId) return item;
-      updated = { ...item, [fieldName]: value, updatedAt: new Date().toISOString() };
-      return updated;
-    }));
-    if (updated) setSelected(updated);
+    setCandidates((prev) => {
+      const next = prev.map((item) => {
+        if (item.id !== candidateId) return item;
+        return { ...item, [fieldName]: value, updatedAt: new Date().toISOString() };
+      });
+      const tgt = next.find((i) => i.id === candidateId);
+      if (tgt) setSelected(tgt);
+      return next;
+    });
   }
   function startEdit(candidate) { setEditing(candidate); setSelected(null); setTab('add'); }
 
