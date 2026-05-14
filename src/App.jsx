@@ -236,6 +236,7 @@ const emptyCandidate = {
   energyTags: [],
   personalityTags: [],
   observationNotes: '',
+  observationMemo: '',
   green: [],
   yellow: [],
   red: [],
@@ -550,6 +551,7 @@ function createForm(candidate) {
     energyTags: [...(candidate?.energyTags || [])],
     personalityTags: [...(candidate?.personalityTags || [])],
     observationNotes: candidate?.observationNotes || '',
+    observationMemo: candidate?.observationMemo || '',
     green: [...(candidate?.green || [])],
     yellow: [...(candidate?.yellow || [])],
     red: [...(candidate?.red || [])],
@@ -636,6 +638,9 @@ function candidateMarkdown(candidate, report) {
     '## 9. 관찰 포인트 메모',
     candidate.observationNotes || '없음',
     '',
+    '## 10. 관찰 메모',
+    candidate.observationMemo || '기록 없음',
+    '',
     '---',
     '> LLM 활용 제안: 위 리포트를 기반으로 "이 관계가 나에게 지속 가능한 구조인가"를 함께 분석해주세요.',
     '',
@@ -653,12 +658,12 @@ function Badge({ children, color = 'gray' }) {
 function Card({ children, className = '' }) {
   return <section className={`card ${className}`}>{children}</section>;
 }
-function Field({ label, value, onChange, placeholder, type = 'text', textarea = false }) {
+function Field({ label, value, onChange, placeholder, type = 'text', textarea = false, rows = 3 }) {
   return (
     <label className="field">
       <span>{label}</span>
       {textarea ? (
-        <textarea rows={3} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />
+        <textarea rows={rows} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />
       ) : (
         <input type={type} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />
       )}
@@ -988,7 +993,7 @@ function TagPickerGroup({ title, tags, selected, onToggle, maxSelect = 3 }) {
   );
 }
 
-function ObservationSection({ notes, onChange }) {
+function ObservationSection({ notes, onChange, memo = '', onMemoChange }) {
   const [recommended, setRecommended] = useState(() => {
     // Shuffle and pick 3
     return [...observationPointPool].sort(() => 0.5 - Math.random()).slice(0, 3);
@@ -1027,6 +1032,19 @@ function ObservationSection({ notes, onChange }) {
         onChange={onChange} 
         placeholder="예: 바쁜 시기에도 대화 밀도가 유지되는지, 말과 행동이 일치하는지 등 관찰할 포인트를 기록하세요."
       />
+      {onMemoChange && (
+        <>
+          <div className="sectionDivider" style={{ margin: '20px 0 16px 0' }} />
+          <Field 
+            label="관찰 메모" 
+            textarea 
+            rows={6}
+            value={memo} 
+            onChange={onMemoChange} 
+            placeholder="관계 흐름, 공개 정보, 인터뷰 요약, 개인적 인상, 추가 관찰 포인트 등을 수동으로 적어두세요."
+          />
+        </>
+      )}
     </div>
   );
 }
@@ -1148,7 +1166,7 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
 
       <Card className="accordion">
         <button type="button" onClick={() => setOpen(open === 'observation' ? '' : 'observation')}>
-          <div><b>관찰 계획 & 추천</b><span>향후 무엇을 더 확인할 것인가</span></div>
+          <div><b>관찰 계획 & 메모</b><span>향후 관찰할 점과 누적 메모</span></div>
           <em>{open === 'observation' ? '닫기' : '열기'}</em>
         </button>
         {open === 'observation' && (
@@ -1156,6 +1174,8 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
             <ObservationSection 
               notes={form.observationNotes || ''}
               onChange={(val) => update('observationNotes', val)}
+              memo={form.observationMemo || ''}
+              onMemoChange={(val) => update('observationMemo', val)}
             />
           </div>
         )}
@@ -1271,6 +1291,8 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
           <ObservationSection 
             notes={form.observationNotes || ''}
             onChange={(val) => update('observationNotes', val)}
+            memo={form.observationMemo || ''}
+            onMemoChange={(val) => update('observationMemo', val)}
           />
 
           <div className="sectionDivider" style={{ margin: '24px 0' }} />
@@ -1479,6 +1501,13 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline }) {
               </p>
             </Card>
           )}
+
+          <Card style={{ borderLeft: '4px solid var(--blue)' }}>
+            <h3>📝 관찰 메모</h3>
+            <p style={{ whiteSpace: 'pre-wrap', marginTop: '8px', fontSize: '13.5px', lineHeight: 1.6, color: 'var(--text-body)' }}>
+              {candidate.observationMemo || '기록 없음'}
+            </p>
+          </Card>
 
           <Card>
             <h3>정서적 결 & 에너지</h3>
