@@ -733,17 +733,46 @@ function Chevron({ isOpen }) {
   );
 }
 
-function DetailAccordion({ title, subtitle, children, defaultOpen = false }) {
+function DetailAccordion({ title, subtitle, children, defaultOpen = false, onEdit }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <Card className="accordion">
-      <button type="button" onClick={() => setOpen(!open)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', padding: '16px 20px', textAlign: 'left', border: 'none', background: 'none', cursor: 'pointer' }}>
-        <div>
-          <b style={{ display: 'block', fontSize: '15px', fontWeight: 700, color: 'var(--text-1)' }}>{title}</b>
-          {subtitle && <span style={{ display: 'block', marginTop: '4px', fontSize: '11px', color: 'var(--text-3)', fontWeight: 500 }}>{subtitle}</span>}
-        </div>
-        <Chevron isOpen={open} />
-      </button>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', paddingRight: '20px' }}>
+        <button type="button" onClick={() => setOpen(!open)} style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'space-between', padding: '16px 0 16px 20px', textAlign: 'left', border: 'none', background: 'none', cursor: 'pointer', overflow: 'hidden' }}>
+          <div style={{ flex: 1 }}>
+            <b style={{ display: 'block', fontSize: '15px', fontWeight: 700, color: 'var(--text-1)' }}>{title}</b>
+            {subtitle && <span style={{ display: 'block', marginTop: '4px', fontSize: '11px', color: 'var(--text-3)', fontWeight: 500, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{subtitle}</span>}
+          </div>
+          <div style={{ paddingRight: '12px', paddingLeft: '8px', display: 'flex', alignItems: 'center' }}>
+            <Chevron isOpen={open} />
+          </div>
+        </button>
+        {onEdit && (
+          <button 
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onEdit(); }}
+            style={{
+              border: 'none',
+              background: 'var(--bg)',
+              padding: '6px 10px',
+              borderRadius: '6px',
+              fontSize: '11px',
+              fontWeight: 600,
+              color: 'var(--text-2)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '3px',
+              transition: 'all 0.15s ease',
+              flexShrink: 0
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--blue)'; e.currentTarget.style.background = 'var(--blue-light)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-2)'; e.currentTarget.style.background = 'var(--bg)'; }}
+          >
+            ✏️ 수정
+          </button>
+        )}
+      </div>
       {open && (
         <div className="accordionBody" style={{ padding: '16px 20px', background: 'var(--surface)', borderTop: '1px solid var(--divider)' }}>
           {children}
@@ -1796,7 +1825,12 @@ function DynamicListSection({ items = [], type, onChange }) {
   };
 
   const handleUpdate = (id, newText) => {
-    onChange(items.map(item => item.id === id ? { ...item, text: newText } : item));
+    const clean = newText.trim();
+    if (!clean) {
+      handleDelete(id);
+      return;
+    }
+    onChange(items.map(item => item.id === id ? { ...item, text: clean } : item));
     setEditingId(null);
     setEditDraft('');
   };
@@ -1862,8 +1896,19 @@ function DynamicListSection({ items = [], type, onChange }) {
                     className="textarea" 
                     value={editDraft} 
                     onChange={(e) => setEditDraft(e.target.value)} 
-                    style={{ width: '100%', padding: '8px', fontSize: '13px', borderRadius: '6px', border: '1px solid var(--divider)' }}
+                    onKeyDown={(e) => {
+                      if (e.nativeEvent.isComposing) return;
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleUpdate(item.id, editDraft);
+                      }
+                      if (e.key === 'Escape') {
+                        setEditingId(null);
+                      }
+                    }}
+                    style={{ width: '100%', padding: '8px', fontSize: '13px', borderRadius: '6px', border: '1px solid var(--blue-border)', outline: 'none' }}
                     rows={2}
+                    autoFocus
                   />
                   <div className="twoButtons">
                     <button onClick={() => setEditingId(null)}>취소</button>
@@ -1873,11 +1918,25 @@ function DynamicListSection({ items = [], type, onChange }) {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', alignItems: 'flex-start' }}>
-                    <p style={{ margin: 0, fontSize: '13.5px', lineHeight: 1.6, color: 'var(--text-body)', whiteSpace: 'pre-wrap', flex: 1 }}>
+                    <p 
+                      onClick={() => startEdit(item)}
+                      style={{ 
+                        margin: 0, 
+                        fontSize: '13.5px', 
+                        lineHeight: 1.6, 
+                        color: 'var(--text-body)', 
+                        whiteSpace: 'pre-wrap', 
+                        flex: 1, 
+                        cursor: 'pointer',
+                        transition: 'color 0.15s ease'
+                      }}
+                      title="클릭하여 수정"
+                      onMouseEnter={(e) => e.target.style.color = 'var(--blue)'}
+                      onMouseLeave={(e) => e.target.style.color = 'var(--text-body)'}
+                    >
                       {item.text}
                     </p>
                     <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-                      <button onClick={() => startEdit(item)} style={{ border: 'none', background: 'none', color: 'var(--blue)', fontSize: '11px', fontWeight: 600, cursor: 'pointer', padding: 0 }}>수정</button>
                       <button onClick={() => handleDelete(item.id)} style={{ border: 'none', background: 'none', color: 'var(--red)', fontSize: '11px', fontWeight: 600, cursor: 'pointer', padding: 0 }}>삭제</button>
                     </div>
                   </div>
@@ -1923,6 +1982,37 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
   const markdownText = candidateMarkdown(candidate, report);
   const [isAddingQuickMemo, setIsAddingQuickMemo] = useState(false);
   const [quickMemoForm, setQuickMemoForm] = useState({ summary: '', good: '', concern: '', nextCheck: '' });
+  const [showMenu, setShowMenu] = useState(false);
+  const [editingNoteId, setEditingNoteId] = useState(null);
+  const [editingNoteForm, setEditingNoteForm] = useState({ summary: '', good: '', concern: '', nextCheck: '' });
+
+  const startEditNote = (note) => {
+    setEditingNoteId(note.id);
+    setEditingNoteForm({
+      summary: note.summary || '',
+      good: note.good || '',
+      concern: note.concern || '',
+      nextCheck: note.nextCheck || ''
+    });
+  };
+
+  const handleUpdateQuickNote = (noteId) => {
+    if (!editingNoteForm.summary && !editingNoteForm.good && !editingNoteForm.concern && !editingNoteForm.nextCheck) {
+      handleDeleteQuickNote(noteId);
+      return;
+    }
+    const updatedList = (candidate.quickNotes || []).map(n => n.id === noteId ? { ...n, ...editingNoteForm } : n);
+    updateField(candidate.id, 'quickNotes', updatedList);
+    setEditingNoteId(null);
+  };
+
+  const handleDeleteQuickNote = (noteId) => {
+    if (window.confirm('이 빠른 기록 메모를 삭제하시겠습니까?')) {
+      const updatedList = (candidate.quickNotes || []).filter(n => n.id !== noteId);
+      updateField(candidate.id, 'quickNotes', updatedList);
+      setEditingNoteId(null);
+    }
+  };
 
   const handleSaveInlineQuickMemo = () => {
     if (!quickMemoForm.summary && !quickMemoForm.good && !quickMemoForm.concern && !quickMemoForm.nextCheck) {
@@ -1965,16 +2055,59 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
               })}
             </div>
             <h2>
-              {candidate.name || '무명의 후보'}{' '}
-              <button onClick={() => edit(candidate)}>
-                <Icon type="edit" />
-              </button>
+              {candidate.name || '무명의 후보'}
             </h2>
             <p>
               {report.age || '나이 미상'}세 · {candidate.job || '직업 미상'} · {candidate.location || '거주지 미상'}
             </p>
           </div>
-          <button className="close" onClick={close}>×</button>
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '4px', position: 'relative' }}>
+            <button 
+              onClick={() => setShowMenu(!showMenu)}
+              style={{
+                border: 'none',
+                background: 'transparent',
+                fontSize: '20px',
+                color: 'var(--text-2)',
+                cursor: 'pointer',
+                padding: '8px 4px',
+                lineHeight: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              title="후보 전체 관리"
+            >
+              ⋮
+            </button>
+            {showMenu && (
+              <div style={{
+                position: 'absolute',
+                top: '38px',
+                right: '0',
+                background: 'var(--surface)',
+                border: '1px solid var(--divider)',
+                boxShadow: 'var(--shadow-md)',
+                borderRadius: '10px',
+                zIndex: 999,
+                minWidth: '160px',
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column'
+              }}>
+                <button onClick={() => { edit(candidate); setShowMenu(false); }} style={{ padding: '12px 14px', fontSize: '13px', border: 'none', background: 'none', textAlign: 'left', color: 'var(--text-body)', cursor: 'pointer', borderBottom: '1px solid var(--divider)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  📝 전체 상세 정보 편집
+                </button>
+                <button onClick={() => { copy(); setShowMenu(false); }} style={{ padding: '12px 14px', fontSize: '13px', border: 'none', background: 'none', textAlign: 'left', color: 'var(--text-body)', cursor: 'pointer', borderBottom: '1px solid var(--divider)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  📋 마크다운 전체 복사
+                </button>
+                <button onClick={() => { if (window.confirm('정말 이 후보 정보를 삭제하시겠습니까?')) { remove(candidate.id); close(); } setShowMenu(false); }} style={{ padding: '12px 14px', fontSize: '13px', border: 'none', background: 'none', textAlign: 'left', color: 'var(--red)', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  🗑️ 이 후보 기록 삭제
+                </button>
+              </div>
+            )}
+            <button className="close" onClick={close}>×</button>
+          </div>
         </div>
         <main className="sheetBody">
           {/* 관계 관찰 요약 (기본 노출 - 펼쳐진 상태) */}
@@ -2036,27 +2169,70 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
                   아직 누적된 빠른 기록이 없습니다.<br/>목록의 📝 버튼을 통해 가볍게 남겨보세요.
                 </div>
               ) : (
-                candidate.quickNotes.map((note) => (
-                  <div key={note.id} style={{ background: 'var(--bg)', padding: '14px', borderRadius: '10px', fontSize: '13px', border: '1px solid rgba(0,0,0,0.03)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--divider)', paddingBottom: '6px', marginBottom: '8px' }}>
-                      <span style={{ color: 'var(--blue)', fontSize: '11px', fontWeight: 700 }}>
-                        ⚡️ {new Date(note.createdAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                      </span>
+                candidate.quickNotes.map((note) => {
+                  const isEditing = editingNoteId === note.id;
+                  return (
+                    <div 
+                      key={note.id} 
+                      style={{ 
+                        background: 'var(--bg)', 
+                        padding: '14px', 
+                        borderRadius: '10px', 
+                        fontSize: '13px', 
+                        border: isEditing ? '1px solid var(--blue-border)' : '1px solid rgba(0,0,0,0.03)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px',
+                        cursor: isEditing ? 'default' : 'pointer',
+                        transition: 'all 0.15s ease'
+                      }}
+                      onClick={() => { if (!isEditing) startEditNote(note); }}
+                      title={isEditing ? "" : "클릭하여 이 기록 즉시 수정/삭제"}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--divider)', paddingBottom: '6px', pointerEvents: 'auto' }}>
+                        <span style={{ color: 'var(--blue)', fontSize: '11px', fontWeight: 700 }}>
+                          ⚡️ {new Date(note.createdAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                        {!isEditing && (
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); handleDeleteQuickNote(note.id); }}
+                            style={{ border: 'none', background: 'none', color: 'var(--red)', fontSize: '11px', fontWeight: 600, cursor: 'pointer', padding: 0 }}
+                          >
+                            삭제
+                          </button>
+                        )}
+                      </div>
+                      
+                      {isEditing ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '4px' }} onClick={(e) => e.stopPropagation()}>
+                          <Field label="한 줄 메모" value={editingNoteForm.summary} onChange={(v) => setEditingNoteForm(p => ({...p, summary: v}))} placeholder="한 줄 요약" />
+                          <Field label="좋았던 점" textarea value={editingNoteForm.good} onChange={(v) => setEditingNoteForm(p => ({...p, good: v}))} placeholder="좋았던 점" rows={2} />
+                          <Field label="찝찝했던 점" textarea value={editingNoteForm.concern} onChange={(v) => setEditingNoteForm(p => ({...p, concern: v}))} placeholder="찝찝했던 점" rows={2} />
+                          <Field label="다음 확인점" textarea value={editingNoteForm.nextCheck} onChange={(v) => setEditingNoteForm(p => ({...p, nextCheck: v}))} placeholder="다음 확인" rows={2} />
+                          <div className="twoButtons" style={{ marginTop: '4px' }}>
+                            <button onClick={() => setEditingNoteId(null)}>취소</button>
+                            <button className="primary" onClick={() => handleUpdateQuickNote(note.id)}>변경 저장</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          {note.summary && <p style={{ margin: '4px 0 0 0', color: 'var(--text-1)', fontWeight: 700, fontSize: '13.5px' }}>“{note.summary}”</p>}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '12.5px', borderTop: note.summary ? '1px dashed rgba(0,0,0,0.05)' : 'none', paddingTop: note.summary ? '8px' : '0' }}>
+                            {note.good && <div style={{ color: 'var(--text-body)' }}><b style={{ color: 'var(--green)', marginRight: '4px' }}>🟢 좋았던 점:</b> {note.good}</div>}
+                            {note.concern && <div style={{ color: 'var(--text-body)' }}><b style={{ color: 'var(--red)', marginRight: '4px' }}>🟠 찝찝했던 점:</b> {note.concern}</div>}
+                            {note.nextCheck && <div style={{ color: 'var(--text-body)' }}><b style={{ color: 'var(--blue)', marginRight: '4px' }}>👀 다음 확인:</b> {note.nextCheck}</div>}
+                          </div>
+                        </>
+                      )}
                     </div>
-                    {note.summary && <p style={{ margin: '4px 0 8px 0', color: 'var(--text-1)', fontWeight: 700, fontSize: '13.5px' }}>“{note.summary}”</p>}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '12.5px', borderTop: note.summary ? '1px dashed rgba(0,0,0,0.05)' : 'none', paddingTop: note.summary ? '8px' : '0' }}>
-                      {note.good && <div style={{ color: 'var(--text-body)' }}><b style={{ color: 'var(--green)', marginRight: '4px' }}>🟢 좋았던 점:</b> {note.good}</div>}
-                      {note.concern && <div style={{ color: 'var(--text-body)' }}><b style={{ color: 'var(--red)', marginRight: '4px' }}>🟠 찝찝했던 점:</b> {note.concern}</div>}
-                      {note.nextCheck && <div style={{ color: 'var(--text-body)' }}><b style={{ color: 'var(--blue)', marginRight: '4px' }}>👀 다음 확인:</b> {note.nextCheck}</div>}
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </DetailAccordion>
 
           {/* 2. 정서적 결 (기본 펼침) */}
-          <DetailAccordion title="정서적 결" subtitle="대화 밀도 및 감정 피로도" defaultOpen={true}>
+          <DetailAccordion title="정서적 결" subtitle="대화 밀도 및 감정 피로도" defaultOpen={true} onEdit={() => edit(candidate)}>
             <div className="infoGrid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
               {emotionalBondItems.map(item => {
                 const val = candidate.emotionalBond?.[item.key] ?? 5;
@@ -2075,7 +2251,7 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
           </DetailAccordion>
 
           {/* 3. 관계 에너지 방향 (기본 펼침) */}
-          <DetailAccordion title="관계 에너지 방향" subtitle="이 관계가 나에게 유발하는 에너지" defaultOpen={true}>
+          <DetailAccordion title="관계 에너지 방향" subtitle="이 관계가 나에게 유발하는 에너지" defaultOpen={true} onEdit={() => edit(candidate)}>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
               {(candidate.energyTags || []).map(id => {
                 const tag = energyTagOptions.find(t => t.id === id);
@@ -2088,7 +2264,7 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
           </DetailAccordion>
 
           {/* 4. 플래그 (기본 펼침) */}
-          <DetailAccordion title="플래그 (관찰된 신호)" subtitle="그린/옐로우/레드 플래그 모아보기" defaultOpen={true}>
+          <DetailAccordion title="플래그 (관찰된 신호)" subtitle="그린/옐로우/레드 플래그 모아보기" defaultOpen={true} onEdit={() => edit(candidate)}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
                 <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--green)', marginBottom: '6px' }}>🟢 그린 플래그</div>
@@ -2112,7 +2288,7 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
           </DetailAccordion>
 
           {/* 5. 기본 프로필 (기본 접힘) */}
-          <DetailAccordion title="기본 프로필" subtitle="기본 신원 및 첫인상 메모" defaultOpen={false}>
+          <DetailAccordion title="기본 프로필" subtitle="기본 신원 및 첫인상 메모" defaultOpen={false} onEdit={() => edit(candidate)}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginBottom: '12px' }}>
               <div style={{ padding: '10px', border: '1px solid var(--divider)', borderRadius: '10px', background: 'var(--bg)' }}>
                 <small style={{ fontSize: '10px', color: 'var(--text-3)', display: 'block' }}>이름</small>
@@ -2146,7 +2322,7 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
           </DetailAccordion>
 
           {/* 6. 조건/스펙 (기본 접힘) */}
-          <DetailAccordion title="조건/스펙" subtitle="키, 돈, 주거 형태 등 하드웨어 점수" defaultOpen={false}>
+          <DetailAccordion title="조건/스펙" subtitle="키, 돈, 주거 형태 등 하드웨어 점수" defaultOpen={false} onEdit={() => edit(candidate)}>
             <div className="scoreGrid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '14px' }}>
               <ScoreCard title="조건/스펙" value={report.conditionScore} max={40} desc="키·돈·직업처럼 확인 가능한 조건" />
               <ScoreCard title="정보 확인도" value={report.trustScore} max={15} desc="말로 들은 정보가 확인됐는지" />
@@ -2176,7 +2352,7 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
           </DetailAccordion>
 
           {/* 7. 대화/태도 세부 점수 (기본 접힘) */}
-          <DetailAccordion title="대화/태도 세부 점수" subtitle="말과 행동 일치, 소통 템포 상세" defaultOpen={false}>
+          <DetailAccordion title="대화/태도 세부 점수" subtitle="말과 행동 일치, 소통 템포 상세" defaultOpen={false} onEdit={() => edit(candidate)}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {relationItems.map(item => {
                 const val = candidate.relation?.[item.key] ?? 5;
