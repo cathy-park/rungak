@@ -737,7 +737,7 @@ function Chevron({ isOpen }) {
 function DetailAccordion({ title, subtitle, children, defaultOpen = false, onEdit }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <Card className="accordion">
+    <Card className="accordion" style={{ padding: 0 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', padding: '16px 20px', cursor: 'pointer' }} onClick={() => setOpen(!open)}>
         <div style={{ flex: 1, paddingRight: '12px' }}>
           <b style={{ display: 'block', fontSize: '15px', fontWeight: 700, color: 'var(--text-1)' }}>{title}</b>
@@ -777,8 +777,8 @@ function Avatar({ candidate, size = 'md' }) {
 function Badge({ children, color = 'gray' }) {
   return <span className={`badge tone-${color}`}>{children}</span>;
 }
-function Card({ children, className = '' }) {
-  return <section className={`card ${className}`}>{children}</section>;
+function Card({ children, className = '', ...props }) {
+  return <section className={`card ${className}`} {...props}>{children}</section>;
 }
 function Field({ label, value, onChange, placeholder, type = 'text', textarea = false, rows = 3 }) {
   return (

@@ -970,7 +970,7 @@ p { margin: 0; }
 
 /* ─── ACCORDION ──────────────────────────────────────── */
 .accordion {
-  padding: 0;
+  padding: 0 !important;
   overflow: hidden;
 }
 
@@ -979,7 +979,7 @@ p { margin: 0; }
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 18px 20px;
+  padding: 18px 20px !important;
   text-align: left;
 }
 
@@ -1006,7 +1006,7 @@ p { margin: 0; }
 }
 
 .accordionBody {
-  padding: 16px 20px;
+  padding: 16px 20px !important;
   background: var(--surface);
   border-top: 1px solid var(--divider);
 }
