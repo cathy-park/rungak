@@ -730,6 +730,61 @@ function SelectField({ label, value, onChange, children }) {
     </label>
   );
 }
+
+function BulletTextarea({ label, value, onChange, placeholder, rows = 3 }) {
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      const cursorPosition = e.target.selectionStart;
+      const textBefore = value.substring(0, cursorPosition);
+      const textAfter = value.substring(cursorPosition);
+      
+      const lines = textBefore.split('\n');
+      const currentLine = lines[lines.length - 1];
+      
+      if (currentLine === '• ') {
+        const newValue = textBefore.substring(0, textBefore.length - 2) + '\n' + textAfter;
+        onChange(newValue);
+        setTimeout(() => { e.target.selectionStart = e.target.selectionEnd = cursorPosition - 1; }, 0);
+        return;
+      }
+      
+      const newValue = textBefore + '\n• ' + textAfter;
+      onChange(newValue);
+      setTimeout(() => { e.target.selectionStart = e.target.selectionEnd = cursorPosition + 3; }, 0);
+    } else if (e.key === 'Backspace') {
+      const cursorPosition = e.target.selectionStart;
+      if (cursorPosition >= 2) {
+        const textBefore = value.substring(0, cursorPosition);
+        if (textBefore.endsWith('\n• ')) {
+          e.preventDefault();
+          const newValue = textBefore.substring(0, textBefore.length - 3) + '\n' + value.substring(cursorPosition);
+          onChange(newValue);
+          setTimeout(() => { e.target.selectionStart = e.target.selectionEnd = cursorPosition - 2; }, 0);
+        } else if (textBefore === '• ') {
+          e.preventDefault();
+          onChange(value.substring(2));
+          setTimeout(() => { e.target.selectionStart = e.target.selectionEnd = 0; }, 0);
+        }
+      }
+    }
+  };
+
+  const handleChange = (e) => {
+    let newValue = e.target.value;
+    if (value === '' && newValue.length === 1 && newValue !== '•') {
+      newValue = '• ' + newValue;
+    }
+    onChange(newValue);
+  };
+
+  return (
+    <label className="field">
+      {label && <span>{label}</span>}
+      <textarea rows={rows} value={value} onChange={handleChange} onKeyDown={handleKeyDown} placeholder={placeholder} style={{ lineHeight: 1.6 }} />
+    </label>
+  );
+}
 function Toggle({ checked, onChange }) {
   return <button type="button" className={`verify ${checked ? 'on' : ''}`} onClick={() => onChange(!checked)}>{checked ? '확인됨' : '미확인'}</button>;
 }
@@ -1054,9 +1109,9 @@ function ObservationSection({ notes, onChange, memo = '', onMemoChange }) {
   const addPoint = (point) => {
     const current = notes.trim();
     if (!current) {
-      onChange(point);
+      onChange('• ' + point);
     } else if (!current.includes(point)) {
-      onChange(current + '\n' + point);
+      onChange(current + '\n• ' + point);
     }
   };
 
@@ -1077,23 +1132,21 @@ function ObservationSection({ notes, onChange, memo = '', onMemoChange }) {
           </button>
         ))}
       </div>
-      <Field 
+      <BulletTextarea 
         label="다음에 관찰할 내용 기록" 
-        textarea 
         value={notes} 
         onChange={onChange} 
-        placeholder="예: 바쁜 시기에도 대화 밀도가 유지되는지, 말과 행동이 일치하는지 등 관찰할 포인트를 기록하세요."
+        placeholder="다음 만남에서 확인하고 싶은 점을 가볍게 기록해보세요."
       />
       {onMemoChange && (
         <>
           <div className="sectionDivider" style={{ margin: '20px 0 16px 0' }} />
-          <Field 
-            label="관찰 메모" 
-            textarea 
+          <BulletTextarea 
+            label="고정 관찰 메모" 
             rows={6}
             value={memo} 
             onChange={onMemoChange} 
-            placeholder="관계 흐름, 공개 정보, 인터뷰 요약, 개인적 인상, 추가 관찰 포인트 등을 수동으로 적어두세요."
+            placeholder="대화 흐름이나 반복되는 행동 패턴을 남겨보세요."
           />
         </>
       )}
@@ -1746,18 +1799,18 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline }) {
 
           {/* 8. 관찰 포인트 (기본 접힘) */}
           <DetailAccordion title="관찰 포인트" subtitle="다음 만남에서 집중 관찰/검증할 목록" defaultOpen={false}>
-            <div style={{ padding: '12px', background: 'var(--surface)', borderLeft: '4px solid var(--blue)', borderRadius: '8px' }}>
+            <div style={{ padding: '14px', background: 'var(--bg)', borderRadius: '10px' }}>
               <p style={{ whiteSpace: 'pre-wrap', margin: 0, fontSize: '13.5px', lineHeight: 1.6, color: 'var(--text-body)' }}>
-                {candidate.observationNotes || '등록된 향후 관찰 계획이 없습니다.'}
+                {candidate.observationNotes || '다음 만남에서 확인하고 싶은 점을 가볍게 기록해보세요.'}
               </p>
             </div>
           </DetailAccordion>
 
           {/* 9. 고정 관찰 메모 (기본 접힘) */}
           <DetailAccordion title="고정 관찰 메모" subtitle="장기 분석 및 변하지 않는 배경 정보" defaultOpen={false}>
-            <div style={{ padding: '12px', background: 'var(--surface)', borderLeft: '4px solid var(--blue)', borderRadius: '8px' }}>
+            <div style={{ padding: '14px', background: 'var(--bg)', borderRadius: '10px' }}>
               <p style={{ whiteSpace: 'pre-wrap', margin: 0, fontSize: '13.5px', lineHeight: 1.6, color: 'var(--text-body)' }}>
-                {candidate.fixedObservationMemo || candidate.observationMemo || '기록 없음'}
+                {candidate.fixedObservationMemo || candidate.observationMemo || '대화 흐름이나 반복되는 행동 패턴을 남겨보세요.'}
               </p>
             </div>
           </DetailAccordion>
