@@ -750,9 +750,9 @@ function DetailAccordion({ title, subtitle, children, defaultOpen = false, onEdi
               title="이 섹션 수정"
               onClick={(e) => { e.stopPropagation(); onEdit(); setOpen(true); }}
               className="iconButton"
-              style={{ width: '28px', height: '28px', background: 'var(--surface)', border: '1px solid var(--divider)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-2)' }}
+              style={{ width: '32px', height: '32px', background: 'var(--surface)', border: '1px solid var(--divider)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '15px', padding: '0' }}
             >
-              <Pencil size={14} />
+              ✏️
             </button>
           )}
           <div style={{ display: 'flex', alignItems: 'center', width: '24px', justifyContent: 'center', color: 'var(--text-2)' }}>
@@ -2117,13 +2117,13 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
                 flexDirection: 'column'
               }}>
                 <button onClick={() => { edit(candidate); setShowMenu(false); }} style={{ padding: '12px 14px', fontSize: '13px', border: 'none', background: 'none', textAlign: 'left', color: 'var(--text-body)', cursor: 'pointer', borderBottom: '1px solid var(--divider)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Pencil size={14} /> 전체 상세 정보 편집
+                  ✏️ 전체 상세 정보 편집
                 </button>
                 <button onClick={() => { copy(); setShowMenu(false); }} style={{ padding: '12px 14px', fontSize: '13px', border: 'none', background: 'none', textAlign: 'left', color: 'var(--text-body)', cursor: 'pointer', borderBottom: '1px solid var(--divider)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Clipboard size={14} /> 마크다운 전체 복사
+                  📋 마크다운 전체 복사
                 </button>
                 <button onClick={() => { if (window.confirm('정말 이 후보 정보를 삭제하시겠습니까?')) { remove(candidate.id); close(); } setShowMenu(false); }} style={{ padding: '12px 14px', fontSize: '13px', border: 'none', background: 'none', textAlign: 'left', color: 'var(--red)', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Trash2 size={14} /> 이 후보 기록 삭제
+                  🗑️ 이 후보 기록 삭제
                 </button>
               </div>
             )}
