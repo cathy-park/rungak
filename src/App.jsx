@@ -733,6 +733,9 @@ function SelectField({ label, value, onChange, children }) {
 
 function BulletTextarea({ label, value, onChange, placeholder, rows = 3 }) {
   const handleKeyDown = (e) => {
+    if (e.nativeEvent.isComposing) {
+      return;
+    }
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       const cursorPosition = e.target.selectionStart;
