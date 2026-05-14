@@ -1791,7 +1791,11 @@ function QuickMemoModal({ candidate, close, onSave }) {
               오늘의 관계 흐름을 가볍게 남겨보세요.
             </p>
           </div>
-          <button className="close" onClick={close} style={{ marginLeft: 'auto' }}>×</button>
+          <div className="detail-header-actions" style={{ marginLeft: 'auto' }}>
+            <button className="iconButton" onClick={close} style={{ background: 'transparent', border: 'none', color: 'var(--text-2)', cursor: 'pointer', display: 'flex', padding: '4px' }}>
+              <X size={20} />
+            </button>
+          </div>
         </div>
         <div className="sheetBody" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', paddingBottom: '20px', gap: '10px' }}>
           <div className="formStack">
@@ -2590,7 +2594,9 @@ function GuideModal({ close, onExport, onImport }) {
       <div className="guide" onClick={(e) => e.stopPropagation()}>
         <div className="guideHead">
           <div><p>Settings & Guide</p><h2>설정 및 판단 기준</h2></div>
-          <button onClick={close}>×</button>
+          <button className="iconButton" onClick={close} style={{ display: 'grid', placeItems: 'center', color: 'var(--text-2)', border: 'none', background: 'var(--surface)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+            <X size={20} />
+          </button>
         </div>
         
         <Card>

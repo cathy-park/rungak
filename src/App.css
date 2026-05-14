@@ -1,6 +1,6 @@
 :root {
-  --font-display: 'Inter Tight', system-ui, -apple-system, sans-serif;
-  --font-text: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Inter Tight', 'Tossface', 'Toss Face', system-ui, -apple-system, sans-serif;
+  --font-text: 'Inter', 'Tossface', 'Toss Face', system-ui, -apple-system, sans-serif;
 
   /* Backgrounds */
   --bg: #F5F7FA;
@@ -983,7 +983,8 @@ p { margin: 0; }
   padding: 16px 20px;
 }
 
-.sheetHeader > div { flex: 1; min-width: 0; }
+.sheetHeader > div:not(.detail-header-actions) { flex: 1; min-width: 0; }
+.sheetHeader .detail-header-actions { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; }
 
 .sheetHeader h2 {
   display: flex;
