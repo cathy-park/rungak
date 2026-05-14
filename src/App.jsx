@@ -1433,9 +1433,9 @@ function TimelineSection({ candidate, report, saveTimeline }) {
   }
 
   return (
-    <Card className="timeline">
-      <div className="timelineHead">
-        <div><h3>타임라인</h3><p>점수에는 직접 고른 신호만 반영해요.</p></div>
+    <div className="timeline" style={{ border: 'none', padding: 0, background: 'transparent', boxShadow: 'none', margin: 0 }}>
+      <div className="timelineHead" style={{ marginTop: 0, paddingTop: 0 }}>
+        <div><p style={{ margin: 0, color: 'var(--text-3)', fontSize: '12px' }}>점수에는 직접 고른 신호만 반영해요.</p></div>
         <div>
           <Badge color={tone}>흐름 {report.flowScore > 0 ? '+' : ''}{report.flowScore}</Badge>
           {!adding && <button onClick={() => setAdding(true)}>+ 기록</button>}
@@ -1511,7 +1511,7 @@ function TimelineSection({ candidate, report, saveTimeline }) {
           </div>
         ))
       )}
-    </Card>
+    </div>
   );
 }
 function DetailModal({ candidate, close, edit, remove, saveTimeline }) {
