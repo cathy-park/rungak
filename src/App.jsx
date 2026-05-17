@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { MoreVertical, X, Pencil, Trash2, Clipboard, ChevronDown, ChevronUp, Plus } from 'lucide-react';
 import './App.css';
+import { db, doc, setDoc, getDoc } from './firebase';
 
 const STORAGE_KEY = 'rungak_lab_vite_v1';
 const AVATAR_BASE = '/characters';
@@ -869,6 +870,24 @@ function Icon({ type }) {
   if (type === 'edit') return <svg viewBox="0 0 24 24"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/><path d="m13.5 7.5 3 3"/></svg>;
   return <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>;
 }
+function ConfirmModal({ message, sub, confirmLabel = '확인', danger = false, onConfirm, onCancel }) {
+  return (
+    <div className="sheetBackdrop confirmBackdrop" onClick={onCancel}>
+      <div className="confirmBox" onClick={e => e.stopPropagation()}>
+        <p className="confirmMsg">{message}</p>
+        {sub && <p className="confirmSub">{sub}</p>}
+        <div className="twoButtons" style={{ marginTop: '20px' }}>
+          <button className="secondary" onClick={onCancel}>취소</button>
+          <button className={danger ? 'danger' : 'primary'} onClick={onConfirm}>{confirmLabel}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+function Toast({ message, type = 'success', onDone }) {
+  useEffect(() => { const t = setTimeout(onDone, 2200); return () => clearTimeout(t); }, [onDone]);
+  return <div className={`toast toast-${type}`}>{message}</div>;
+}
 function Header({ openGuide }) {
   return <header className="header"><div><p>Run Angle Lab</p><h1>런각 연구소</h1></div><button className="iconButton" onClick={openGuide}><Icon type="note" /></button></header>;
 }
@@ -1547,6 +1566,7 @@ function TimelineSection({ candidate, report, saveTimeline }) {
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState({ date: todayValue(), type: 'date', feeling: 'neutral', notes: '', signals: [] });
+  const [confirmDel, setConfirmDel] = useState(null);
   const currentTimeline = candidate.dateTimeline || candidate.timeline || [];
   const events = [...currentTimeline].sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
   const tone = report.flowScore > 0 ? 'green' : report.flowScore < 0 ? 'red' : 'gray';
@@ -1561,9 +1581,7 @@ function TimelineSection({ candidate, report, saveTimeline }) {
   }
 
   function removeEvent(id) {
-    if (!window.confirm('이 기록을 삭제할까요?')) return;
-    const nextList = currentTimeline.filter((e) => e.id !== id);
-    saveTimeline(candidate.id, nextList);
+    setConfirmDel(id);
   }
 
   function submit() {
@@ -1588,6 +1606,7 @@ function TimelineSection({ candidate, report, saveTimeline }) {
   }
 
   return (
+    <>
     <div className="timeline" style={{ border: 'none', padding: 0, background: 'transparent', boxShadow: 'none', margin: 0 }}>
       <div className="timelineHead" style={{ marginTop: 0, paddingTop: 0 }}>
         <div><p style={{ margin: 0, color: 'var(--text-3)', fontSize: '12px' }}>점수에는 직접 고른 신호만 반영해요.</p></div>
@@ -1689,6 +1708,19 @@ function TimelineSection({ candidate, report, saveTimeline }) {
         ))
       )}
     </div>
+    {confirmDel && (
+      <ConfirmModal
+        message="이 기록을 삭제할까요?"
+        confirmLabel="삭제"
+        danger
+        onConfirm={() => {
+          saveTimeline(candidate.id, currentTimeline.filter(e => e.id !== confirmDel));
+          setConfirmDel(null);
+        }}
+        onCancel={() => setConfirmDel(null)}
+      />
+    )}
+    </>
   );
 }
 function EditableMemoSection({ value, onSave, placeholder }) {
@@ -1817,6 +1849,7 @@ function DynamicListSection({ items = [], type, onChange }) {
   const [draftText, setDraftText] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editDraft, setEditDraft] = useState('');
+  const [confirmId, setConfirmId] = useState(null);
 
   const handleAdd = () => {
     if (!draftText.trim()) return;
@@ -1837,11 +1870,7 @@ function DynamicListSection({ items = [], type, onChange }) {
     setEditDraft('');
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('이 항목을 삭제하시겠습니까?')) {
-      onChange(items.filter(item => item.id !== id));
-    }
-  };
+  const handleDelete = (id) => { setConfirmId(id); };
 
   const handleUpdateStatus = (id, nextStatus) => {
     onChange(items.map(item => item.id === id ? { ...item, status: nextStatus } : item));
@@ -1855,10 +1884,11 @@ function DynamicListSection({ items = [], type, onChange }) {
   const isCheck = type === 'check';
 
   return (
+    <>
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
       {!isAdding && (
-        <button 
-          className="primary" 
+        <button
+          className="primary"
           style={{ width: '100%', padding: '12px', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}
           onClick={() => setIsAdding(true)}
         >
@@ -1976,6 +2006,16 @@ function DynamicListSection({ items = [], type, onChange }) {
         )}
       </div>
     </div>
+    {confirmId && (
+      <ConfirmModal
+        message="이 항목을 삭제할까요?"
+        confirmLabel="삭제"
+        danger
+        onConfirm={() => { onChange(items.filter(item => item.id !== confirmId)); setConfirmId(null); }}
+        onCancel={() => setConfirmId(null)}
+      />
+    )}
+    </>
   );
 }
 function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField }) {
@@ -1990,10 +2030,21 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
   const [activeTab, setActiveTab] = useState('summary'); // 'summary' | 'observe' | 'chat' | 'spec' | 'record'
   const [editingSection, setEditingSection] = useState(null);
   const [sectionForm, setSectionForm] = useState(null);
+  const [confirm, setConfirm] = useState(null);
+  const [pendingSection, setPendingSection] = useState(null);
 
   const startSectionEdit = (sectionId) => {
     if (editingSection && editingSection !== sectionId) {
-      if (!window.confirm('편집 중인 내용이 있습니다. 무시하고 다른 항목을 편집하시겠습니까?')) return;
+      setPendingSection(sectionId);
+      setConfirm({
+        message: '편집 중인 내용이 있습니다.',
+        sub: '저장하지 않고 다른 항목을 편집할까요?',
+        confirmLabel: '무시하고 이동',
+        danger: true,
+        onConfirm: () => { setEditingSection(sectionId); setPendingSection(null); setConfirm(null); },
+        onCancel: () => { setPendingSection(null); setConfirm(null); },
+      });
+      return;
     }
     setEditingSection(sectionId);
     if (sectionId === 'emotional') setSectionForm({ energyTags: candidate.energyTags || [], emotionalBond: candidate.emotionalBond || {} });
@@ -2038,11 +2089,18 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
   };
 
   const handleDeleteQuickNote = (noteId) => {
-    if (window.confirm('이 빠른 기록 메모를 삭제하시겠습니까?')) {
-      const updatedList = (candidate.quickNotes || []).filter(n => n.id !== noteId);
-      updateField(candidate.id, 'quickNotes', updatedList);
-      setEditingNoteId(null);
-    }
+    setConfirm({
+      message: '이 빠른 기록을 삭제할까요?',
+      confirmLabel: '삭제',
+      danger: true,
+      onConfirm: () => {
+        const updatedList = (candidate.quickNotes || []).filter(n => n.id !== noteId);
+        updateField(candidate.id, 'quickNotes', updatedList);
+        setEditingNoteId(null);
+        setConfirm(null);
+      },
+      onCancel: () => setConfirm(null),
+    });
   };
 
   const handleSaveInlineQuickMemo = () => {
@@ -2073,6 +2131,7 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
   }
   
   return (
+    <>
     <div className="sheetBackdrop" onClick={close}>
       <div className="sheet" onClick={(e) => e.stopPropagation()}>
         <div className="sheetHeader">
@@ -2122,8 +2181,8 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
                 <button onClick={() => { copy(); setShowMenu(false); }} style={{ padding: '12px 14px', fontSize: '13px', border: 'none', background: 'none', textAlign: 'left', color: 'var(--text-body)', cursor: 'pointer', borderBottom: '1px solid var(--divider)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   📋 마크다운 전체 복사
                 </button>
-                <button onClick={() => { if (window.confirm('정말 이 후보 정보를 삭제하시겠습니까?')) { remove(candidate.id); close(); } setShowMenu(false); }} style={{ padding: '12px 14px', fontSize: '13px', border: 'none', background: 'none', textAlign: 'left', color: 'var(--red)', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  🗑️ 이 후보 기록 삭제
+                <button onClick={() => { setShowMenu(false); setConfirm({ message: `'${candidate.name}' 기록을 삭제할까요?`, sub: '삭제 후 복구할 수 없습니다.', confirmLabel: '삭제', danger: true, onConfirm: () => { remove(candidate.id); close(); setConfirm(null); }, onCancel: () => setConfirm(null) }); }} style={{ padding: '12px 14px', fontSize: '13px', border: 'none', background: 'none', textAlign: 'left', color: 'var(--red)', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Trash2 size={14} /> 이 후보 기록 삭제
                 </button>
               </div>
             )}
@@ -2583,12 +2642,39 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
         </main>
       </div>
     </div>
+    {confirm && <ConfirmModal {...confirm} />}
+    </>
   );
 }
 function Info({ label, value, checked }) {
   return <div className="info"><small>{label}</small><b>{value}</b>{checked && <Badge color="green">확인됨</Badge>}</div>;
 }
-function GuideModal({ close, onExport, onImport }) {
+function GuideModal({ close, onExport, onImport, onSyncUpload, onSyncDownload }) {
+  const [syncCode, setSyncCode] = useState('');
+  const [inputCode, setInputCode] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleCreateCode = async () => {
+    setIsUploading(true);
+    try {
+      const code = await onSyncUpload();
+      setSyncCode(code);
+      setCopied(false);
+    } catch (err) {
+      // 에러 처리는 부모 함수에서 Toast로 처리됨
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleCopyCode = () => {
+    if (!syncCode) return;
+    navigator.clipboard.writeText(syncCode);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div className="sheetBackdrop" onClick={close}>
       <div className="guide" onClick={(e) => e.stopPropagation()}>
@@ -2599,8 +2685,66 @@ function GuideModal({ close, onExport, onImport }) {
           </button>
         </div>
         
+        {/* 기기간 데이터 연동 카드 */}
         <Card>
-          <h3>데이터 관리</h3>
+          <h3>기기간 데이터 연동 (8자리 코드)</h3>
+          <p style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '6px', lineHeight: 1.45 }}>
+            현재 기기의 데이터를 서버에 임시 업로드하여 생성된 8자리 코드를 다른 기기에 입력하면 안전하게 데이터를 연동할 수 있습니다.
+          </p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '16px', borderTop: '1px solid var(--divider)', paddingTop: '16px' }}>
+            {/* 1. 코드 생성 (내보내기) */}
+            <div>
+              <span style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--text-2)', marginBottom: '8px' }}>방법 1. 현재 기기 데이터 내보내기</span>
+              {!syncCode ? (
+                <button 
+                  onClick={handleCreateCode} 
+                  disabled={isUploading}
+                  style={{ width: '100%', padding: '10px 12px', background: 'var(--blue)', color: 'white', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                >
+                  {isUploading ? '연동 코드 생성 중...' : '📤 연동 코드 생성하기'}
+                </button>
+              ) : (
+                <div style={{ background: 'var(--surface)', border: '1px solid var(--divider)', padding: '12px', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 500 }}>아래 코드를 다른 기기에 입력하세요.</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ fontSize: '24px', fontWeight: 800, letterSpacing: '2px', color: 'var(--blue)' }}>{syncCode}</span>
+                    <button 
+                      onClick={handleCopyCode}
+                      style={{ padding: '6px 12px', background: 'var(--surface)', border: '1px solid var(--divider)', borderRadius: '6px', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer', color: 'var(--text-1)' }}
+                    >
+                      {copied ? '✅ 복사됨' : '📋 복사'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 2. 코드 입력 (가져오기) */}
+            <div style={{ borderTop: '1px dashed var(--divider)', paddingTop: '14px', marginTop: '2px' }}>
+              <span style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--text-2)', marginBottom: '8px' }}>방법 2. 다른 기기 데이터 가져오기</span>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input 
+                  type="text" 
+                  value={inputCode} 
+                  onChange={(e) => setInputCode(e.target.value.toUpperCase().slice(0, 8))} 
+                  placeholder="8자리 코드 입력" 
+                  maxLength={8}
+                  style={{ flex: 1, padding: '10px', border: '1px solid var(--divider)', borderRadius: '8px', fontSize: '14px', background: 'var(--surface)', color: 'var(--text-1)', fontWeight: 700, textAlign: 'center', letterSpacing: '1px' }}
+                />
+                <button 
+                  onClick={() => onSyncDownload(inputCode)}
+                  style={{ padding: '0 16px', background: 'var(--text-1)', color: 'var(--surface)', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}
+                >
+                  📥 불러오기
+                </button>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        <Card>
+          <h3>데이터 파일 백업</h3>
           <div className="twoButtons" style={{ marginTop: '12px' }}>
             <button onClick={onExport}>전체 데이터 백업</button>
             <label className="uploadButton">
@@ -2714,6 +2858,8 @@ function FloatingAdd({ onClick }) {
 }
 export default function App() {
   const [tab, setTab] = useState('home');
+  const [appConfirm, setAppConfirm] = useState(null);
+  const [toast, setToast] = useState(null);
   const [candidates, setCandidates] = useState(() => {
     try {
       const saved = window.localStorage.getItem(STORAGE_KEY);
@@ -2849,21 +2995,90 @@ export default function App() {
       try {
         const json = JSON.parse(e.target.result);
         if (Array.isArray(json)) {
-          if (window.confirm('기존 데이터가 덮어씌워집니다. 계속할까요?')) {
-            setCandidates(json);
-            alert('데이터 복구 완료!');
-            setGuideOpen(false);
-          }
+          setAppConfirm({
+            message: '기존 데이터가 덮어씌워집니다.',
+            sub: `후보 ${json.length}명을 불러옵니다. 계속할까요?`,
+            confirmLabel: '가져오기',
+            danger: true,
+            onConfirm: () => {
+              setCandidates(json);
+              setToast({ message: `데이터 복구 완료 (${json.length}명)`, type: 'success' });
+              setGuideOpen(false);
+              setAppConfirm(null);
+            },
+            onCancel: () => setAppConfirm(null),
+          });
         } else {
-          alert('유효하지 않은 데이터 형식입니다.');
+          setToast({ message: '유효하지 않은 데이터 형식입니다.', type: 'error' });
         }
       } catch (err) {
-        alert('불러오기에 실패했습니다.');
+        setToast({ message: '불러오기에 실패했습니다.', type: 'error' });
       }
     };
     reader.readAsText(file);
     event.target.value = '';
   }
 
-  return <div className="app"><div className="phone"><main>{tab === 'home' && <Home candidates={candidates} openCandidate={setSelected} goAdd={() => { setEditing(null); setTab('add'); }} openGuide={() => setGuideOpen(true)} openQuickMemo={setQuickMemoCandidate}/>} {tab === 'add' && <AddCandidate initialCandidate={editing} onSave={save} onCancel={() => { setEditing(null); setTab('home'); }}/>}</main>{tab === 'home' && <FloatingAdd onClick={() => { setEditing(null); setTab('add'); }}/>} {selected && <DetailModal candidate={selected} close={() => setSelected(null)} edit={startEdit} remove={remove} saveTimeline={saveTimeline} updateField={updateCandidateField}/>} {quickMemoCandidate && <QuickMemoModal candidate={quickMemoCandidate} close={() => setQuickMemoCandidate(null)} onSave={addQuickMemo} />} {guideOpen && <GuideModal close={() => setGuideOpen(false)} onExport={exportData} onImport={importData}/>}</div></div>;
+  async function generateAndUploadData() {
+    try {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let code = '';
+      for (let i = 0; i < 8; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      
+      const docRef = doc(db, 'sync_codes', code);
+      await setDoc(docRef, {
+        candidates: candidates,
+        createdAt: new Date().toISOString()
+      });
+
+      return code;
+    } catch (err) {
+      console.error(err);
+      setToast({ message: '데이터 연동 코드 생성에 실패했습니다.', type: 'error' });
+      throw err;
+    }
+  }
+
+  async function downloadDataByCode(code) {
+    if (!code || code.trim().length !== 8) {
+      setToast({ message: '올바른 8자리 코드를 입력해주세요.', type: 'error' });
+      return;
+    }
+    const cleanCode = code.trim().toUpperCase();
+    try {
+      setToast({ message: '데이터를 검색하는 중...', type: 'info' });
+      const docRef = doc(db, 'sync_codes', cleanCode);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        if (data && Array.isArray(data.candidates)) {
+          setAppConfirm({
+            message: '기존 데이터가 덮어씌워집니다.',
+            sub: `연동 코드 [${cleanCode}]로부터 후보 ${data.candidates.length}명을 불러옵니다. 계속할까요?`,
+            confirmLabel: '가져오기',
+            danger: true,
+            onConfirm: () => {
+              setCandidates(data.candidates);
+              setToast({ message: `데이터 연동 완료 (${data.candidates.length}명)`, type: 'success' });
+              setGuideOpen(false);
+              setAppConfirm(null);
+            },
+            onCancel: () => setAppConfirm(null),
+          });
+        } else {
+          setToast({ message: '데이터 형식이 올바르지 않습니다.', type: 'error' });
+        }
+      } else {
+        setToast({ message: '존재하지 않거나 만료된 연동 코드입니다.', type: 'error' });
+      }
+    } catch (err) {
+      console.error(err);
+      setToast({ message: '데이터 연동에 실패했습니다. 코드를 확인해 주세요.', type: 'error' });
+    }
+  }
+
+  return <div className="app"><div className="phone"><main>{tab === 'home' && <Home candidates={candidates} openCandidate={setSelected} goAdd={() => { setEditing(null); setTab('add'); }} openGuide={() => setGuideOpen(true)} openQuickMemo={setQuickMemoCandidate}/>} {tab === 'add' && <AddCandidate initialCandidate={editing} onSave={save} onCancel={() => { setEditing(null); setTab('home'); }}/>}</main>{tab === 'home' && <FloatingAdd onClick={() => { setEditing(null); setTab('add'); }}/>} {selected && <DetailModal candidate={selected} close={() => setSelected(null)} edit={startEdit} remove={remove} saveTimeline={saveTimeline} updateField={updateCandidateField}/>} {quickMemoCandidate && <QuickMemoModal candidate={quickMemoCandidate} close={() => setQuickMemoCandidate(null)} onSave={addQuickMemo} />} {guideOpen && <GuideModal close={() => setGuideOpen(false)} onExport={exportData} onImport={importData} onSyncUpload={generateAndUploadData} onSyncDownload={downloadDataByCode}/>} {appConfirm && <ConfirmModal {...appConfirm} />} {toast && <Toast {...toast} onDone={() => setToast(null)} />}</div></div>;
 }
