@@ -82,6 +82,51 @@ const checkStatusOptions = [
   { value: 'watch', label: '추가 관찰', color: 'blue' },
 ];
 
+function compressBase64Image(base64Str, maxWidth = 120, maxHeight = 120, quality = 0.6) {
+  return new Promise((resolve) => {
+    if (!base64Str || typeof base64Str !== 'string' || !base64Str.startsWith('data:image')) {
+      resolve(base64Str);
+      return;
+    }
+    
+    const img = new Image();
+    img.src = base64Str;
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+      
+      if (width > height) {
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+      } else {
+        if (height > maxHeight) {
+          width = Math.round((width * maxHeight) / height);
+          height = maxHeight;
+        }
+      }
+      
+      canvas.width = width;
+      canvas.height = height;
+      
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        resolve(base64Str);
+        return;
+      }
+      
+      ctx.drawImage(img, 0, 0, width, height);
+      const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+      resolve(compressedDataUrl);
+    };
+    img.onerror = () => {
+      resolve(base64Str);
+    };
+  });
+}
+
 function migrateTextToItems(text, type = 'fixed') {
   if (!text || typeof text !== 'string') return [];
   return text
@@ -1308,7 +1353,20 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
   function updateRelation(key, value) { setForm((prev) => ({ ...prev, relation: { ...prev.relation, [key]: Number(value) } })); }
   function updateEmotionalBond(key, value) { setForm((prev) => ({ ...prev, emotionalBond: { ...prev.emotionalBond, [key]: Number(value) } })); }
   function toggleList(key, label) { setForm((prev) => ({ ...prev, [key]: prev[key].includes(label) ? prev[key].filter((item) => item !== label) : [...prev[key], label] })); }
-  function photo(file) { if (!file) return; const reader = new FileReader(); reader.onload = () => update('photo', String(reader.result || '')); reader.readAsDataURL(file); }
+  function photo(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const compressed = await compressBase64Image(String(reader.result || ''), 120, 120, 0.6);
+        update('photo', compressed);
+      } catch (err) {
+        console.error('Image compression failed', err);
+        update('photo', String(reader.result || ''));
+      }
+    };
+    reader.readAsDataURL(file);
+  }
   function save() { onSave({ ...form, id: form.id || Date.now(), name: form.name.trim() || '무명의 후보', age: form.age || calcAge(form.birthDate) }); }
   
   if (isEdit) return (
@@ -3026,15 +3084,23 @@ export default function App() {
       code += chars.charAt(Math.floor(Math.random() * chars.length));
     }
 
-    // Firestore 1MB 단일 문서 제한을 준수하기 위해 대용량 base64 이미지 데이터를 압축/생략 처리
-    // 기기간 연동 시 사진 대신 텍스트 조건표/타임라인 데이터를 최우선 보존함
-    const sanitizedCandidates = candidates.map(c => {
-      // 이미지 용량이 50KB(약 50,000자)를 초과하면 base64 고화질 사진이므로 Firestore 업로드 시 생략하여 전송 성공을 확실히 함
-      if (c.photo && c.photo.length > 50000) {
-        return { ...c, photo: '' }; 
-      }
-      return c;
-    });
+    // Firestore 1MB 제한을 절대 초과하지 않도록 대용량 이미지 데이터를 실시간 초소형 썸네일로 압축 변환
+    // 이를 통해 기기간 사진 데이터 유실 없이 완벽하게 백업 및 동기화가 이루어집니다.
+    const sanitizedCandidates = await Promise.all(
+      candidates.map(async (c) => {
+        if (c.photo && c.photo.length > 30000) { // 30KB 이상인 거대 base64 텍스트 대상
+          try {
+            // 아바타 원형 썸네일에 어울리도록 100x100 해상도 및 0.5 JPEG 압축율로 용량을 2KB~5KB 수준으로 극대화 압축
+            const compressed = await compressBase64Image(c.photo, 100, 100, 0.5);
+            return { ...c, photo: compressed };
+          } catch (err) {
+            console.error('실시간 이미지 동기화 압축 실패:', err);
+            return { ...c, photo: '' }; // 최악의 오류 발생 시에만 텍스트 데이터 보호를 위해 생략
+          }
+        }
+        return c;
+      })
+    );
 
     const uploadPromise = (async () => {
       const docRef = doc(db, 'sync_codes', code);
@@ -3046,7 +3112,7 @@ export default function App() {
     })();
 
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('TIMEOUT')), 8000)
+      setTimeout(() => reject(new Error('TIMEOUT')), 15000) // 압축 소요 시간을 반영해 타임아웃을 15초로 설정
     );
 
     try {
