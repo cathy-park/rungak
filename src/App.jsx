@@ -916,14 +916,54 @@ function Icon({ type }) {
   return <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>;
 }
 function ConfirmModal({ message, sub, confirmLabel = '확인', danger = false, onConfirm, onCancel }) {
+  const baseButtonStyle = {
+    flex: 1,
+    height: '48px',
+    borderRadius: '12px',
+    fontSize: '14px',
+    fontWeight: '700',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    border: 'none',
+    cursor: 'pointer',
+    transition: 'all 0.15s ease',
+    boxSizing: 'border-box',
+    padding: '0 16px',
+    width: '100%',
+    fontFamily: 'inherit',
+  };
+
+  const secondaryStyle = {
+    ...baseButtonStyle,
+    background: 'var(--bg)',
+    border: '1px solid var(--divider)',
+    color: 'var(--text-1)',
+  };
+
+  const dangerStyle = {
+    ...baseButtonStyle,
+    background: 'var(--red-light)',
+    border: '1px solid var(--red-border)',
+    color: 'var(--red-text)',
+  };
+
+  const primaryStyle = {
+    ...baseButtonStyle,
+    background: 'var(--blue)',
+    color: '#fff',
+  };
+
+  const confirmButtonStyle = danger ? dangerStyle : primaryStyle;
+
   return (
     <div className="sheetBackdrop confirmBackdrop" onClick={onCancel}>
       <div className="confirmBox" onClick={e => e.stopPropagation()}>
         <p className="confirmMsg">{message}</p>
         {sub && <p className="confirmSub">{sub}</p>}
-        <div className="twoButtons" style={{ marginTop: '20px' }}>
-          <button className="secondary" onClick={onCancel}>취소</button>
-          <button className={danger ? 'danger' : 'primary'} onClick={onConfirm}>{confirmLabel}</button>
+        <div className="twoButtons" style={{ marginTop: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+          <button style={secondaryStyle} onClick={onCancel}>취소</button>
+          <button style={confirmButtonStyle} onClick={onConfirm}>{confirmLabel}</button>
         </div>
       </div>
     </div>
