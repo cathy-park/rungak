@@ -974,7 +974,29 @@ function Toast({ message, type = 'success', onDone }) {
   return <div className={`toast toast-${type}`}>{message}</div>;
 }
 function Header({ openGuide }) {
-  return <header className="header"><div><p>Run Angle Lab</p><h1>런각 연구소</h1></div><button className="iconButton" onClick={openGuide}><Icon type="note" /></button></header>;
+  return (
+    <header className="header">
+      <div>
+        <p>Run Angle Lab</p>
+        <h1 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <img 
+            src="/ico.png" 
+            alt="런각 연구소" 
+            style={{ 
+              width: '28px', 
+              height: '28px', 
+              borderRadius: '6px',
+              objectFit: 'cover'
+            }} 
+          />
+          런각 연구소
+        </h1>
+      </div>
+      <button className="iconButton" onClick={openGuide}>
+        <Icon type="note" />
+      </button>
+    </header>
+  );
 }
 const CrownIcon = ({ rank }) => {
   const theme = {
