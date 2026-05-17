@@ -846,18 +846,19 @@ p { margin: 0; }
   box-shadow: 0 4px 12px rgba(49, 130, 246, 0.30);
 }
 
-.secondary, .uploadButton, .twoButtons button:not(.primary) {
+.secondary, .uploadButton {
   background: var(--bg);
   border: 1px solid var(--divider);
   color: var(--text-1);
   border-radius: 12px;
 }
-.secondary:hover, .uploadButton:hover, .twoButtons button:not(.primary):hover { background: var(--divider); }
+.secondary:hover, .uploadButton:hover { background: var(--divider); }
 
 .danger {
   background: var(--red-light);
   border: 1px solid var(--red-border);
   color: var(--red-text);
+  border-radius: 12px;
 }
 .danger:hover { background: var(--red-border); }
 
@@ -874,6 +875,38 @@ p { margin: 0; }
 }
 .twoButtons button, .twoButtons .uploadButton, .stickyActions button {
   width: 100%;
+  height: 48px;
+  border-radius: 14px !important;
+  font-size: 14px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+.twoButtons button.secondary {
+  background: var(--bg) !important;
+  border: 1px solid var(--divider) !important;
+  color: var(--text-1) !important;
+}
+.twoButtons button.secondary:hover {
+  background: var(--divider) !important;
+}
+.twoButtons button.danger {
+  background: var(--red-light) !important;
+  border: 1px solid var(--red-border) !important;
+  color: var(--red-text) !important;
+}
+.twoButtons button.danger:hover {
+  background: var(--red-border) !important;
+}
+.twoButtons button.primary {
+  background: var(--blue) !important;
+  border: 1px solid transparent !important;
+  color: #fff !important;
+}
+.twoButtons button.primary:hover {
+  opacity: 0.92;
 }
 
 .iconButton {
