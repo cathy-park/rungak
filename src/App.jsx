@@ -2692,7 +2692,7 @@ function GuideModal({ close, onExport, onImport, onSyncUpload, onSyncDownload })
             현재 기기의 데이터를 서버에 임시 업로드하여 생성된 8자리 코드를 다른 기기에 입력하면 안전하게 데이터를 연동할 수 있습니다.
           </p>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '16px', borderTop: '1px solid var(--divider)', paddingTop: '16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '16px', borderTop: '1px solid var(--divider)', paddingTop: '16px' }}>
             {/* 1. 코드 생성 (내보내기) */}
             <div>
               <span style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--text-2)', marginBottom: '8px' }}>방법 1. 현재 기기 데이터 내보내기</span>
@@ -2700,18 +2700,18 @@ function GuideModal({ close, onExport, onImport, onSyncUpload, onSyncDownload })
                 <button 
                   onClick={handleCreateCode} 
                   disabled={isUploading}
-                  style={{ width: '100%', padding: '10px 12px', background: 'var(--blue)', color: 'white', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                  style={{ width: '100%', height: '48px', background: 'var(--blue)', color: 'white', border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', boxShadow: 'var(--shadow-sm)' }}
                 >
                   {isUploading ? '연동 코드 생성 중...' : '📤 연동 코드 생성하기'}
                 </button>
               ) : (
-                <div style={{ background: 'var(--surface)', border: '1px solid var(--divider)', padding: '12px', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 500 }}>아래 코드를 다른 기기에 입력하세요.</span>
+                <div style={{ background: 'var(--bg)', border: '1px solid var(--divider)', padding: '14px', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 600 }}>아래 코드를 복사하여 다른 기기에 입력하세요.</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <span style={{ fontSize: '24px', fontWeight: 800, letterSpacing: '2px', color: 'var(--blue)' }}>{syncCode}</span>
                     <button 
                       onClick={handleCopyCode}
-                      style={{ padding: '6px 12px', background: 'var(--surface)', border: '1px solid var(--divider)', borderRadius: '6px', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer', color: 'var(--text-1)' }}
+                      style={{ padding: '6px 14px', background: 'var(--surface)', border: '1px solid var(--divider)', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', color: 'var(--text-2)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                     >
                       {copied ? '✅ 복사됨' : '📋 복사'}
                     </button>
@@ -2721,20 +2721,20 @@ function GuideModal({ close, onExport, onImport, onSyncUpload, onSyncDownload })
             </div>
 
             {/* 2. 코드 입력 (가져오기) */}
-            <div style={{ borderTop: '1px dashed var(--divider)', paddingTop: '14px', marginTop: '2px' }}>
+            <div style={{ borderTop: '1px dashed var(--divider)', paddingTop: '16px', marginTop: '2px' }}>
               <span style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--text-2)', marginBottom: '8px' }}>방법 2. 다른 기기 데이터 가져오기</span>
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
                 <input 
                   type="text" 
                   value={inputCode} 
                   onChange={(e) => setInputCode(e.target.value.toUpperCase().slice(0, 8))} 
                   placeholder="8자리 코드 입력" 
                   maxLength={8}
-                  style={{ flex: 1, padding: '10px', border: '1px solid var(--divider)', borderRadius: '8px', fontSize: '14px', background: 'var(--surface)', color: 'var(--text-1)', fontWeight: 700, textAlign: 'center', letterSpacing: '1px' }}
+                  style={{ width: '100%', height: '48px', border: '1px solid var(--divider)', borderRadius: '12px', fontSize: '15px', background: 'var(--surface)', color: 'var(--text-1)', fontWeight: 700, textAlign: 'center', letterSpacing: '2px', outline: 'none' }}
                 />
                 <button 
                   onClick={() => onSyncDownload(inputCode)}
-                  style={{ padding: '0 16px', background: 'var(--text-1)', color: 'var(--surface)', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}
+                  style={{ width: '100%', height: '48px', background: 'var(--text-1)', color: 'var(--surface)', border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                 >
                   📥 불러오기
                 </button>
