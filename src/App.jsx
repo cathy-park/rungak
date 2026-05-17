@@ -3026,17 +3026,27 @@ export default function App() {
       code += chars.charAt(Math.floor(Math.random() * chars.length));
     }
 
+    // Firestore 1MB 단일 문서 제한을 준수하기 위해 대용량 base64 이미지 데이터를 압축/생략 처리
+    // 기기간 연동 시 사진 대신 텍스트 조건표/타임라인 데이터를 최우선 보존함
+    const sanitizedCandidates = candidates.map(c => {
+      // 이미지 용량이 50KB(약 50,000자)를 초과하면 base64 고화질 사진이므로 Firestore 업로드 시 생략하여 전송 성공을 확실히 함
+      if (c.photo && c.photo.length > 50000) {
+        return { ...c, photo: '' }; 
+      }
+      return c;
+    });
+
     const uploadPromise = (async () => {
       const docRef = doc(db, 'sync_codes', code);
       await setDoc(docRef, {
-        candidates: candidates,
+        candidates: sanitizedCandidates,
         createdAt: new Date().toISOString()
       });
       return code;
     })();
 
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('TIMEOUT')), 6000)
+      setTimeout(() => reject(new Error('TIMEOUT')), 8000)
     );
 
     try {
@@ -3044,6 +3054,9 @@ export default function App() {
       return result;
     } catch (err) {
       console.error('Firebase Upload Error:', err);
+      // 모바일 기기 디버깅을 위한 alert 노출
+      alert(`[에러 발생] 기기 연동에 실패했습니다.\n\n오류 내용: ${err.message || '네트워크 오류'}\n\n모바일 브라우저 권한 차단이나 고화질 사진(1MB 초과) 때문일 수 있습니다.`);
+      
       if (err.message === 'TIMEOUT') {
         setToast({ 
           message: '서버 연결 시간 초과. Firebase Firestore가 활성화되지 않았거나 규칙(Rules) 설정으로 차단되었을 수 있습니다. 아래 가이드를 확인해 주세요.', 
