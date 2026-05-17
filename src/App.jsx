@@ -3020,23 +3020,41 @@ export default function App() {
   }
 
   async function generateAndUploadData() {
-    try {
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-      let code = '';
-      for (let i = 0; i < 8; i++) {
-        code += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = '';
+    for (let i = 0; i < 8; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    const uploadPromise = (async () => {
       const docRef = doc(db, 'sync_codes', code);
       await setDoc(docRef, {
         candidates: candidates,
         createdAt: new Date().toISOString()
       });
-
       return code;
+    })();
+
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('TIMEOUT')), 6000)
+    );
+
+    try {
+      const result = await Promise.race([uploadPromise, timeoutPromise]);
+      return result;
     } catch (err) {
-      console.error(err);
-      setToast({ message: '데이터 연동 코드 생성에 실패했습니다.', type: 'error' });
+      console.error('Firebase Upload Error:', err);
+      if (err.message === 'TIMEOUT') {
+        setToast({ 
+          message: '서버 연결 시간 초과. Firebase Firestore가 활성화되지 않았거나 규칙(Rules) 설정으로 차단되었을 수 있습니다. 아래 가이드를 확인해 주세요.', 
+          type: 'error' 
+        });
+      } else {
+        setToast({ 
+          message: `연동 코드 생성 실패: ${err.message || 'Firebase 오류'}`, 
+          type: 'error' 
+        });
+      }
       throw err;
     }
   }
@@ -3047,10 +3065,20 @@ export default function App() {
       return;
     }
     const cleanCode = code.trim().toUpperCase();
-    try {
-      setToast({ message: '데이터를 검색하는 중...', type: 'info' });
+    
+    const downloadPromise = (async () => {
       const docRef = doc(db, 'sync_codes', cleanCode);
       const docSnap = await getDoc(docRef);
+      return docSnap;
+    })();
+
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('TIMEOUT')), 6000)
+    );
+
+    try {
+      setToast({ message: '데이터를 검색하는 중...', type: 'info' });
+      const docSnap = await Promise.race([downloadPromise, timeoutPromise]);
 
       if (docSnap.exists()) {
         const data = docSnap.data();
@@ -3075,8 +3103,18 @@ export default function App() {
         setToast({ message: '존재하지 않거나 만료된 연동 코드입니다.', type: 'error' });
       }
     } catch (err) {
-      console.error(err);
-      setToast({ message: '데이터 연동에 실패했습니다. 코드를 확인해 주세요.', type: 'error' });
+      console.error('Firebase Download Error:', err);
+      if (err.message === 'TIMEOUT') {
+        setToast({ 
+          message: '서버 연결 시간 초과. Firebase Firestore가 활성화되지 않았거나 규칙(Rules) 설정으로 차단되었을 수 있습니다. 아래 가이드를 확인해 주세요.', 
+          type: 'error' 
+        });
+      } else {
+        setToast({ 
+          message: '데이터 연동에 실패했습니다. 코드를 확인해 주세요.', 
+          type: 'error' 
+        });
+      }
     }
   }
 
