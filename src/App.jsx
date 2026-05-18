@@ -524,6 +524,42 @@ function verified(candidate, key) {
   return Boolean(candidate.verified?.[key]);
 }
 
+// ─── 상태별 디자인 토큰 ───────────────────────────────────────────
+const STATUS_THEMES = {
+  green:  { quoteColor: '#16A34A', highlightColor: '#16A34A' },
+  blue:   { quoteColor: '#2F80ED', highlightColor: '#2F80ED' },
+  orange: { quoteColor: '#F97316', highlightColor: '#F97316' },
+  amber:  { quoteColor: '#D97706', highlightColor: '#D97706' },
+  red:    { quoteColor: '#E11D48', highlightColor: '#E11D48' },
+};
+
+// ─── 상태별 UX Writing ───────────────────────────────────────────
+const STATUS_COPY = {
+  green: {
+    heroTitle: '현재 흐름은 꽤 안정적으로 보여요.',
+    heroBody:  '초반의 좋은 인상에만 기대기보다, 시간이 지나도 일관성이 유지되는지 천천히 확인해보세요.',
+  },
+  blue: {
+    heroTitle: '조건과 관계 흐름을 조금 더 봐도 좋아요.',
+    heroBody:  '호감은 유지하되, 아직은 관계를 빠르게 확정하기보다 흐름을 보는 편이 좋아요.',
+  },
+  orange: {
+    heroTitle: '조건보다 실제 태도를 먼저 확인해보세요.',
+    heroBody:  '조건은 좋아 보여도 관계의 안정감은 대화 속 태도와 일관성에서 확인해야 해요. 조급하게 결론 내리기보다 신뢰가 쌓이는지 천천히 살펴보세요.',
+  },
+  amber: {
+    heroTitle: '감정을 깊게 쓰기 전 속도를 늦춰보세요.',
+    heroBody:  '확신이 생기기 전까지는 기대를 키우기보다 자신의 감정 에너지를 지키는 편이 좋아요.',
+  },
+  red: {
+    heroTitle: '지금은 관계를 정리하는 쪽이 더 안전해 보여요.',
+    heroBody:  '대화가 반복적으로 불안정하거나 신뢰를 깎는다면, 더 설득하려 하기보다 빠져나오는 선택이 필요해요.',
+  },
+};
+
+function getStatusTheme(color) { return STATUS_THEMES[color] || STATUS_THEMES.blue; }
+function getStatusCopy(color)  { return STATUS_COPY[color]  || STATUS_COPY.blue; }
+
 function analyze(candidate) {
   const age = candidate.age || calcAge(candidate.birthDate);
   const rows = [
@@ -574,69 +610,53 @@ function analyze(candidate) {
   const hardRun = redList.some((label) => redFlags.find((item) => item.label === label)?.hardRun);
   const lowVerify = verifiedCount <= 1 && conditionScore >= 24;
   let verdict = '더 만나며 관찰';
-  let label = '🔭 섣부른 확신은 잠시 내려놓고, 설레는 여정을 기분 좋게 지켜볼 템포';
   let color = 'blue';
-  
+
   if (hardRun || totalScore < 40) {
     verdict = '정리 권장';
-    label = '🚨 감정의 신호등에 빨간불! 지금은 단호한 거리두기가 필요할 때';
     color = 'red';
   } else if (lowVerify || (conditionScore >= 28 && trustScore <= 5)) {
     verdict = '조건 확인 필요';
-    label = '✨ 매력적인 조건 뒤에 숨겨진 진짜 모습, 천천히 알아가 볼까요?';
-    color = 'amber';
+    color = 'orange';
   } else if (totalScore >= 75 && trustScore >= 8) {
     verdict = '계속 만나도 좋음';
-    label = '🌱 맑은 하늘에 순풍이 불어오는 중! 서로에게 스며드는 따뜻한 안정감';
     color = 'green';
   } else if (relationScore < 16 || Number(candidate.relation?.comfort || 10) <= 3) {
     verdict = '감정 투입 보류';
-    label = '⏳ 마음의 시계를 조금만 늦추고, 관계의 리듬을 찬찬히 조율해볼 시기';
-    color = 'orange';
+    color = 'amber';
   }
-  
-  const comments = [];
+
+  const copy = getStatusCopy(color);
+  const label = copy.heroTitle;
+  const comments = [copy.heroBody];
   if (scoreCap < 100 && capReason) comments.push(capReason);
-  
-  if (verdict === '정리 권장') {
-    comments.push('상대방에게서 위험 신호가 여러 번 감지되었어요. 더 깊은 상처를 받기 전에 냉정하게 브레이크를 밟고, 나 자신의 평안과 소중한 일상을 최우선으로 지켜내야 해요! 🛑🧘‍♀️');
-  } else if (verdict === '조건 확인 필요') {
-    comments.push('겉으로 보이는 조건은 우수하지만, 아직 온전한 신뢰를 채우기 위한 검증이 더 필요해요. 조급해하지 말고 대화 속에서 팩트 퍼즐을 하나씩 맞춰보세요! 🕵️‍♂️🔍');
-  } else if (verdict === '계속 만나도 좋음') {
-    comments.push('서로에 대한 대화, 성향, 신뢰의 깊이가 균형 있게 잘 잡혀가고 있어요. 급격한 감정 폭풍보다는 자연스레 흐르는 안정된 기류 속에서 소중한 연대를 이어가 보세요! 💑✨');
-  } else if (verdict === '감정 투입 보류') {
-    comments.push('상대방과 대화할 때 느껴지는 편안함이나 미묘한 감정 온도가 아직은 불완전해요. 마음의 문을 성급히 열기보다는 가벼운 템포로 조금 더 만나며 편안함을 확인해 보세요! ☕🍂');
-  } else {
-    comments.push('아직은 호감의 초기 단계를 지나며 서로를 알아가는 아주 흥미로운 구간이에요. 특정한 결론을 내리기보다는 여러 상황 속에서 서로가 빚어내는 케미를 즐겁게 관찰해봐요! 🎈🔎');
-  }
-  
   if (flowScore !== 0) comments.push(`타임라인 만남 흐름 점수 ${flowScore > 0 ? '+' : ''}${flowScore}점이 반영됐어요.`);
-  if (!comments.length) comments.push('지금은 단정하기보다 관찰에 가까운 상태예요. 다음 만남에서 말과 행동 일치를 확인하세요.');
   return { age, rows, conditionScore, relationScore, trustScore, realityScore, bonusPenalty, flowScore, totalScore, verifiedCount, verdict, label, color, comments };
 }
 
 // 조용민 전용 표시 오버라이드 — 분석 로직은 건드리지 않고 표시값만 통일
 function getDisplayReport(candidate, report) {
   if ((candidate?.name || candidate?.form?.name) !== '조용민') return report;
+  const copy = STATUS_COPY.blue;
   return {
     ...report,
     totalScore: 72,
     verdict: '더 만나며 관찰',
     color: 'blue',
-    label: '조건과 관계 흐름을 조금 더 봐도 좋아요.',
-    comments: ['지금은 단정하기보다 관찰에 가까운 상태예요. 다음 만남에서 말과 행동 일치를 체크해보세요.'],
+    label: copy.heroTitle,
+    comments: [copy.heroBody],
   };
 }
 
 function scoreTone(color) {
   return {
-    green: { className: 'tone-green', label: '안정' },
-    blue: { className: 'tone-blue', label: '보통' },
-    amber: { className: 'tone-amber', label: '확인' },
-    orange: { className: 'tone-orange', label: '주의' },
-    red: { className: 'tone-red', label: '위험' },
-    gray: { className: 'tone-gray', label: '기타' },
-  }[color] || { className: 'tone-blue', label: '보통' };
+    green:  { className: 'tone-green',  label: '안정' },
+    blue:   { className: 'tone-blue',   label: '관찰' },
+    orange: { className: 'tone-orange', label: '확인' },
+    amber:  { className: 'tone-amber',  label: '보류' },
+    red:    { className: 'tone-red',    label: '위험' },
+    gray:   { className: 'tone-gray',   label: '기타' },
+  }[color] || { className: 'tone-blue', label: '관찰' };
 }
 function scoreLevel(percent) {
   if (percent >= 80) return { label: '좋음', color: 'green' };
