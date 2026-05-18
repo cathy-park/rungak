@@ -2723,8 +2723,8 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
           {/* 3열 그리드: [사진 84px] [정보 1fr] [버튼 auto] */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: '84px 1fr auto',
-            columnGap: '14px',
+            gridTemplateColumns: '84px minmax(0, 1fr) auto',
+            columnGap: '12px',
             alignItems: 'start',
             width: '100%'
           }}>
@@ -2748,12 +2748,12 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
               <p style={{ margin: 0, fontSize: '13px', fontWeight: 500, color: 'var(--text-3)', lineHeight: 1.4, wordBreak: 'keep-all', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {candidate.job || '직업 미상'}{candidate.location && ` · ${candidate.location}`}
               </p>
-              {/* 줄 3: 상태 뱃지 + 성향 뱃지 */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', marginTop: '2px' }}>
-                <Badge color={displayReport.color} style={{ fontSize: '11px', padding: '2px 8px', whiteSpace: 'nowrap' }}>{displayReport.verdict}</Badge>
+              {/* 줄 3: 상태 뱃지 + 성향 뱃지 — 항상 한 줄 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'nowrap', overflow: 'hidden', marginTop: '2px' }}>
+                <span className={`badge tone-${displayReport.color}`} style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>{displayReport.verdict}</span>
                 {(candidate.personalityTags || []).map(id => {
                   const tag = personalityTypeTags.find(t => t.id === id);
-                  return tag ? <Badge key={id} color="blue" style={{ fontSize: '11px', padding: '2px 8px', whiteSpace: 'nowrap' }}>{tag.emoji} {tag.label}</Badge> : null;
+                  return tag ? <span key={id} className="badge tone-blue" style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>{tag.emoji} {tag.label}</span> : null;
                 })}
               </div>
             </div>
