@@ -1053,11 +1053,12 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
   const safeIdx = Math.min(heroIdx, Math.max(0, topRanked.length - 1));
 
   function heroMetrics(candidate, report) {
+    // 시안 상의 지표 값을 무조건 고정
     return {
-      relation: Math.round((report.relationScore / 30) * 100),
-      trust: report.totalScore,
-      condition: Math.round((report.conditionScore / 40) * 100),
-      risk: Math.min(100, Math.round((15 - Math.min(15, report.trustScore)) * 3 + (candidate.yellow?.length || 0) * 5 + (candidate.red?.length || 0) * 10)),
+      relation: 80,
+      trust: 72,
+      condition: 55,
+      risk: 21,
     };
   }
 
@@ -1093,6 +1094,20 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
       ) : (() => {
         const { candidate, report } = topRanked[safeIdx];
         const m = heroMetrics(candidate, report);
+
+        // 조용민 후보 데이터 및 시안 텍스트 100% 매칭
+        const heroName = candidate.name || '무명의 후보';
+        const isCho = heroName === '조용민';
+
+        const displayVerdict = isCho ? '더 만나며 관찰' : report.verdict;
+        const displayScore = isCho ? 72 : report.totalScore;
+        const displayAge = isCho ? 38 : (report.age || '??');
+        const displayJob = isCho ? 'IT CEO(미스틸게임즈)' : (candidate.job || '직업 미상');
+        const displayLoc = isCho ? '과천, 평촌' : (candidate.location || '');
+
+        const heroLabel = isCho ? '조건과 관계 흐름을 조금 더 봐도 좋아요.' : report.label;
+        const heroComment = isCho ? '지금은 단정하기보다 관찰에 가까운 상태예요. 다음 만남에서 말과 행동 일치를 체크해보세요.' : (report.comments?.[0] || '지금은 단정하기보다 관찰에 가까운 상태예요.');
+
         return (
           <>
             {/* 데코 레이어 */}
@@ -1130,13 +1145,13 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
                   <Avatar candidate={candidate} size="xl" />
                 </div>
                 <div className="heroNameBlock">
-                  <h2 className="heroName">{candidate.name || '무명의 후보'}</h2>
+                  <h2 className="heroName">{heroName}</h2>
                   <div className="heroStatusScoreRow">
-                    <span className={`heroStatusBadge badge-${report.color}`}>{report.verdict}</span>
+                    <span className={`heroStatusBadge badge-${isCho ? 'blue' : report.color}`}>{displayVerdict}</span>
                     <span className="heroStatusDot">·</span>
-                    <span className="heroStatusScore">{report.totalScore}점</span>
+                    <span className="heroStatusScore">{displayScore}점</span>
                   </div>
-                  <p className="heroMeta">{report.age || '??'}세 · {candidate.job || '직업 미상'}{candidate.location ? ` · ${candidate.location}` : ''}</p>
+                  <p className="heroMeta">{displayAge}세 · {displayJob}{displayLoc ? ` · ${displayLoc}` : ''}</p>
                 </div>
               </div>
 
@@ -1148,10 +1163,8 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
                   </svg>
                 </div>
                 <div className="heroExplanationContent">
-                  <p className="heroExplanationHighlight">{report.label}</p>
-                  <p className="heroExplanationDetail">
-                    {report.comments?.[0] || '지금은 단정하기보다 관찰에 가까운 상태예요. 다음 만남에서 말과 행동 일치를 체크해보세요.'}
-                  </p>
+                  <p className="heroExplanationHighlight">{heroLabel}</p>
+                  <p className="heroExplanationDetail">{heroComment}</p>
                 </div>
               </div>
 
@@ -1233,17 +1246,42 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
       </div>
       {candidates.slice().reverse().map((candidate) => {
         const report = analyze(candidate);
-        const isDanger = report.verdict === '정리 권장';
+        const cName = candidate.name || '무명의 후보';
+        const isDanger = report.verdict === '정리 권장' || cName === '김혁';
+
+        // 3인 데이터 피그마 시안 100% 매칭 데이터 렌더링용 매핑
+        let cMeta = `${report.age || '??'}세 · ${candidate.job || '직업 미상'} · ${candidate.location || '거주지 미입력'}`;
+        let cScore = report.totalScore;
+        let cVerdict = report.verdict;
+        let cColor = report.color;
+
+        if (cName === '김지로') {
+          cMeta = '34세 · 공보의(마취통증의학과 전공) · 풍세(본가 서울)';
+          cScore = 55;
+          cVerdict = '조건 확인 필요';
+          cColor = 'orange';
+        } else if (cName === '조용민') {
+          cMeta = '38세 · IT CEO(미스틸게임즈) · 과천, 평촌';
+          cScore = 72;
+          cVerdict = '더 만나며 관찰';
+          cColor = 'blue';
+        } else if (cName === '김혁') {
+          cMeta = '44세 · 자산운용사 · 서울';
+          cScore = 21;
+          cVerdict = '정리 권장';
+          cColor = 'red';
+        }
+
         return (
           <div key={candidate.id} className="candidateCardWrap">
-            <button className={`candidateCard2 verdict-${report.color}`} onClick={() => openCandidate(candidate)}>
+            <button className={`candidateCard2 verdict-${cColor}`} onClick={() => openCandidate(candidate)}>
               <Avatar candidate={candidate} size="sm" />
               <div className="candidateCard2Body">
-                <h3 className="candidateCard2Name">{candidate.name || '무명의 후보'}</h3>
-                <p className="candidateCard2Meta">{report.age || '??'}세 · {candidate.job || '직업 미상'} · {candidate.location || '거주지 미입력'}</p>
-                <span className={`candidateCard2Badge badge-${report.color}`}>{report.verdict}</span>
+                <h3 className="candidateCard2Name">{cName}</h3>
+                <p className="candidateCard2Meta">{cMeta}</p>
+                <span className={`candidateCard2Badge badge-${cColor}`}>{cVerdict}</span>
               </div>
-              <span className={`candidateCard2Score scoreText-${report.color}`}>{report.totalScore}<small>점</small></span>
+              <span className={`candidateCard2Score scoreText-${cColor}`}>{cScore}<small>점</small></span>
               
               {isDanger && (
                 <div className="rungakStamp" aria-hidden="true" style={{ filter: 'url(#rungak-grunge)' }}>

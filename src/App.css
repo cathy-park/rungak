@@ -4,10 +4,10 @@
   --font-display: 'Noto Sans KR', 'Inter Tight', 'Tossface', 'Toss Face', system-ui, -apple-system, sans-serif;
   --font-text: 'Noto Sans KR', 'Inter', 'Tossface', 'Toss Face', system-ui, -apple-system, sans-serif;
 
-  /* Backgrounds: 밝고 부드러운 블루 연구소 테마 배경 */
-  --bg: #F4F8FD;
+  /* Backgrounds: 밝고 매우 부드러운 블루그레이/화이트 테마 배경 */
+  --bg: #F8FAFC;
   --surface: #FFFFFF;
-  --divider: #E3EFFB;
+  --divider: #EAF2FA;
 
   /* Text hierarchy */
   --text-1: #1B212F;
@@ -174,10 +174,11 @@ p { margin: 0; }
   margin: 0 auto;
   background: var(--bg);
   overflow-x: hidden; /* Prevents horizontal layout bounce / wobble on mobile */
+  position: relative; /* 플로팅 버튼의 절대 배치 기준 */
 }
 
 .phone > main {
-  padding: 0 16px 100px;
+  padding: 0 16px 80px; /* 아래 여백 조정으로 스크롤 슬림화 */
 }
 
 /* ─── HEADER ─────────────────────────────────────────── */
@@ -185,22 +186,22 @@ p { margin: 0; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 28px 0 16px;
+  padding: 16px 0 10px; /* 헤더 높이 극적 축소 */
 }
 .headerFlaskLogo {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   background: #FFFFFF;
   border: 1.5px solid #D1E3FA;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(49, 130, 246, 0.05);
+  box-shadow: 0 2px 8px rgba(49, 130, 246, 0.03);
 }
 .headerTitle {
-  font-size: 21px;
+  font-size: 18px;
   font-weight: 800;
   letter-spacing: -0.03em;
   color: var(--text-1);
@@ -209,16 +210,16 @@ p { margin: 0; }
   font-family: var(--font-display);
 }
 .headerSub {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 800;
   color: var(--blue);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  margin: 2px 0 0;
+  margin: 1px 0 0;
 }
 .headerSettingBtn {
-  width: 42px;
-  height: 42px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   display: grid;
   place-items: center;
@@ -226,7 +227,7 @@ p { margin: 0; }
   border: 1.5px solid #D1E3FA;
   color: #6A798F;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.01);
   transition: all 0.2s ease;
 }
 .headerSettingBtn:hover {
@@ -1816,39 +1817,39 @@ p { margin: 0; }
 .heroBubble-1 {
   width: 110px;
   height: 110px;
-  right: -25px;
-  top: -20px;
-  background: radial-gradient(circle, rgba(49, 130, 246, 0.12) 0%, rgba(49, 130, 246, 0.01) 70%);
+  right: -20px;
+  top: -15px;
+  background: radial-gradient(circle, rgba(49, 130, 246, 0.1) 0%, rgba(49, 130, 246, 0.01) 70%);
 }
 .heroBubble-2 {
-  width: 60px;
-  height: 60px;
-  right: 60px;
-  bottom: 120px;
-  background: rgba(49, 130, 246, 0.03);
+  width: 44px;
+  height: 44px;
+  right: 50px;
+  bottom: 80px;
+  background: rgba(49, 130, 246, 0.02);
 }
 .heroBubble-3 {
-  width: 28px;
-  height: 28px;
-  left: 20px;
-  bottom: 150px;
-  background: rgba(49, 130, 246, 0.04);
+  width: 20px;
+  height: 20px;
+  left: 12px;
+  bottom: 100px;
+  background: rgba(49, 130, 246, 0.03);
 }
 .heroFlaskDeco {
   position: absolute;
-  right: 18px;
-  top: 36px;
-  width: 82px;
-  height: 110px;
-  opacity: 0.18;
+  right: 14px;
+  top: 24px;
+  width: 64px;
+  height: 84px;
+  opacity: 0.16;
 }
 
 .avatar.xl {
-  width: 96px;
-  height: 96px;
+  width: 72px; /* 콤팩트 아바타 */
+  height: 72px;
   border-radius: 50%;
-  border: 4px solid #FFFFFF;
-  box-shadow: 0 4px 16px rgba(49, 130, 246, 0.12);
+  border: 3.5px solid #FFFFFF;
+  box-shadow: 0 3px 12px rgba(49, 130, 246, 0.1);
   background: #EAF4FF;
 }
 
@@ -1856,7 +1857,7 @@ p { margin: 0; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px 0 4px;
+  padding: 16px 0 4px;
   text-align: center;
 }
 
@@ -1864,28 +1865,28 @@ p { margin: 0; }
 .heroRankBadge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   background: #FFFFFF;
   border: 1px solid #FFE082;
   border-radius: 980px;
-  padding: 6px 14px;
-  font-size: 12px;
+  padding: 4px 10px; /* 콤팩트 */
+  font-size: 11px;
   font-weight: 800;
   color: #B45309;
-  margin-bottom: 18px;
+  margin-bottom: 10px;
   position: relative;
   z-index: 2;
-  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.08);
+  box-shadow: 0 1px 4px rgba(251, 191, 36, 0.05);
 }
 .heroRankCrown {
-  font-size: 13px;
+  font-size: 11px;
 }
 
 .heroCard {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px; /* 콤팩트 */
   text-align: left;
   background: transparent;
   border: none;
@@ -1900,7 +1901,7 @@ p { margin: 0; }
 .heroProfileRow {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 14px;
   width: 100%;
 }
 .heroAvatarWrapper {
@@ -1909,15 +1910,15 @@ p { margin: 0; }
 }
 .heroCrownWrap {
   position: absolute;
-  top: -12px;
+  top: -10px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 5;
-  filter: drop-shadow(0 2px 4px rgba(234, 179, 8, 0.25));
+  filter: drop-shadow(0 1.5px 3px rgba(234, 179, 8, 0.2));
 }
 .heroCrownSvg {
-  width: 32px;
-  height: 28px;
+  width: 26px;
+  height: 22px;
 }
 
 .heroNameBlock {
@@ -1927,10 +1928,10 @@ p { margin: 0; }
 
 .heroName {
   font-family: var(--font-display);
-  font-size: 24px;
+  font-size: 20px; /* 콤팩트 이름 */
   font-weight: 800;
   color: var(--text-1);
-  margin: 0 0 6px;
+  margin: 0 0 2px;
   line-height: 1.1;
   letter-spacing: -0.03em;
 }
@@ -1938,15 +1939,15 @@ p { margin: 0; }
 .heroStatusScoreRow {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 6px;
+  gap: 5px;
+  margin-bottom: 2px;
 }
 .heroStatusBadge {
   display: inline-flex;
   align-items: center;
-  border-radius: 8px;
-  padding: 4px 10px;
-  font-size: 11.5px;
+  border-radius: 6px;
+  padding: 2px 7px;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.01em;
 }
@@ -1957,20 +1958,20 @@ p { margin: 0; }
 .heroStatusBadge.badge-red { background: #E11D48; color: #FFFFFF; }
 
 .heroStatusDot {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 900;
   color: var(--text-3);
 }
 .heroStatusScore {
   font-family: var(--font-display);
-  font-size: 21px;
+  font-size: 19px;
   font-weight: 900;
   color: var(--blue);
   letter-spacing: -0.02em;
 }
 
 .heroMeta {
-  font-size: 12.5px;
+  font-size: 11.5px;
   color: var(--text-2);
   font-weight: 600;
   margin: 0;
@@ -1982,38 +1983,42 @@ p { margin: 0; }
 /* 설명 박스 (흰색 카드) */
 .heroExplanationBox {
   background: #FFFFFF;
-  border-radius: 18px;
-  padding: 16px 18px;
+  border-radius: 14px;
+  padding: 10px 12px; /* 콤팩트 패딩 */
   display: flex;
-  gap: 12px;
+  gap: 8px;
   align-items: flex-start;
-  box-shadow: 0 4px 16px rgba(49, 130, 246, 0.02);
-  border: 1px solid rgba(49, 130, 246, 0.05);
+  box-shadow: 0 2px 8px rgba(49, 130, 246, 0.01);
+  border: 1px solid rgba(49, 130, 246, 0.04);
   width: 100%;
 }
 .heroQuoteIcon {
   color: var(--blue);
   flex-shrink: 0;
-  margin-top: 2px;
+  margin-top: 1px;
   opacity: 0.85;
+}
+.heroQuoteIcon svg {
+  width: 12px;
+  height: 12px;
 }
 .heroExplanationContent {
   flex: 1;
   min-width: 0;
 }
 .heroExplanationHighlight {
-  font-size: 14.5px;
+  font-size: 13px; /* 콤팩트 */
   font-weight: 800;
   color: var(--blue);
-  line-height: 1.45;
-  margin: 0 0 4px;
+  line-height: 1.4;
+  margin: 0 0 2px;
   word-break: keep-all;
 }
 .heroExplanationDetail {
-  font-size: 12.5px;
+  font-size: 11.5px; /* 콤팩트 */
   font-weight: 500;
   color: var(--text-body);
-  line-height: 1.55;
+  line-height: 1.45;
   margin: 0;
   word-break: keep-all;
 }
@@ -2022,7 +2027,7 @@ p { margin: 0; }
 .heroIndicatorGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  gap: 6px;
   width: 100%;
 }
 .heroIndicatorCard {
@@ -2030,46 +2035,46 @@ p { margin: 0; }
   flex-direction: column;
   align-items: center;
   background: #FFFFFF;
-  border-radius: 16px;
-  padding: 12px 6px;
-  border: 1px solid #E4ECF5;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.01);
+  border-radius: 12px;
+  padding: 6px 2px; /* 콤팩트 */
+  border: 1px solid #E6EEF5;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.005);
   transition: all 0.2s ease;
 }
 .heroIndicatorCard:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.03);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
 }
 .heroIndicatorLabel {
-  font-size: 9.5px;
+  font-size: 9px; /* 콤팩트 */
   font-weight: 700;
   color: var(--text-3);
   text-align: center;
-  margin-bottom: 6px;
+  margin-bottom: 3px;
   line-height: 1.2;
 }
 .heroIndicatorValueRow {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 3px;
 }
 .heroIndicatorIcon {
-  width: 20px;
-  height: 20px;
+  width: 14px;
+  height: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 .heroIndicatorIcon svg {
-  width: 16px;
-  height: 16px;
+  width: 12px;
+  height: 12px;
   stroke: currentColor;
 }
 .heroIndicatorValue {
   font-family: var(--font-display);
-  font-size: 19px;
+  font-size: 15px; /* 콤팩트 수치 */
   font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1;
@@ -2088,13 +2093,13 @@ p { margin: 0; }
 .heroDots {
   display: flex;
   justify-content: center;
-  gap: 6px;
-  margin-top: 12px;
+  gap: 5px;
+  margin-top: 8px;
 }
 
 .heroDot {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: var(--divider);
   border: none;
@@ -2104,35 +2109,35 @@ p { margin: 0; }
 }
 .heroDot.active {
   background: var(--blue);
-  transform: scale(1.35);
+  transform: scale(1.3);
 }
 
 /* ─── REDESIGNED CANDIDATE CARDS ─────────────────────── */
 .list {
   background: #F4F8FD;
   border-radius: 28px;
-  padding: 12px 14px 24px;
-  margin-top: 8px;
+  padding: 10px 10px 16px; /* 콤팩트 패딩 */
+  margin-top: 6px;
   border: 1px solid #EAF2FB;
 }
 .candidateCardWrap {
   position: relative;
-  margin-bottom: 12px;
+  margin-bottom: 8px; /* 콤팩트 간격 */
 }
 .candidateCard2 {
   position: relative;
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 14px;
-  border-radius: 20px;
+  gap: 10px; /* 콤팩트 */
+  border-radius: 16px; /* 콤팩트 라운드 */
   background: #FFFFFF;
   border: 1px solid #E5E8EB;
-  padding: 16px 54px 16px 20px;
+  padding: 10px 42px 10px 14px; /* 극도 콤팩트 */
   text-align: left;
-  box-shadow: 0 6px 16px rgba(149, 157, 165, 0.03);
+  box-shadow: 0 2px 8px rgba(149, 157, 165, 0.01);
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
 }
 /* left verdict color bar */
@@ -2142,8 +2147,8 @@ p { margin: 0; }
   left: 0;
   top: 0;
   bottom: 0;
-  width: 5px;
-  border-radius: 20px 0 0 20px;
+  width: 4px;
+  border-radius: 16px 0 0 16px;
   background: var(--divider);
 }
 .candidateCard2.verdict-green::before  { background: var(--green); }
@@ -2152,12 +2157,11 @@ p { margin: 0; }
 .candidateCard2.verdict-orange::before { background: var(--orange); }
 .candidateCard2.verdict-red::before    { background: var(--red); }
 .candidateCard2:hover {
-  box-shadow: 0 10px 24px rgba(49, 130, 246, 0.08);
-  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(49, 130, 246, 0.04);
   border-color: #C2D6FF;
 }
 .candidateCard2:active {
-  transform: scale(0.99);
+  transform: scale(0.995);
   background: #F8FBFF;
 }
 
@@ -2166,12 +2170,12 @@ p { margin: 0; }
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 1px; /* 콤팩트 */
 }
 
 .candidateCard2Name {
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: 14px; /* 콤팩트 */
   font-weight: 800;
   color: var(--text-1);
   margin: 0;
@@ -2179,21 +2183,24 @@ p { margin: 0; }
 }
 
 .candidateCard2Meta {
-  font-size: 12px;
+  font-size: 11px; /* 콤팩트 */
   color: var(--text-body);
   font-weight: 500;
   margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .candidateCard2Badge {
   display: inline-flex;
   align-self: flex-start;
   align-items: center;
-  border-radius: 6px;
-  padding: 3px 8px;
-  font-size: 10.5px;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 10px; /* 콤팩트 */
   font-weight: 800;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 .candidateCard2Badge.badge-blue { background: var(--blue-light); color: var(--blue-text); }
 .candidateCard2Badge.badge-green { background: var(--green-light); color: var(--green-text); }
@@ -2203,25 +2210,25 @@ p { margin: 0; }
 
 .candidateCard2Score {
   font-family: var(--font-display);
-  font-size: 22px;
+  font-size: 18px; /* 콤팩트 */
   font-weight: 900;
   letter-spacing: -0.04em;
   white-space: nowrap;
   flex-shrink: 0;
 }
 .candidateCard2Score small {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: var(--text-2);
-  margin-left: 1px;
+  margin-left: 0.5px;
 }
 
 .candidateCard2EditBtn {
   position: absolute;
-  right: 14px;
-  bottom: 14px;
-  width: 32px;
-  height: 32px;
+  right: 10px;
+  bottom: 10px;
+  width: 26px; /* 콤팩트 */
+  height: 26px;
   border-radius: 50%;
   background: #F3F5F7;
   border: 1px solid #E5E8EB;
@@ -2232,13 +2239,11 @@ p { margin: 0; }
   cursor: pointer;
   z-index: 4;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
 }
 .candidateCard2EditBtn:hover {
   background: var(--blue);
   color: #FFFFFF;
   border-color: var(--blue);
-  box-shadow: 0 4px 10px rgba(49, 130, 246, 0.25);
   transform: scale(1.05);
 }
 .candidateCard2EditBtn:active { opacity: 1; }
@@ -2246,16 +2251,49 @@ p { margin: 0; }
 /* ─── RUNGAK DANGER STAMP ────────────────────────────── */
 .rungakStamp {
   position: absolute;
-  right: 50px;
+  right: 36px;
   top: 50%;
   transform: translateY(-50%) rotate(-8deg);
-  width: 90px;
-  height: 90px;
+  width: 72px; /* 김혁 카드를 덮되 가리지 않도록 콤팩트화 */
+  height: 72px;
   pointer-events: none;
   z-index: 3;
-  opacity: 0.92;
+  opacity: 0.9;
   transition: all 0.3s ease;
 }
 .candidateCardWrap:hover .rungakStamp {
   transform: translateY(-50%) rotate(-4deg) scale(1.04);
+}
+
+/* ─── FLOATING + BUTTON ──────────────────────────────── */
+.floating {
+  position: absolute; /* .phone 내부 고정 배치! */
+  right: 20px;
+  bottom: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #3182F6;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(49, 130, 246, 0.35);
+  border: none;
+  cursor: pointer;
+  z-index: 100;
+  transition: all 0.2s ease;
+}
+.floating:hover {
+  transform: scale(1.05);
+  box-shadow: 0 10px 28px rgba(49, 130, 246, 0.45);
+}
+.floating:active {
+  transform: scale(0.98);
+}
+.floating svg {
+  width: 24px;
+  height: 24px;
+  stroke: currentColor;
+  stroke-width: 3;
 }
