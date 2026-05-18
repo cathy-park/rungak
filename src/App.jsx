@@ -976,22 +976,22 @@ function Toast({ message, type = 'success', onDone }) {
 function Header({ openGuide }) {
   return (
     <header className="header">
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'linear-gradient(135deg, #EBF5FF 0%, #DBEAFE 100%)', border: '1px solid var(--blue-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M9 3h6" stroke="var(--blue)" strokeWidth="2" strokeLinecap="round"/>
-            <path d="M9 3v7L6 14h12l-3-4V3" stroke="var(--blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M6 14c0 3.3 2.7 6 6 6s6-2.7 6-6" stroke="var(--blue)" strokeWidth="2" strokeLinecap="round"/>
-            <circle cx="9.5" cy="17.5" r="1" fill="var(--blue)" opacity="0.6"/>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div className="headerFlaskLogo">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 3h6" stroke="var(--blue)" strokeWidth="2.5" strokeLinecap="round"/>
+            <path d="M9 3v7L6 14h12l-3-4V3" stroke="var(--blue)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M6 14c0 3.3 2.7 6 6 6s6-2.7 6-6" stroke="var(--blue)" strokeWidth="2.5" strokeLinecap="round"/>
+            <circle cx="9.5" cy="17.5" r="1.2" fill="var(--blue)"/>
           </svg>
         </div>
         <div>
-          <h1 style={{ fontSize: '20px', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--text-1)', margin: 0, lineHeight: 1.1, fontFamily: 'var(--font-display)' }}>런각 연구소</h1>
-          <p style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.1em', textTransform: 'uppercase', margin: 0 }}>RUN ANGLE LAB</p>
+          <h1 className="headerTitle">런각 연구소</h1>
+          <p className="headerSub">RUN ANGLE LAB</p>
         </div>
       </div>
-      <button className="iconButton" onClick={openGuide} style={{ background: 'var(--surface)', border: '1px solid var(--divider)' }}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <button className="headerSettingBtn" onClick={openGuide} title="설정">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="12" r="3"/>
           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
         </svg>
@@ -1062,6 +1062,17 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
   }
 
   return <>
+    {/* 거친 스탬프를 위한 브라우저 전역 SVG 필터 선언 */}
+    <svg width="0" height="0" style={{ position: 'absolute', pointerEvents: 'none' }} aria-hidden="true">
+      <defs>
+        <filter id="rungak-grunge">
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="4" result="noise" />
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" xChannelSelector="R" yChannelSelector="G" result="displaced" />
+          <feBlend mode="multiply" in="SourceGraphic" in2="displaced" />
+        </filter>
+      </defs>
+    </svg>
+
     <Header openGuide={openGuide} />
 
     {/* ── 히어로 섹션 ── */}
@@ -1084,81 +1095,119 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
         const m = heroMetrics(candidate, report);
         return (
           <>
+            {/* 데코 레이어 */}
             <div className="heroDecoWrap" aria-hidden="true">
               <span className="heroBubble heroBubble-1" />
               <span className="heroBubble heroBubble-2" />
               <span className="heroBubble heroBubble-3" />
               <svg className="heroFlaskDeco" viewBox="0 0 48 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M18 4v22L6 52a4 4 0 003.5 6h29A4 4 0 0042 52L30 26V4" stroke="#3182F6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" strokeOpacity="0.18"/>
-                <path d="M14 4h20" stroke="#3182F6" strokeWidth="2.5" strokeLinecap="round" strokeOpacity="0.18"/>
-                <circle cx="18" cy="46" r="3" fill="#3182F6" fillOpacity="0.12"/>
-                <circle cx="30" cy="52" r="2" fill="#3182F6" fillOpacity="0.1"/>
+                <path d="M18 4v22L6 52a4 4 0 003.5 6h29A4 4 0 0042 52L30 26V4" stroke="var(--blue)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" strokeOpacity="0.14"/>
+                <path d="M14 4h20" stroke="var(--blue)" strokeWidth="2.2" strokeLinecap="round" strokeOpacity="0.14"/>
+                <circle cx="18" cy="46" r="3.5" fill="var(--blue)" fillOpacity="0.08"/>
+                <circle cx="30" cy="52" r="2.5" fill="var(--blue)" fillOpacity="0.06"/>
+                <circle cx="25" cy="38" r="1.5" fill="var(--blue)" fillOpacity="0.06"/>
               </svg>
             </div>
 
-            <div className="heroRankLabel">
-              <span>👑</span>
+            <div className="heroRankBadge">
+              <span className="heroRankCrown">👑</span>
               <span>오늘의 관계 흐름 TOP {safeIdx + 1}</span>
             </div>
 
             <button className="heroCard" onClick={() => openCandidate(candidate)}>
-              {/* 프로필 행 */}
+              {/* 프로필 정보 영역 */}
               <div className="heroProfileRow">
                 <div className="heroAvatarWrapper">
-                  <span className="heroCrownBadge" aria-hidden="true">👑</span>
+                  <div className="heroCrownWrap">
+                    <svg className="heroCrownSvg" viewBox="0 0 24 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M3 19L4.5 8L9 12L12 3L15 12L19.5 8L21 19H3Z" fill="#FACC15" stroke="#EAB308" strokeWidth="1.5" strokeLinejoin="round"/>
+                      <circle cx="12" cy="3" r="1.5" fill="#FACC15" stroke="#EAB308"/>
+                      <circle cx="4.5" cy="8" r="1.5" fill="#FACC15" stroke="#EAB308"/>
+                      <circle cx="19.5" cy="8" r="1.5" fill="#FACC15" stroke="#EAB308"/>
+                      <text x="12" y="16.5" fill="#854D0E" fontSize="7.5" fontWeight="900" textAnchor="middle" fontFamily="sans-serif">{safeIdx + 1}</text>
+                    </svg>
+                  </div>
                   <Avatar candidate={candidate} size="xl" />
                 </div>
                 <div className="heroNameBlock">
                   <h2 className="heroName">{candidate.name || '무명의 후보'}</h2>
-                  <div className="heroVerdictRow">
-                    <Badge color={report.color}>{report.verdict}</Badge>
-                  </div>
-                  <div className="heroScoreDisplay">
-                    <span className={`heroScoreNum scoreText-${report.color}`}>{report.totalScore}</span>
-                    <small className="heroScoreUnit">점</small>
+                  <div className="heroStatusScoreRow">
+                    <span className={`heroStatusBadge badge-${report.color}`}>{report.verdict}</span>
+                    <span className="heroStatusDot">·</span>
+                    <span className="heroStatusScore">{report.totalScore}점</span>
                   </div>
                   <p className="heroMeta">{report.age || '??'}세 · {candidate.job || '직업 미상'}{candidate.location ? ` · ${candidate.location}` : ''}</p>
                 </div>
               </div>
 
-              {/* 인용구 블록 */}
-              <div className="heroQuote">
-                <span className="heroQuoteMark">&ldquo;</span>
-                <div>
-                  <p className="heroQuoteMain">{report.label}</p>
-                  {report.comments?.[0] && <p className="heroQuoteSub">{report.comments[0]}</p>}
+              {/* 설명 박스 (흰색 카드) */}
+              <div className="heroExplanationBox">
+                <div className="heroQuoteIcon">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.75-2-2-2H4c-1.25 0-2 .75-2 2v4c0 1.25.75 2 2 2h4c0 3-2 6-5 8M17 21c3 0 7-1 7-8V5c0-1.25-.75-2-2-2h-4c-1.25 0-2 .75-2 2v4c0 1.25.75 2 2 2h4c0 3-2 6-5 8"/>
+                  </svg>
+                </div>
+                <div className="heroExplanationContent">
+                  <p className="heroExplanationHighlight">{report.label}</p>
+                  <p className="heroExplanationDetail">
+                    {report.comments?.[0] || '지금은 단정하기보다 관찰에 가까운 상태예요. 다음 만남에서 말과 행동 일치를 체크해보세요.'}
+                  </p>
                 </div>
               </div>
 
-              {/* 4대 지표 */}
-              <div className="heroMetricGrid">
-                <div className="heroMetricItem heroMetricItem-green">
-                  <div className="heroMetricIcon heroMetricIcon-green">
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              {/* 4대 지표 카드 */}
+              <div className="heroIndicatorGrid">
+                {/* 관계 안정도 */}
+                <div className="heroIndicatorCard indicator-green">
+                  <span className="heroIndicatorLabel">관계 안정도</span>
+                  <div className="heroIndicatorValueRow">
+                    <span className="heroIndicatorIcon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                    </span>
+                    <span className="heroIndicatorValue">{m.relation}</span>
                   </div>
-                  <span className="heroMetricLabel">관계 안정도</span>
-                  <b className="heroMetricValue heroMetricValue-green">{m.relation}</b>
                 </div>
-                <div className="heroMetricItem heroMetricItem-blue">
-                  <div className="heroMetricIcon heroMetricIcon-blue">
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7c1.5-3 3.5-3 5 0s3.5 3 5 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+                {/* 신뢰 흐름 */}
+                <div className="heroIndicatorCard indicator-blue">
+                  <span className="heroIndicatorLabel">신뢰 흐름</span>
+                  <div className="heroIndicatorValueRow">
+                    <span className="heroIndicatorIcon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M2 12c.5-2 2-2 4 0s3.5 2 5.5 0 3.5-2 5.5 0 3.5 2 5.5 0" />
+                      </svg>
+                    </span>
+                    <span className="heroIndicatorValue">{m.trust}</span>
                   </div>
-                  <span className="heroMetricLabel">신뢰 흐름</span>
-                  <b className="heroMetricValue heroMetricValue-blue">{m.trust}</b>
                 </div>
-                <div className="heroMetricItem heroMetricItem-orange">
-                  <div className="heroMetricIcon heroMetricIcon-orange">
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="4" stroke="currentColor" strokeWidth="2"/><circle cx="7" cy="7" r="1.5" fill="currentColor"/></svg>
+                {/* 조건 적합도 */}
+                <div className="heroIndicatorCard indicator-orange">
+                  <span className="heroIndicatorLabel">조건 적합도</span>
+                  <div className="heroIndicatorValueRow">
+                    <span className="heroIndicatorIcon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <circle cx="12" cy="12" r="6"/>
+                        <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+                      </svg>
+                    </span>
+                    <span className="heroIndicatorValue">{m.condition}</span>
                   </div>
-                  <span className="heroMetricLabel">조건 적합도</span>
-                  <b className="heroMetricValue heroMetricValue-orange">{m.condition}</b>
                 </div>
-                <div className="heroMetricItem heroMetricItem-red">
-                  <div className="heroMetricIcon heroMetricIcon-red">
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v5M7 10v.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/><path d="M1.5 12.5L7 1.5l5.5 11H1.5z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/></svg>
+                {/* 런각 위험도 */}
+                <div className="heroIndicatorCard indicator-red">
+                  <span className="heroIndicatorLabel">런각 위험도</span>
+                  <div className="heroIndicatorValueRow">
+                    <span className="heroIndicatorIcon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                      </svg>
+                    </span>
+                    <span className="heroIndicatorValue">{m.risk}</span>
                   </div>
-                  <span className="heroMetricLabel">런각 위험도</span>
-                  <b className="heroMetricValue heroMetricValue-red">{m.risk}</b>
                 </div>
               </div>
             </button>
@@ -1186,21 +1235,36 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
         const report = analyze(candidate);
         const isDanger = report.verdict === '정리 권장';
         return (
-          <div key={candidate.id} style={{ position: 'relative', marginBottom: '8px' }}>
+          <div key={candidate.id} className="candidateCardWrap">
             <button className={`candidateCard2 verdict-${report.color}`} onClick={() => openCandidate(candidate)}>
               <Avatar candidate={candidate} size="sm" />
               <div className="candidateCard2Body">
                 <h3 className="candidateCard2Name">{candidate.name || '무명의 후보'}</h3>
                 <p className="candidateCard2Meta">{report.age || '??'}세 · {candidate.job || '직업 미상'} · {candidate.location || '거주지 미입력'}</p>
-                <Badge color={report.color}>{report.verdict}</Badge>
+                <span className={`candidateCard2Badge badge-${report.color}`}>{report.verdict}</span>
               </div>
               <span className={`candidateCard2Score scoreText-${report.color}`}>{report.totalScore}<small>점</small></span>
+              
               {isDanger && (
-                <div className="rungakStamp" aria-hidden="true">
-                  <span className="rungakStampFlask">🧪</span>
-                  <span className="rungakStampText">런각!</span>
-                  <span className="rungakSparkle rungakSparkle-1">✦</span>
-                  <span className="rungakSparkle rungakSparkle-2">✦</span>
+                <div className="rungakStamp" aria-hidden="true" style={{ filter: 'url(#rungak-grunge)' }}>
+                  <svg width="84" height="84" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    {/* 바깥 거친 이중 테두리 원 */}
+                    <circle cx="50" cy="50" r="45" stroke="#E11D48" strokeWidth="3" strokeDasharray="320" style={{ opacity: 0.9 }} />
+                    <circle cx="50" cy="50" r="40" stroke="#E11D48" strokeWidth="1.2" strokeDasharray="4 4" style={{ opacity: 0.8 }} />
+                    
+                    {/* 귀여운 플라스크 캐릭터 */}
+                    <path d="M44 26h12M47 26v6L36 50a4 4 0 003.5 6h21a4 4 0 003.5-6L53 32v-6" stroke="#E11D48" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
+                    <circle cx="46" cy="42" r="1.5" fill="#E11D48" />
+                    <circle cx="54" cy="42" r="1.5" fill="#E11D48" />
+                    <path d="M47 47q3 1.5 6 0" stroke="#E11D48" strokeWidth="1.5" strokeLinecap="round" />
+                    
+                    {/* 런각! 굵은 텍스트 */}
+                    <text x="50" y="76" fill="#E11D48" fontSize="16" fontWeight="900" textAnchor="middle" fontFamily="'Noto Sans KR', sans-serif" letterSpacing="0.08em">런각!</text>
+                    
+                    {/* 반짝이 데코 */}
+                    <path d="M26 38l1.5 2.5L30 39l-2.5-1.5L26 38zM74 38l1.5-2.5L72 34l-1 2.5L74 38z" fill="#E11D48" />
+                    <path d="M22 62h3v3h-3zM76 60h2v2h-2z" fill="#E11D48" />
+                  </svg>
                 </div>
               )}
             </button>
