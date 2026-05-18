@@ -2720,48 +2720,19 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
           </div>
         </div>
 
-        {/* ── Expanded Profile Header — sheetHeader 클래스 제거(sticky/flex 간섭 차단) ── */}
+        {/* ── Expanded Profile Header ── */}
         <div style={{
+          position: 'relative',          /* 액션 버튼 absolute 기준점 */
           display: 'grid',
-          gridTemplateColumns: '84px minmax(0, 1fr) auto',
+          gridTemplateColumns: '84px minmax(0, 1fr)',   /* 2열 — 버튼은 column 차지 안 함 */
           columnGap: '12px',
           alignItems: 'start',
           padding: '18px 16px 16px',
           background: 'var(--bg)',
           overflow: 'visible'
         }}>
-          {/* Col 1: 프로필 사진 */}
-          <div style={{ width: '84px', height: '84px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
-            <Avatar candidate={candidate} size="xl" />
-          </div>
-
-          {/* Col 2: 정보 3줄 */}
-          <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: '5px', paddingTop: '2px', overflow: 'visible' }}>
-            {/* 줄 1: 이름 + 나이 */}
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-1)', lineHeight: 1.2, letterSpacing: '-0.02em' }}>
-                {candidate.name || '무명의 후보'}
-              </span>
-              <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-3)', whiteSpace: 'nowrap' }}>
-                {report.age || '나이 미상'}세
-              </span>
-            </div>
-            {/* 줄 2: 직업 · 지역 */}
-            <p style={{ margin: 0, fontSize: '13px', fontWeight: 500, color: 'var(--text-3)', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {candidate.job || '직업 미상'}{candidate.location && ` · ${candidate.location}`}
-            </p>
-            {/* 줄 3: 상태 뱃지 + 성향 뱃지 — 넘치면 wrap, 잘리지 않음 */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', overflow: 'visible', marginTop: '2px' }}>
-              <span className={`badge tone-${displayReport.color}`} style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>{displayReport.verdict}</span>
-              {(candidate.personalityTags || []).map(id => {
-                const tag = personalityTypeTags.find(t => t.id === id);
-                return tag ? <span key={id} className="badge tone-blue" style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>{tag.emoji} {tag.label}</span> : null;
-              })}
-            </div>
-          </div>
-
-          {/* Col 3: 더보기 / 닫기 버튼 */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0, position: 'relative' }}>
+          {/* 액션 버튼 — absolute로 공간 점유 없이 우상단 고정 */}
+          <div style={{ position: 'absolute', top: '14px', right: '12px', display: 'flex', alignItems: 'center', gap: '4px', zIndex: 3 }}>
             <button className="iconButton" onClick={() => setShowMenu(!showMenu)} title="후보 전체 관리" style={{ background: 'transparent', border: 'none', color: 'var(--text-2)', cursor: 'pointer', display: 'flex', padding: '4px' }}>
               <MoreVertical size={20} />
             </button>
@@ -2775,6 +2746,36 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
             <button className="iconButton" onClick={close} style={{ background: 'transparent', border: 'none', color: 'var(--text-2)', cursor: 'pointer', display: 'flex', padding: '4px' }}>
               <X size={20} />
             </button>
+          </div>
+
+          {/* Col 1: 프로필 사진 */}
+          <div style={{ width: '84px', height: '84px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
+            <Avatar candidate={candidate} size="xl" />
+          </div>
+
+          {/* Col 2: 정보 3줄 — 버튼 아래 공간까지 전폭 사용 */}
+          <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: '5px', paddingTop: '2px', overflow: 'visible' }}>
+            {/* 줄 1: 이름 + 나이 — 버튼과 겹치지 않도록 오른쪽 여백 확보 */}
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', paddingRight: '88px' }}>
+              <span style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-1)', lineHeight: 1.2, letterSpacing: '-0.02em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {candidate.name || '무명의 후보'}
+              </span>
+              <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-3)', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                {report.age || '나이 미상'}세
+              </span>
+            </div>
+            {/* 줄 2: 직업 · 지역 — 버튼 아래까지 전폭 */}
+            <p style={{ margin: 0, fontSize: '13px', fontWeight: 500, color: 'var(--text-3)', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {candidate.job || '직업 미상'}{candidate.location && ` · ${candidate.location}`}
+            </p>
+            {/* 줄 3: 뱃지 — 버튼 아래까지 전폭, 넘치면 wrap */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', overflow: 'visible', marginTop: '2px' }}>
+              <span className={`badge tone-${displayReport.color}`} style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>{displayReport.verdict}</span>
+              {(candidate.personalityTags || []).map(id => {
+                const tag = personalityTypeTags.find(t => t.id === id);
+                return tag ? <span key={id} className="badge tone-blue" style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>{tag.emoji} {tag.label}</span> : null;
+              })}
+            </div>
           </div>
         </div>
 
