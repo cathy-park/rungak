@@ -2209,7 +2209,24 @@ p { margin: 0; }
   overflow: hidden;
 }
 
-/* 김혁 카드 핑크 테마 특별 지원 */
+/* 각 등급별 파스텔 배경색 및 전용 테두리 보더 튜닝 */
+.candidateCard2.verdict-green {
+  background: #F0FDF4;
+  border-color: #DCFCE7;
+}
+.candidateCard2.verdict-blue {
+  background: #EFF6FF;
+  border-color: #DBEAFE;
+}
+.candidateCard2.verdict-amber {
+  background: #FFFDF5;
+  border-color: #FEF3C7;
+}
+.candidateCard2.verdict-orange {
+  background: #FFF7ED;
+  border-color: #FFEDD5;
+}
+.candidateCard2.verdict-red,
 .candidateCard2.card-danger {
   background: #FFF7F7;
   border-color: #FECACA;
@@ -2234,11 +2251,15 @@ p { margin: 0; }
 
 .candidateCard2:hover {
   box-shadow: 0 6px 20px rgba(49, 130, 246, 0.08);
-  border-color: #C8DCFF;
 }
+.candidateCard2.verdict-green:hover  { border-color: #BBF7D0; }
+.candidateCard2.verdict-blue:hover   { border-color: #BFDBFE; }
+.candidateCard2.verdict-amber:hover  { border-color: #FDE68A; }
+.candidateCard2.verdict-orange:hover { border-color: #FDBA74; }
+.candidateCard2.verdict-red:hover    { border-color: #FCA5A5; }
 .candidateCard2:active {
-  transform: scale(0.998);
-  background: #F9FBFF;
+  transform: scale(0.992);
+  opacity: 0.88;
 }
 
 .candidateCard2Body {
