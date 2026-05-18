@@ -1325,17 +1325,22 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
       </div>
     )}
 
-    {/* 페이지네이션 도트 - 슬라이드가 2개 이상일 때만 표시하여 오해 소지 완전 방지 */}
+    {/* 페이지네이션 도트 및 힌트 가이드 - 슬라이드가 2개 이상일 때만 표시하여 오해 소지 완전 방지 */}
     {hasCandidates && hasRecommendable && topRanked.length > 1 && (
-      <div className="heroDots">
-        {topRanked.map((_, idx) => (
-          <button
-            key={idx}
-            className={`heroDot ${idx === heroIdx ? `active verdict-${topRanked[idx].report.color}` : ''}`}
-            onClick={() => scrollToSlide(idx)}
-            title={`후보 ${idx + 1}`}
-          />
-        ))}
+      <div className="heroDotsContainer" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '10px', marginBottom: '4px' }}>
+        <span className="heroSliderHelper" style={{ fontSize: '11px', color: '#8A97A8', fontWeight: 500, letterSpacing: '-0.02em', marginBottom: '8px', opacity: 0.85 }}>
+          좌우로 넘겨 후보를 비교해보세요
+        </span>
+        <div className="heroDots" style={{ margin: 0 }}>
+          {topRanked.map((_, idx) => (
+            <button
+              key={idx}
+              className={`heroDot ${idx === heroIdx ? `active verdict-${topRanked[idx].report.color}` : ''}`}
+              onClick={() => scrollToSlide(idx)}
+              title={`후보 ${idx + 1}`}
+            />
+          ))}
+        </div>
       </div>
     )}
 
