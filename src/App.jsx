@@ -1136,10 +1136,7 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
               </svg>
             </div>
 
-            {/* 오늘의 런각 1위 pill 뱃지 */}
-            <div className="heroRankBadge">
-              <span>오늘의 런각 1위</span>
-            </div>
+
 
             <button className="heroCard" onClick={() => openCandidate(candidate)}>
               {/* 프로필 정보 영역 */}
