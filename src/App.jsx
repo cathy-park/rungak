@@ -735,7 +735,7 @@ function generateHeroCopy(report) {
 
   const body = segments.join(" ");
 
-  return { title, body };
+  return { title, body, bullets: segments };
 }
 
 function getDisplayReport(candidate, report) {
@@ -785,6 +785,7 @@ function normalizeCandidate(raw) {
   const analysis = analyze(raw);
   const report = getDisplayReport(raw, analysis);
   const finalScore = Math.round(report.totalScore);
+  const heroCopy = generateHeroCopy(analysis);
 
   return {
     ...raw,
@@ -800,7 +801,8 @@ function normalizeCandidate(raw) {
       heroSummary: generateHeroSummary(report),
       detailTitle: report.label,
       detailBody: report.comments?.[0] || '관계의 전반적인 정량 데이터 분석이 완료되었습니다.',
-      detailComments: report.comments || []
+      detailComments: report.comments || [],
+      detailBullets: heroCopy.bullets || []
     }
   };
 }
@@ -2952,26 +2954,41 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
             {activeTab === 'summary' && (
               <>
                 <Card className={`final ${scoreTone(displayReport.color).className}`} style={{ marginTop: '0px' }}>
-                  <div>
-                    <Badge color={displayReport.color}>{scoreTone(displayReport.color).label}</Badge>
-                    <p>최종 총점</p>
-                    <strong>{displayReport.finalScore}</strong>
+                  {/* ── 상단: 점수 + 판정 compact 한 행 ── */}
+                  <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '8px' }}>
+                    <div>
+                      <Badge color={displayReport.color}>{scoreTone(displayReport.color).label}</Badge>
+                      <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-2)', margin: '8px 0 2px', letterSpacing: '0.01em' }}>최종 총점</p>
+                      <strong style={{ fontFamily: 'var(--font-display)', fontSize: '48px', fontWeight: 700, letterSpacing: '-0.045em', lineHeight: 1, color: 'var(--text-1)', display: 'block' }}>
+                        {displayReport.finalScore}
+                      </strong>
+                    </div>
+                    <div style={{ textAlign: 'right', paddingBottom: '2px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-2)', display: 'block' }}>판정</span>
+                      <b style={{ fontSize: '22px', fontFamily: 'var(--font-display)', fontWeight: 700, letterSpacing: '-0.02em', display: 'block', marginTop: '2px', color: 'var(--text-1)' }}>
+                        {displayReport.verdict}
+                      </b>
+                    </div>
                   </div>
-                  <aside>
-                    <span>판정</span>
-                    <b>{displayReport.verdict}</b>
-                  </aside>
-                  <section style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <b style={{ fontSize: '15px', color: 'var(--text-1)', lineHeight: '1.4' }}>{displayReport.copy.detailTitle}</b>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '4px' }}>
-                      {displayReport.copy.detailComments.map((c, i) => (
-                        <p key={i} style={{ fontSize: '13px', color: 'var(--text-2)', lineHeight: '1.6', margin: 0, paddingLeft: '12px', position: 'relative', wordBreak: 'keep-all' }}>
-                          <span style={{ position: 'absolute', left: 0, color: 'var(--blue)' }}>•</span>
-                          {c}
-                        </p>
+
+                  {/* ── 분석 요약 박스 ── */}
+                  <section style={{ marginTop: '14px', borderRadius: '14px', background: '#ffffff', padding: '16px 18px', border: '1px solid var(--divider)' }}>
+                    <b style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-1)', lineHeight: 1.4, display: 'block', wordBreak: 'keep-all' }}>
+                      {displayReport.copy.detailTitle}
+                    </b>
+                    <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {(displayReport.copy.detailBullets?.length >= 2
+                        ? displayReport.copy.detailBullets
+                        : displayReport.copy.detailComments
+                      ).map((bullet, i) => (
+                        <div key={i} style={{ display: 'grid', gridTemplateColumns: '14px 1fr', alignItems: 'start' }}>
+                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', marginTop: '8px', background: `var(--${displayReport.color})`, display: 'block' }} />
+                          <span style={{ fontSize: '13.5px', color: 'var(--text-body)', lineHeight: 1.55, wordBreak: 'keep-all' }}>{bullet}</span>
+                        </div>
                       ))}
                     </div>
                   </section>
+
                   <div className="miniGrid">
                     <MiniScore label="조건/스펙" value={report.conditionScore} max={40} />
                     <MiniScore label="대화/태도" value={report.relationScore} max={30} />
