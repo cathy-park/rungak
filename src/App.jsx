@@ -993,7 +993,7 @@ function Header({ openGuide }) {
   return (
     <header className="header">
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <img src="/assets/ico.png" alt="Rungak Lab Logo" style={{ width: '32px', height: '32px', display: 'block', objectFit: 'contain' }} />
+        <img src="/assets/ico.png" alt="Rungak Lab Logo" style={{ width: '32px', height: '32px', display: 'block', objectFit: 'contain', borderRadius: '8px' }} />
         <div>
           <h1 className="headerTitle">런각 연구소</h1>
           <p className="headerSub">RUN ANGLE LAB</p>
