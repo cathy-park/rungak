@@ -1327,6 +1327,22 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
                 </div>
               </div>
             </div>
+            {topRanked.length > 1 && (
+              <div 
+                className={`heroPeekEdge verdict-${topRanked[(safeIdx + 1) % topRanked.length].report.color}`} 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setHeroIdx((safeIdx + 1) % topRanked.length);
+                }}
+                title="다음 추천 후보 보기"
+                style={{ pointerEvents: 'auto' }}
+              >
+                <div className="heroPeekAvatarWrapper">
+                  <Avatar candidate={topRanked[(safeIdx + 1) % topRanked.length].candidate} size="xs" />
+                </div>
+                <span className="heroPeekArrow">➔</span>
+              </div>
+            )}
           </>
         );
       })()}
@@ -1433,11 +1449,11 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
               )}
             </button>
             <button
-              className="candidateCard2EditBtn"
+              className="candidateCard2EditBtn toss-quick-memo-btn"
               onClick={(e) => { e.stopPropagation(); openQuickMemo(candidate); }}
               title="빠른 메모"
             >
-              <StickyNote size={15} className="quickMemoIconColor" />
+              <span className="toss-quick-memo-emoji" role="img" aria-label="memo">📝</span>
             </button>
           </div>
         );
