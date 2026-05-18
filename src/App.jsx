@@ -2537,37 +2537,101 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
     <>
     <div className="sheetBackdrop" onClick={close}>
       <div className="sheet" onClick={(e) => e.stopPropagation()}>
-        <div className="sheetHeader">
-          <Avatar candidate={candidate} size="sm" />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <h2 style={{ margin: 0 }}>
-              {candidate.name || '무명의 후보'}
-            </h2>
-            <p style={{ margin: 0 }}>
-              {report.age || '나이 미상'}세 · {candidate.job || '직업 미상'} · {candidate.location || '거주지 미상'}
-            </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '2px' }}>
-              <Badge color={displayReport.color}>{displayReport.verdict}</Badge>
-              {(candidate.personalityTags || []).map(id => {
-                const tag = personalityTypeTags.find(t => t.id === id);
-                return tag ? <Badge key={id} color="blue">{tag.emoji} {tag.label}</Badge> : null;
-              })}
+        <div className="sheetHeader profile-header" style={{ position: 'relative', padding: '24px 20px 16px', borderBottom: 'none' }}>
+          <div className="profile-summary" style={{
+            display: 'grid',
+            gridTemplateColumns: '84px 1fr',
+            columnGap: '16px',
+            alignItems: 'start',
+            width: '100%',
+            paddingRight: '60px' /* 우측 상단 X/더보기 버튼과의 겹침 절대 차단 안전마진 */
+          }}>
+            {/* 1. 왼쪽 프로필 이미지 */}
+            <div className="profile-avatar-wrap" style={{ width: '84px', height: '84px', flexShrink: 0 }}>
+              <Avatar candidate={candidate} size="xl" />
+            </div>
+
+            {/* 2. 오른쪽 정보 영역 */}
+            <div className="profile-info-wrap" style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: '5px' }}>
+              <h2 className="profile-name" style={{
+                margin: '0 0 2px',
+                fontSize: '26px',
+                fontWeight: 900,
+                color: 'var(--text-1)',
+                lineHeight: 1.15,
+                letterSpacing: '-0.03em'
+              }}>
+                {candidate.name || '무명의 후보'}
+              </h2>
+              <p className="profile-meta-line" style={{
+                margin: 0,
+                fontSize: '14.5px',
+                fontWeight: 600,
+                color: '#64748B',
+                lineHeight: '1.4',
+                wordBreak: 'keep-all'
+              }}>
+                {report.age || '나이 미상'}세 · {candidate.job || '직업 미상'}
+              </p>
+              {candidate.location && (
+                <p className="profile-meta-line" style={{
+                  margin: 0,
+                  fontSize: '14.5px',
+                  fontWeight: 600,
+                  color: '#64748B',
+                  lineHeight: '1.4',
+                  wordBreak: 'keep-all'
+                }}>
+                  {candidate.location}
+                </p>
+              )}
+              {/* 상태 뱃지 가로 배치 및 wrap */}
+              <div className="profile-badges-row" style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                flexWrap: 'wrap',
+                marginTop: '4px'
+              }}>
+                <Badge color={displayReport.color}>{displayReport.verdict}</Badge>
+                {(candidate.personalityTags || []).map(id => {
+                  const tag = personalityTypeTags.find(t => t.id === id);
+                  return tag ? <Badge key={id} color="blue">{tag.emoji} {tag.label}</Badge> : null;
+                })}
+              </div>
             </div>
           </div>
-          <div className="detail-header-actions" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
+
+          {/* 3. 더보기/닫기 버튼 (우측 상단 독립 액션 배치) */}
+          <div className="profile-actions-wrap" style={{
+            position: 'absolute',
+            top: '20px',
+            right: '18px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            zIndex: 10
+          }}>
             <button 
               className="iconButton"
               onClick={() => setShowMenu(!showMenu)}
               title="후보 전체 관리"
-              style={{ background: 'transparent', border: 'none', color: 'var(--text-2)', cursor: 'pointer', display: 'flex', padding: '4px' }}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text-2)',
+                cursor: 'pointer',
+                display: 'flex',
+                padding: '4px'
+              }}
             >
               <MoreVertical size={20} />
             </button>
             {showMenu && (
               <div style={{
                 position: 'absolute',
-                top: '38px',
-                right: '0',
+                top: '34px',
+                right: '28px',
                 background: 'var(--surface)',
                 border: '1px solid var(--divider)',
                 boxShadow: 'var(--shadow-md)',
@@ -2589,7 +2653,18 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
                 </button>
               </div>
             )}
-            <button className="iconButton" onClick={close} style={{ background: 'transparent', border: 'none', color: 'var(--text-2)', cursor: 'pointer', display: 'flex', padding: '4px' }}>
+            <button 
+              className="iconButton" 
+              onClick={close} 
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text-2)',
+                cursor: 'pointer',
+                display: 'flex',
+                padding: '4px'
+              }}
+            >
               <X size={20} />
             </button>
           </div>
