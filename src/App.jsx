@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { MoreVertical, X, Pencil, Trash2, Clipboard, ChevronDown, ChevronUp, Plus, StickyNote } from 'lucide-react';
 import './App.css';
 import { db, doc, setDoc, getDoc, onSnapshot } from './firebase';
@@ -2536,6 +2537,45 @@ function DynamicListSection({ items = [], type, onChange }) {
     </>
   );
 }
+/* 더보기 드롭다운 — document.body에 portal로 렌더링하여 stacking context 탈출 */
+function PopoverMenu({ triggerRef, open, onClose, children }) {
+  useEffect(() => {
+    if (!open) return;
+    function handler(e) {
+      if (triggerRef.current?.contains(e.target)) return; // 트리거 버튼 클릭은 toggle에 맡김
+      onClose();
+    }
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open, triggerRef, onClose]);
+
+  if (!open || !triggerRef.current) return null;
+  const r = triggerRef.current.getBoundingClientRect();
+
+  return createPortal(
+    <div
+      onMouseDown={(e) => e.stopPropagation()}
+      style={{
+        position: 'fixed',
+        top: r.bottom + 6,
+        right: window.innerWidth - r.right,
+        zIndex: 9999,
+        minWidth: '180px',
+        background: 'var(--surface)',
+        border: '1px solid var(--divider)',
+        borderRadius: '12px',
+        boxShadow: '0 8px 28px rgba(0,0,0,0.13)',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      {children}
+    </div>,
+    document.body
+  );
+}
+
 function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField }) {
   const displayReport = normalizeCandidate(candidate);
   const report = analyze(candidate); // 상세 탭 개별 지표 렌더링용 보존
@@ -2544,6 +2584,8 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
   const [isAddingQuickMemo, setIsAddingQuickMemo] = useState(false);
   const [quickMemoForm, setQuickMemoForm] = useState({ summary: '', good: '', concern: '', nextCheck: '' });
   const [showMenu, setShowMenu] = useState(false);
+  const expandedMoreRef = useRef(null);  // expanded 헤더 ⋯ 버튼
+  const compactMoreRef  = useRef(null);  // compact 헤더 ⋯ 버튼
   const [editingNoteId, setEditingNoteId] = useState(null);
   const [editingNoteForm, setEditingNoteForm] = useState({ summary: '', good: '', concern: '', nextCheck: '' });
   const [activeTab, setActiveTab] = useState('summary'); // 'summary' | 'observe' | 'chat' | 'spec' | 'record'
@@ -2554,10 +2596,12 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
 
   const sheetRef = React.useRef(null);
   const [showCompactHeader, setShowCompactHeader] = useState(false);
+  const activeMoreRef = showCompactHeader ? compactMoreRef : expandedMoreRef;
 
   const handleScroll = (e) => {
     const scrollTop = e.currentTarget.scrollTop;
     setShowCompactHeader(scrollTop > 120);
+    setShowMenu(false); // 스크롤로 헤더 전환 시 메뉴 닫기
   };
 
   const startSectionEdit = (sectionId) => {
@@ -2703,17 +2747,10 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
             </span>
           </div>
           {/* 액션 버튼 */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0, position: 'relative' }}>
-            <button className="iconButton" onClick={() => setShowMenu(!showMenu)} style={{ width: '36px', height: '36px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+            <button ref={compactMoreRef} className="iconButton" onClick={() => setShowMenu(v => !v)} style={{ width: '36px', height: '36px' }}>
               <MoreVertical size={18} />
             </button>
-            {showMenu && (
-              <div style={{ position: 'absolute', top: '40px', right: '40px', background: 'var(--surface)', border: '1px solid var(--divider)', boxShadow: 'var(--shadow-md)', borderRadius: '10px', zIndex: 999, minWidth: '160px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                <button onClick={() => { edit(candidate); setShowMenu(false); }} style={{ padding: '12px 14px', fontSize: '13px', border: 'none', background: 'none', textAlign: 'left', color: 'var(--text-body)', cursor: 'pointer', borderBottom: '1px solid var(--divider)', display: 'flex', alignItems: 'center', gap: '8px' }}>✏️ 전체 상세 정보 편집</button>
-                <button onClick={() => { copy(); setShowMenu(false); }} style={{ padding: '12px 14px', fontSize: '13px', border: 'none', background: 'none', textAlign: 'left', color: 'var(--text-body)', cursor: 'pointer', borderBottom: '1px solid var(--divider)', display: 'flex', alignItems: 'center', gap: '8px' }}>📋 마크다운 전체 복사</button>
-                <button onClick={() => { setShowMenu(false); setConfirm({ message: `'${candidate.name}' 기록을 삭제할까요?`, sub: '삭제 후 복구할 수 없습니다.', confirmLabel: '삭제', danger: true, onConfirm: () => { remove(candidate.id); close(); setConfirm(null); }, onCancel: () => setConfirm(null) }); }} style={{ padding: '12px 14px', fontSize: '13px', border: 'none', background: 'none', textAlign: 'left', color: 'var(--red)', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}><Trash2 size={14} /> 이 후보 기록 삭제</button>
-              </div>
-            )}
             <button className="iconButton" onClick={close} style={{ width: '36px', height: '36px' }}>
               <X size={18} />
             </button>
@@ -2733,16 +2770,9 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
         }}>
           {/* 액션 버튼 — absolute로 공간 점유 없이 우상단 고정 */}
           <div style={{ position: 'absolute', top: '14px', right: '12px', display: 'flex', alignItems: 'center', gap: '4px', zIndex: 3 }}>
-            <button className="iconButton" onClick={() => setShowMenu(!showMenu)} title="후보 전체 관리" style={{ background: 'transparent', border: 'none', color: 'var(--text-2)', cursor: 'pointer', display: 'flex', padding: '4px' }}>
+            <button ref={expandedMoreRef} className="iconButton" onClick={() => setShowMenu(v => !v)} title="후보 전체 관리" style={{ background: 'transparent', border: 'none', color: 'var(--text-2)', cursor: 'pointer', display: 'flex', padding: '4px' }}>
               <MoreVertical size={20} />
             </button>
-            {showMenu && !showCompactHeader && (
-              <div style={{ position: 'absolute', top: '34px', right: '0', background: 'var(--surface)', border: '1px solid var(--divider)', boxShadow: 'var(--shadow-md)', borderRadius: '10px', zIndex: 999, minWidth: '160px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                <button onClick={() => { edit(candidate); setShowMenu(false); }} style={{ padding: '12px 14px', fontSize: '13px', border: 'none', background: 'none', textAlign: 'left', color: 'var(--text-body)', cursor: 'pointer', borderBottom: '1px solid var(--divider)', display: 'flex', alignItems: 'center', gap: '8px' }}>✏️ 전체 상세 정보 편집</button>
-                <button onClick={() => { copy(); setShowMenu(false); }} style={{ padding: '12px 14px', fontSize: '13px', border: 'none', background: 'none', textAlign: 'left', color: 'var(--text-body)', cursor: 'pointer', borderBottom: '1px solid var(--divider)', display: 'flex', alignItems: 'center', gap: '8px' }}>📋 마크다운 전체 복사</button>
-                <button onClick={() => { setShowMenu(false); setConfirm({ message: `'${candidate.name}' 기록을 삭제할까요?`, sub: '삭제 후 복구할 수 없습니다.', confirmLabel: '삭제', danger: true, onConfirm: () => { remove(candidate.id); close(); setConfirm(null); }, onCancel: () => setConfirm(null) }); }} style={{ padding: '12px 14px', fontSize: '13px', border: 'none', background: 'none', textAlign: 'left', color: 'var(--red)', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}><Trash2 size={14} /> 이 후보 기록 삭제</button>
-              </div>
-            )}
             <button className="iconButton" onClick={close} style={{ background: 'transparent', border: 'none', color: 'var(--text-2)', cursor: 'pointer', display: 'flex', padding: '4px' }}>
               <X size={20} />
             </button>
@@ -3239,6 +3269,20 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
         </main>
       </div>
     </div>
+    <PopoverMenu triggerRef={activeMoreRef} open={showMenu} onClose={() => setShowMenu(false)}>
+      <button
+        onClick={() => { edit(candidate); setShowMenu(false); }}
+        style={{ padding: '12px 14px', fontSize: '13px', border: 'none', background: 'none', textAlign: 'left', color: 'var(--text-body)', cursor: 'pointer', borderBottom: '1px solid var(--divider)', display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}
+      >✏️ 전체 상세 정보 편집</button>
+      <button
+        onClick={() => { copy(); setShowMenu(false); }}
+        style={{ padding: '12px 14px', fontSize: '13px', border: 'none', background: 'none', textAlign: 'left', color: 'var(--text-body)', cursor: 'pointer', borderBottom: '1px solid var(--divider)', display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}
+      >📋 마크다운 전체 복사</button>
+      <button
+        onClick={() => { setShowMenu(false); setConfirm({ message: `'${candidate.name}' 기록을 삭제할까요?`, sub: '삭제 후 복구할 수 없습니다.', confirmLabel: '삭제', danger: true, onConfirm: () => { remove(candidate.id); close(); setConfirm(null); }, onCancel: () => setConfirm(null) }); }}
+        style={{ padding: '12px 14px', fontSize: '13px', border: 'none', background: 'none', textAlign: 'left', color: 'var(--red)', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}
+      ><Trash2 size={14} /> 이 후보 기록 삭제</button>
+    </PopoverMenu>
     {confirm && <ConfirmModal {...confirm} />}
     </>
   );
