@@ -3177,10 +3177,10 @@ export default function App() {
   const [appConfirm, setAppConfirm] = useState(null);
   const [toast, setToast] = useState(null);
 
-  // 파비콘 및 모바일 홈화면 아이콘을 8px 곡률로 정교하게 동적 깎아주는 획기적인 효과
+  // 파비콘 및 웹 탭바 아이콘을 8px 곡률로 정교하게 동적 깎아주는 효과
   useEffect(() => {
     const img = new Image();
-    img.src = '/assets/ico.png';
+    img.src = '/ico.png';
     img.crossOrigin = 'anonymous'; // CORS 문제 선제적 방지
     img.onload = () => {
       const canvas = document.createElement('canvas');
@@ -3216,12 +3216,6 @@ export default function App() {
         link.rel = 'shortcut icon';
         link.href = roundedDataUrl;
         document.getElementsByTagName('head')[0].appendChild(link);
-        
-        // 2. 모바일 홈화면에 추가(A2HS) 시 뜨는 apple-touch-icon 갱신
-        const appleLink = document.querySelector("link[rel='apple-touch-icon']") || document.createElement('link');
-        appleLink.rel = 'apple-touch-icon';
-        appleLink.href = roundedDataUrl;
-        document.getElementsByTagName('head')[0].appendChild(appleLink);
       } catch (err) {
         console.warn('동적 파비콘 곡률 렌더링 우회 처리 실패 (CORS 또는 로컬 정책):', err);
       }
