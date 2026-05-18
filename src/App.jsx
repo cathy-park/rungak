@@ -1111,40 +1111,38 @@ const renderRankCrown = (idx) => {
 };
 function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
   const [heroIdx, setHeroIdx] = useState(0);
+  const carouselTrackRef = React.useRef(null);
 
-  // 스와이프 & 마우스 드래그 인식을 위한 정밀 제스처 리스너 Refs
-  const dragStartRef = React.useRef(0);
-  const isDraggingRef = React.useRef(false);
-
-  const handleDragStart = (clientX) => {
-    dragStartRef.current = clientX;
-    isDraggingRef.current = true;
+  const handleCarouselScroll = () => {
+    if (!carouselTrackRef.current) return;
+    const track = carouselTrackRef.current;
+    
+    // 카드 1개의 정밀한 스냅 너비 비율
+    const totalLength = topRanked.length;
+    if (totalLength <= 1) return;
+    
+    const cardWidth = track.scrollWidth / totalLength;
+    const scrollLeft = track.scrollLeft;
+    
+    // 스크롤 포지션에 맞춰 도트 동기화
+    const activeIdx = Math.round(scrollLeft / cardWidth);
+    if (activeIdx !== heroIdx && activeIdx >= 0 && activeIdx < totalLength) {
+      setHeroIdx(activeIdx);
+    }
   };
 
-  const handleDragEnd = (clientX, candidate) => {
-    if (!isDraggingRef.current) return;
-    isDraggingRef.current = false;
-    const diff = dragStartRef.current - clientX;
-    const threshold = 40; // 스와이프 인식 물리 임계치 40px
-
-    if (Math.abs(diff) > threshold) {
-      if (diff > 0) {
-        // 왼쪽으로 슬라이드 -> 다음 카드로
-        if (safeIdx < topRanked.length - 1) {
-          setHeroIdx(safeIdx + 1);
-        }
-      } else {
-        // 오른쪽으로 슬라이드 -> 이전 카드로
-        if (safeIdx > 0) {
-          setHeroIdx(safeIdx - 1);
-        }
-      }
-    } else {
-      // 드래그 임계치 미만의 단순 탭/클릭 시 상세 모달 오픈
-      if (candidate) {
-        openCandidate(candidate);
-      }
-    }
+  const scrollToSlide = (idx) => {
+    if (!carouselTrackRef.current) return;
+    const track = carouselTrackRef.current;
+    const totalLength = topRanked.length;
+    if (totalLength <= 1) return;
+    
+    const cardWidth = track.scrollWidth / totalLength;
+    track.scrollTo({
+      left: idx * cardWidth,
+      behavior: 'smooth'
+    });
+    setHeroIdx(idx);
   };
 
   const mapped = candidates.map(candidate => {
@@ -1187,165 +1185,136 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
     <Header openGuide={openGuide} />
 
     <main>
-    {/* ── 히어로 섹션 ── */}
-    <div 
-      className={`heroSection verdict-${hasRecommendable ? topRanked[safeIdx].report.color : 'default'}`}
-      onTouchStart={(e) => handleDragStart(e.touches[0].clientX)}
-      onTouchEnd={(e) => {
-        if (hasCandidates && hasRecommendable) {
-          const { candidate } = topRanked[safeIdx];
-          handleDragEnd(e.changedTouches[0].clientX, candidate);
-        }
-      }}
-      onMouseDown={(e) => handleDragStart(e.clientX)}
-      onMouseUp={(e) => {
-        if (hasCandidates && hasRecommendable) {
-          const { candidate } = topRanked[safeIdx];
-          handleDragEnd(e.clientX, candidate);
-        }
-      }}
-      onMouseLeave={() => {
-        isDraggingRef.current = false;
-      }}
-      style={{ cursor: hasRecommendable ? 'grab' : 'default', userSelect: 'none' }}
-    >
-      {!hasCandidates ? (
-        <div className="heroEmpty">
-          <Avatar candidate={emptyCandidate} size="lg" />
-          <h3 style={{ fontSize: '17px', fontWeight: 800, margin: '10px 0 4px', color: 'var(--text-1)' }}>기록된 후보가 없어요</h3>
-          <p style={{ fontSize: '13.5px', color: 'var(--text-2)', marginBottom: '14px', textAlign: 'center', wordBreak: 'keep-all' }}>새 후보를 추가하고 점수를 분석해보세요.</p>
-          <button className="heroCTA" onClick={goAdd}>첫 후보 기록하기</button>
-        </div>
-      ) : !hasRecommendable ? (
-        <div className="heroEmpty">
-          <div style={{ fontSize: '28px', marginBottom: '8px', opacity: 0.5 }}>🔍</div>
-          <h3 style={{ fontSize: '16px', fontWeight: 700, margin: '0 0 6px', color: 'var(--text-1)' }}>지금은 추천 후보가 없어요</h3>
-          <p style={{ fontSize: '13px', color: 'var(--text-2)', lineHeight: '1.5', wordBreak: 'keep-all', textAlign: 'center', margin: 0 }}>현재 후보들은 모두 보류/정리 권장 상태예요.<br/>감정보다 관찰을 우선해보세요.</p>
-        </div>
-      ) : (() => {
-        const { candidate, report } = topRanked[safeIdx];
-        const m = heroMetrics(candidate, report);
-
-        // 조용민 후보 데이터 및 시안 텍스트 100% 매칭
-        const heroName = candidate.name || '무명의 후보';
-        const isCho = heroName === '조용민';
-
-        const displayAge = isCho ? 38 : (report.age || '??');
-        const displayJob = isCho ? 'IT CEO(미스틸게임즈)' : (candidate.job || '직업 미상');
-        const displayLoc = isCho ? '과천, 평촌' : (candidate.location || '');
-
-        return (
-          <>
-            {/* 데코 레이어 - 2개의 겹쳐진 비커와 풍성한 버블들 */}
-            <div className="heroDecoWrap" aria-hidden="true">
-              <span className="heroBubble heroBubble-1" />
-              <span className="heroBubble heroBubble-2" />
-              <span className="heroBubble heroBubble-3" />
-              <span className="heroBubble heroBubble-4" />
-              <span className="heroBubble heroBubble-5" />
-              <svg className="heroFlaskDeco" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                {/* 뒤쪽 작은 플라스크 */}
-                <path d="M68 45v14L60 76a2.5 2.5 0 002.2 3.6h18.5a2.5 2.5 0 002.2-3.6L75 59v-14" stroke="var(--blue)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" strokeOpacity="0.3"/>
-                {/* 앞쪽 큰 플라스크 */}
-                <path d="M42 22v26L26 76a4 4 0 003.5 6h36.5a4 4 0 003.5-6L54 48V22" stroke="var(--blue)" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" strokeOpacity="0.45"/>
-                {/* 액체 수면 라인 */}
-                <path d="M30.5 68c4-1 8 1 12 0s8-2 12-1 8 1 12 0" stroke="var(--blue)" strokeWidth="1.5" strokeDasharray="3 3" strokeOpacity="0.35"/>
-                {/* 플라스크 마개 */}
-                <path d="M38 22h16" stroke="var(--blue)" strokeWidth="2.8" strokeLinecap="round" strokeOpacity="0.45"/>
-              </svg>
+    {/* ── 히어로 섹션 캐러셀 (물리 스냅 캐러셀 및 스크롤 연동 시스템) ── */}
+    <div className="heroCarouselViewport">
+      <div 
+        className="heroCarouselTrack" 
+        ref={carouselTrackRef} 
+        onScroll={handleCarouselScroll}
+      >
+        {!hasCandidates ? (
+          <div className="heroSection verdict-default" style={{ margin: '0 auto', scrollSnapAlign: 'center' }}>
+            <div className="heroEmpty">
+              <Avatar candidate={emptyCandidate} size="lg" />
+              <h3 style={{ fontSize: '17px', fontWeight: 800, margin: '10px 0 4px', color: 'var(--text-1)' }}>기록된 후보가 없어요</h3>
+              <p style={{ fontSize: '13.5px', color: 'var(--text-2)', marginBottom: '14px', textAlign: 'center', wordBreak: 'keep-all' }}>새 후보를 추가하고 점수를 분석해보세요.</p>
+              <button className="heroCTA" onClick={goAdd}>첫 후보 기록하기</button>
             </div>
-
-            <div key={candidate.id} className="heroCard heroCardActive" style={{ background: 'transparent', border: 'none', padding: 0, width: '100%', textAlign: 'left', pointerEvents: 'none' }}>
-              {/* 프로필 정보 영역 */}
-              <div className="heroProfileRow">
-                <div className="heroAvatarWrapper">
-                  {renderRankCrown(safeIdx)}
-                  <Avatar candidate={candidate} size="xl" />
-                </div>
-                <div className="heroNameBlock">
-                  <h2 className="heroName">{heroName}</h2>
-                  <div className="heroStatusBadgeRow">
-                    <span className={`heroStatusBadge badge-${report.color}`}>{report.verdict}</span>
-                    <span className="heroStatusScore">{report.totalScore}<small>점</small></span>
-                  </div>
-                  <p className="heroMeta">{displayAge}세 · {displayJob}{displayLoc ? ` · ${displayLoc}` : ''}</p>
-                </div>
-              </div>
-
-              {/* 설명 박스 (흰색 카드) */}
-              <div className="heroExplanationBox">
-                <div className="heroQuoteIcon">
-                  <img src="/assets/quote.svg" alt="Quote Icon" className="heroQuoteIconImg" style={{ width: '14px', height: '11px', display: 'block' }} />
-                </div>
-                <div className="heroExplanationContent">
-                  <p className="heroExplanationHighlight">{report.label}</p>
-                  <p className="heroExplanationDetail">{report.comments?.[0] || '지금은 단정하기보다 관찰에 가까운 상태예요.'}</p>
-                </div>
-              </div>
-
-              {/* 4대 지표 카드 */}
-              <div className="heroIndicatorGrid">
-                {/* 관계 안정도 */}
-                <div className="heroIndicatorCard indicator-green">
-                  <span className="heroIndicatorLabel">관계 안정도</span>
-                  <div className="heroIndicatorValueRow">
-                    <span className="heroIndicatorIcon">
-                      <img src="/assets/stability.svg" alt="Stability Icon" className="heroIndicatorIconImg" style={{ width: '15px', height: '15px', display: 'block' }} />
-                    </span>
-                    <span className="heroIndicatorValue">{m.relation}</span>
-                  </div>
-                </div>
-                {/* 신뢰 흐름 */}
-                <div className="heroIndicatorCard indicator-blue">
-                  <span className="heroIndicatorLabel">신뢰 흐름</span>
-                  <div className="heroIndicatorValueRow">
-                    <span className="heroIndicatorIcon">
-                      <img src="/assets/trust.svg" alt="Trust Icon" className="heroIndicatorIconImg" style={{ width: '15px', height: '15px', display: 'block' }} />
-                    </span>
-                    <span className="heroIndicatorValue">{m.trust}</span>
-                  </div>
-                </div>
-                {/* 조건 적합도 */}
-                <div className="heroIndicatorCard indicator-orange">
-                  <span className="heroIndicatorLabel">조건 적합도</span>
-                  <div className="heroIndicatorValueRow">
-                    <span className="heroIndicatorIcon">
-                      <img src="/assets/condition.svg" alt="Condition Icon" className="heroIndicatorIconImg" style={{ width: '15px', height: '15px', display: 'block' }} />
-                    </span>
-                    <span className="heroIndicatorValue">{m.condition}</span>
-                  </div>
-                </div>
-                {/* 런각 위험도 */}
-                <div className="heroIndicatorCard indicator-red">
-                  <span className="heroIndicatorLabel">런각 위험도</span>
-                  <div className="heroIndicatorValueRow">
-                    <span className="heroIndicatorIcon">
-                      <img src="/assets/risk.svg" alt="Risk Icon" className="heroIndicatorIconImg" style={{ width: '15px', height: '15px', display: 'block' }} />
-                    </span>
-                    <span className="heroIndicatorValue">{m.risk}</span>
-                  </div>
-                </div>
-              </div>
+          </div>
+        ) : !hasRecommendable ? (
+          <div className="heroSection verdict-default" style={{ margin: '0 auto', scrollSnapAlign: 'center' }}>
+            <div className="heroEmpty">
+              <div style={{ fontSize: '28px', marginBottom: '8px', opacity: 0.5 }}>🔍</div>
+              <h3 style={{ fontSize: '16px', fontWeight: 700, margin: '0 0 6px', color: 'var(--text-1)' }}>지금은 추천 후보가 없어요</h3>
+              <p style={{ fontSize: '13px', color: 'var(--text-2)', lineHeight: '1.5', wordBreak: 'keep-all', textAlign: 'center', margin: 0 }}>현재 후보들은 모두 보류/정리 권장 상태예요.<br/>감정보다 관찰을 우선해보세요.</p>
             </div>
-            {topRanked.length > 1 && (
+          </div>
+        ) : (
+          topRanked.map((item, idx) => {
+            const { candidate, report } = item;
+            const m = heroMetrics(candidate, report);
+            const heroName = candidate.name || '무명의 후보';
+            const isCho = heroName === '조용민';
+            const isJi = heroName === '김지로';
+            const displayAge = isCho ? 38 : (report.age || '??');
+            const displayJob = isCho ? 'IT CEO(미스틸게임즈)' : (candidate.job || '직업 미상');
+            const displayLoc = isCho ? '과천, 평촌' : (candidate.location || '');
+
+            return (
               <div 
-                className={`heroPeekEdge verdict-${topRanked[(safeIdx + 1) % topRanked.length].report.color}`} 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setHeroIdx((safeIdx + 1) % topRanked.length);
-                }}
-                title="다음 추천 후보 보기"
-                style={{ pointerEvents: 'auto' }}
+                key={candidate.id} 
+                className={`heroSection verdict-${report.color}`}
+                onClick={() => openCandidate(candidate)}
+                style={{ cursor: 'pointer' }}
               >
-                <div className="heroPeekAvatarWrapper">
-                  <Avatar candidate={topRanked[(safeIdx + 1) % topRanked.length].candidate} size="xs" />
+                {/* 데코 레이어 - 2개의 겹쳐진 비커와 풍성한 버블들 */}
+                <div className="heroDecoWrap" aria-hidden="true">
+                  <span className="heroBubble heroBubble-1" />
+                  <span className="heroBubble heroBubble-2" />
+                  <span className="heroBubble heroBubble-3" />
+                  <span className="heroBubble heroBubble-4" />
+                  <span className="heroBubble heroBubble-5" />
+                  <svg className="heroFlaskDeco" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M68 45v14L60 76a2.5 2.5 0 002.2 3.6h18.5a2.5 2.5 0 002.2-3.6L75 59v-14" stroke="var(--blue)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" strokeOpacity="0.3"/>
+                    <path d="M42 22v26L26 76a4 4 0 003.5 6h36.5a4 4 0 003.5-6L54 48V22" stroke="var(--blue)" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" strokeOpacity="0.45"/>
+                    <path d="M30.5 68c4-1 8 1 12 0s8-2 12-1 8 1 12 0" stroke="var(--blue)" strokeWidth="1.5" strokeDasharray="3 3" strokeOpacity="0.35"/>
+                    <path d="M38 22h16" stroke="var(--blue)" strokeWidth="2.8" strokeLinecap="round" strokeOpacity="0.45"/>
+                  </svg>
                 </div>
-                <span className="heroPeekArrow">➔</span>
+
+                <div className="heroCard" style={{ background: 'transparent', border: 'none', padding: 0, width: '100%', textAlign: 'left' }}>
+                  {/* 프로필 정보 영역 */}
+                  <div className="heroProfileRow">
+                    <div className="heroAvatarWrapper">
+                      {renderRankCrown(idx)}
+                      <Avatar candidate={candidate} size="xl" />
+                    </div>
+                    <div className="heroNameBlock">
+                      <h2 className="heroName">{heroName}</h2>
+                      <div className="heroStatusBadgeRow">
+                        <span className={`heroStatusBadge badge-${report.color}`}>{report.verdict}</span>
+                        <span className="heroStatusScore">{report.totalScore}<small>점</small></span>
+                      </div>
+                      <p className="heroMeta">{displayAge}세 · {displayJob}{displayLoc ? ` · ${displayLoc}` : ''}</p>
+                    </div>
+                  </div>
+
+                  {/* 설명 박스 (흰색 카드) */}
+                  <div className="heroExplanationBox">
+                    <div className="heroQuoteIcon">
+                      <img src="/assets/quote.svg" alt="Quote Icon" className="heroQuoteIconImg" style={{ width: '14px', height: '11px', display: 'block' }} />
+                    </div>
+                    <div className="heroExplanationContent">
+                      <p className="heroExplanationHighlight">{report.label}</p>
+                      <p className="heroExplanationDetail">{report.comments?.[0] || '지금은 단정하기보다 관찰에 가까운 상태예요.'}</p>
+                    </div>
+                  </div>
+
+                  {/* 4대 지표 카드 */}
+                  <div className="heroIndicatorGrid">
+                    <div className="heroIndicatorCard indicator-green">
+                      <span className="heroIndicatorLabel">관계 안정도</span>
+                      <div className="heroIndicatorValueRow">
+                        <span className="heroIndicatorIcon">
+                          <img src="/assets/stability.svg" alt="Stability Icon" className="heroIndicatorIconImg" style={{ width: '15px', height: '15px', display: 'block' }} />
+                        </span>
+                        <span className="heroIndicatorValue">{m.relation}</span>
+                      </div>
+                    </div>
+                    <div className="heroIndicatorCard indicator-blue">
+                      <span className="heroIndicatorLabel">신뢰 흐름</span>
+                      <div className="heroIndicatorValueRow">
+                        <span className="heroIndicatorIcon">
+                          <img src="/assets/trust.svg" alt="Trust Icon" className="heroIndicatorIconImg" style={{ width: '15px', height: '15px', display: 'block' }} />
+                        </span>
+                        <span className="heroIndicatorValue">{m.trust}</span>
+                      </div>
+                    </div>
+                    <div className="heroIndicatorCard indicator-orange">
+                      <span className="heroIndicatorLabel">조건 적합도</span>
+                      <div className="heroIndicatorValueRow">
+                        <span className="heroIndicatorIcon">
+                          <img src="/assets/condition.svg" alt="Condition Icon" className="heroIndicatorIconImg" style={{ width: '15px', height: '15px', display: 'block' }} />
+                        </span>
+                        <span className="heroIndicatorValue">{m.condition}</span>
+                      </div>
+                    </div>
+                    <div className="heroIndicatorCard indicator-red">
+                      <span className="heroIndicatorLabel">런각 위험도</span>
+                      <div className="heroIndicatorValueRow">
+                        <span className="heroIndicatorIcon">
+                          <img src="/assets/risk.svg" alt="Risk Icon" className="heroIndicatorIconImg" style={{ width: '15px', height: '15px', display: 'block' }} />
+                        </span>
+                        <span className="heroIndicatorValue">{m.risk}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-            )}
-          </>
-        );
-      })()}
+            );
+          })
+        )}
+      </div>
     </div>
 
     {/* 페이지네이션 도트 - 히어로 섹션 아래로 완전히 분리하고, 후보자 수에 동적으로 대응 (한명일 때 1개, 두명일 때 2개) */}
@@ -1354,8 +1323,8 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
         {topRanked.map((_, idx) => (
           <button
             key={idx}
-            className={`heroDot ${idx === safeIdx ? `active verdict-${topRanked[safeIdx].report.color}` : ''}`}
-            onClick={() => setHeroIdx(idx)}
+            className={`heroDot ${idx === heroIdx ? `active verdict-${topRanked[idx].report.color}` : ''}`}
+            onClick={() => scrollToSlide(idx)}
             title={`후보 ${idx + 1}`}
           />
         ))}
