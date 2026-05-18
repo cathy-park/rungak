@@ -976,24 +976,25 @@ function Toast({ message, type = 'success', onDone }) {
 function Header({ openGuide }) {
   return (
     <header className="header">
-      <div>
-        <p>Run Angle Lab</p>
-        <h1 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <img 
-            src="/ico.png" 
-            alt="런각 연구소" 
-            style={{ 
-              width: '28px', 
-              height: '28px', 
-              borderRadius: '6px',
-              objectFit: 'cover'
-            }} 
-          />
-          런각 연구소
-        </h1>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'linear-gradient(135deg, #EBF5FF 0%, #DBEAFE 100%)', border: '1px solid var(--blue-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 3h6" stroke="var(--blue)" strokeWidth="2" strokeLinecap="round"/>
+            <path d="M9 3v7L6 14h12l-3-4V3" stroke="var(--blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M6 14c0 3.3 2.7 6 6 6s6-2.7 6-6" stroke="var(--blue)" strokeWidth="2" strokeLinecap="round"/>
+            <circle cx="9.5" cy="17.5" r="1" fill="var(--blue)" opacity="0.6"/>
+          </svg>
+        </div>
+        <div>
+          <h1 style={{ fontSize: '20px', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--text-1)', margin: 0, lineHeight: 1.1, fontFamily: 'var(--font-display)' }}>런각 연구소</h1>
+          <p style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.1em', textTransform: 'uppercase', margin: 0 }}>RUN ANGLE LAB</p>
+        </div>
       </div>
-      <button className="iconButton" onClick={openGuide}>
-        <Icon type="note" />
+      <button className="iconButton" onClick={openGuide} style={{ background: 'var(--surface)', border: '1px solid var(--divider)' }}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
       </button>
     </header>
   );
@@ -1036,82 +1037,120 @@ function ScoreCard({ title, value, max, desc }) {
   return <Card className="scoreCard"><div className="scoreHead"><div><p>{title}</p><strong>{value}<small>/{max}</small></strong></div><div className="right"><Badge color={level.color}>{level.label}</Badge><em>{percent}%</em></div></div><div className="bar"><i className={`tone-bg-${level.color}`} style={{ width: `${percent}%` }} /></div>{desc && <small className="desc">{desc}</small>}</Card>;
 }
 function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
+  const [heroIdx, setHeroIdx] = useState(0);
+
   const mapped = candidates.map(candidate => {
     const report = analyze(candidate);
     return { candidate, report };
   }).sort((a, b) => b.report.totalScore - a.report.totalScore);
 
-  // 추천 가능 기준: 계속 만나도 좋음 / 더 만나며 관찰
-  const recommendable = mapped.filter(({ report }) => 
+  const recommendable = mapped.filter(({ report }) =>
     report.verdict === '계속 만나도 좋음' || report.verdict === '더 만나며 관찰'
   );
   const topRanked = recommendable.slice(0, 3);
-
   const hasCandidates = candidates.length > 0;
   const hasRecommendable = topRanked.length > 0;
+  const safeIdx = Math.min(heroIdx, Math.max(0, topRanked.length - 1));
+
+  function heroMetrics(candidate, report) {
+    return {
+      relation: Math.round((report.relationScore / 30) * 100),
+      trust: report.totalScore,
+      condition: Math.round((report.conditionScore / 40) * 100),
+      risk: Math.min(100, Math.round((15 - Math.min(15, report.trustScore)) * 3 + (candidate.yellow?.length || 0) * 5 + (candidate.red?.length || 0) * 10)),
+    };
+  }
 
   return <>
     <Header openGuide={openGuide} />
-    
-    <div className="carouselWrapper">
+
+    {/* ── 히어로 섹션 ── */}
+    <div className="heroSection">
       {!hasCandidates ? (
-        <div className="rankCard empty">
+        <div className="heroEmpty">
           <Avatar candidate={emptyCandidate} size="lg" />
-          <h3>기록된 후보가 없어요</h3>
-          <p>새 후보를 추가하고 점수를 분석해보세요.</p>
+          <h3 style={{ fontSize: '17px', fontWeight: 800, margin: '10px 0 4px', color: 'var(--text-1)' }}>기록된 후보가 없어요</h3>
+          <p style={{ fontSize: '13.5px', color: 'var(--text-2)', marginBottom: '14px', textAlign: 'center', wordBreak: 'keep-all' }}>새 후보를 추가하고 점수를 분석해보세요.</p>
           <button className="heroCTA" onClick={goAdd}>첫 후보 기록하기</button>
         </div>
       ) : !hasRecommendable ? (
-        <div className="rankCard empty recommend-none" style={{ padding: '20px 16px 18px' }}>
-          <div style={{ fontSize: '24px', marginBottom: '6px', opacity: 0.6 }}>🔍</div>
-          <h3 style={{ fontSize: '16px', fontWeight: 700 }}>지금은 추천 후보가 없어요</h3>
-          <p style={{ marginBottom: '10px', fontSize: '13px', lineHeight: '1.5', wordBreak: 'keep-all', color: 'var(--text-2)' }}>현재 후보들은 모두 보류/정리 권장 상태예요.<br/>감정보다 관찰을 우선해보세요.</p>
-          <button className="heroCTA secondary" onClick={() => {
-            const el = document.querySelector('.list');
-            if(el) el.scrollIntoView({ behavior: 'smooth' });
-          }}>후보 목록에서 다시 보기</button>
+        <div className="heroEmpty">
+          <div style={{ fontSize: '28px', marginBottom: '8px', opacity: 0.5 }}>🔍</div>
+          <h3 style={{ fontSize: '16px', fontWeight: 700, margin: '0 0 6px', color: 'var(--text-1)' }}>지금은 추천 후보가 없어요</h3>
+          <p style={{ fontSize: '13px', color: 'var(--text-2)', lineHeight: '1.5', wordBreak: 'keep-all', textAlign: 'center', margin: 0 }}>현재 후보들은 모두 보류/정리 권장 상태예요.<br/>감정보다 관찰을 우선해보세요.</p>
         </div>
-      ) : (
-        <div className="carouselContainer">
-          {topRanked.map((item, idx) => {
-            const { candidate, report } = item;
-            const tone = scoreTone(report.color);
-            return (
-              <button 
-                key={candidate.id} 
-                className={`rankCard ${tone.className}`} 
-                onClick={() => openCandidate(candidate)}
-              >
-                <div className="rankVisual">
-                  {/* 1위 후보에게만 왕관 표시 */}
-                  {idx === 0 && <div className="crownBox"><CrownIcon rank={1} /></div>}
-                  <Avatar candidate={candidate} size="lg" />
-                </div>
-                
-                <div className="rankInfo">
-                  <h3>{candidate.name || '무명의 후보'}</h3>
-                  <div className="rankVerdictLine">
+      ) : (() => {
+        const { candidate, report } = topRanked[safeIdx];
+        const m = heroMetrics(candidate, report);
+        return (
+          <>
+            <div className="heroRankLabel">
+              <span>★</span>
+              <span>오늘의 런각 {safeIdx + 1}위</span>
+            </div>
+
+            <button className="heroCard" onClick={() => openCandidate(candidate)}>
+              {/* 프로필 행 */}
+              <div className="heroProfileRow">
+                <Avatar candidate={candidate} size="lg" />
+                <div className="heroNameBlock">
+                  <h2 className="heroName">{candidate.name || '무명의 후보'}</h2>
+                  <div className="heroVerdictRow">
                     <Badge color={report.color}>{report.verdict}</Badge>
-                    <span className="dot">·</span>
-                    <strong className={`scoreText-${report.color}`}>{report.totalScore}점</strong>
+                    <span className={`heroScore scoreText-${report.color}`}>{report.totalScore}<small>점</small></span>
                   </div>
-                  <p className="metaText">
-                    {report.age || '??'}세 · {candidate.job || '직업 미상'} · {candidate.location || '거주지'}
-                  </p>
+                  <p className="heroMeta">{report.age || '??'}세 · {candidate.job || '직업 미상'}{candidate.location ? ` · ${candidate.location}` : ''}</p>
                 </div>
-                
-                <div className="rankSummaryLine">
-                  <p className={`summary-title scoreText-${report.color}`}>{report.label}</p>
-                  {report.comments?.[0] && (
-                    <p className="summary-desc">{report.comments[0]}</p>
-                  )}
+              </div>
+
+              {/* 인용구 블록 */}
+              <div className="heroQuote">
+                <span className="heroQuoteMark">&ldquo;</span>
+                <div>
+                  <p className="heroQuoteMain">{report.label}</p>
+                  {report.comments?.[0] && <p className="heroQuoteSub">{report.comments[0]}</p>}
                 </div>
-              </button>
-            );
-          })}
-        </div>
-      )}
+              </div>
+
+              {/* 4대 지표 */}
+              <div className="heroMetricGrid">
+                <div className="heroMetricItem">
+                  <div className="heroMetricIcon heroMetricIcon-green">✓</div>
+                  <span className="heroMetricLabel">관계 안도도</span>
+                  <b className="heroMetricValue">{m.relation}</b>
+                </div>
+                <div className="heroMetricItem">
+                  <div className="heroMetricIcon heroMetricIcon-blue">∿</div>
+                  <span className="heroMetricLabel">신뢰 흐름</span>
+                  <b className="heroMetricValue">{m.trust}</b>
+                </div>
+                <div className="heroMetricItem">
+                  <div className="heroMetricIcon heroMetricIcon-blue">◎</div>
+                  <span className="heroMetricLabel">조건 적합도</span>
+                  <b className="heroMetricValue">{m.condition}</b>
+                </div>
+                <div className="heroMetricItem">
+                  <div className="heroMetricIcon heroMetricIcon-red">⚠</div>
+                  <span className="heroMetricLabel">현각 위험도</span>
+                  <b className="heroMetricValue">{m.risk}</b>
+                </div>
+              </div>
+            </button>
+
+            {/* 페이지네이션 도트 */}
+            {topRanked.length > 1 && (
+              <div className="heroDots">
+                {topRanked.map((_, i) => (
+                  <button key={i} className={`heroDot${i === safeIdx ? ' active' : ''}`} onClick={() => setHeroIdx(i)} />
+                ))}
+              </div>
+            )}
+          </>
+        );
+      })()}
     </div>
+
+    {/* ── 후보 목록 ── */}
     <section className="list">
       <div className="sectionTitle">
         <h2>후보 목록</h2>
@@ -1119,43 +1158,29 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
       </div>
       {candidates.slice().reverse().map((candidate) => {
         const report = analyze(candidate);
+        const isDanger = report.verdict === '정리 권장';
         return (
-          <div key={candidate.id} style={{ position: 'relative', marginBottom: '10px' }}>
-            <button className="candidateCard" onClick={() => openCandidate(candidate)} style={{ paddingRight: '80px', width: '100%', display: 'flex', margin: 0 }}>
+          <div key={candidate.id} style={{ position: 'relative', marginBottom: '8px' }}>
+            <button className="candidateCard2" onClick={() => openCandidate(candidate)}>
               <Avatar candidate={candidate} size="sm" />
-              <div style={{ textAlign: 'left' }}>
-                <h3>{candidate.name || '무명의 후보'}</h3>
-                <p>{report.age || '나이 미상'}세 · {candidate.job || '직업 미상'} · {candidate.location || '거주지 미입력'}</p>
+              <div className="candidateCard2Body">
+                <h3 className="candidateCard2Name">{candidate.name || '무명의 후보'}</h3>
+                <p className="candidateCard2Meta">{report.age || '??'}세 · {candidate.job || '직업 미상'} · {candidate.location || '거주지 미입력'}</p>
                 <Badge color={report.color}>{report.verdict}</Badge>
               </div>
-              <strong className={`scoreText-${report.color}`} style={{ position: 'absolute', right: '16px', top: '16px' }}>{report.totalScore}<small>점</small></strong>
+              <span className={`candidateCard2Score scoreText-${report.color}`}>{report.totalScore}<small>점</small></span>
+              {isDanger && (
+                <div className="rungakStamp" aria-hidden="true">
+                  <span>런각!</span>
+                </div>
+              )}
             </button>
-            <button 
-              className="quickMemoCardBtn"
-              onClick={(e) => {
-                e.stopPropagation();
-                openQuickMemo(candidate);
-              }}
-              style={{
-                position: 'absolute',
-                right: '14px',
-                bottom: '14px',
-                width: '32px',
-                height: '32px',
-                borderRadius: '8px',
-                background: 'var(--bg)',
-                border: '1px solid var(--divider)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '13px',
-                cursor: 'pointer',
-                zIndex: 2,
-                boxShadow: '0 2px 4px rgba(0,0,0,0.04)'
-              }}
+            <button
+              className="candidateCard2EditBtn"
+              onClick={(e) => { e.stopPropagation(); openQuickMemo(candidate); }}
               title="빠른 메모"
             >
-              📝
+              <Pencil size={13} />
             </button>
           </div>
         );
