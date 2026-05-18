@@ -186,12 +186,12 @@ p { margin: 0; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 0 8px; /* 헤더 여백 초밀착 */
+  padding: 12px 0 10px;
 }
 .headerFlaskLogo {
-  width: 26px; /* 앙증맞은 미니 로고 박스 */
-  height: 26px;
-  border-radius: 8px;
+  width: 32px; /* 32px로 확대 */
+  height: 32px;
+  border-radius: 9px;
   background: #FFFFFF;
   border: 1px solid #D1E3FA;
   display: flex;
@@ -201,11 +201,11 @@ p { margin: 0; }
   box-shadow: 0 1.5px 5px rgba(49, 130, 246, 0.03);
 }
 .headerFlaskLogo svg {
-  width: 14px;
-  height: 14px;
+  width: 18px; /* SVG 크기도 적절하게 확대 */
+  height: 18px;
 }
 .headerTitle {
-  font-size: 12px; /* 절반으로 축소 */
+  font-size: 14px; /* 2px 키움 */
   font-weight: 800;
   letter-spacing: -0.03em;
   color: var(--text-1);
@@ -214,7 +214,7 @@ p { margin: 0; }
   font-family: var(--font-display);
 }
 .headerSub {
-  font-size: 6.5px; /* 절반으로 축소 */
+  font-size: 8.5px; /* 2px 키움 */
   font-weight: 800;
   color: var(--blue);
   letter-spacing: 0.9px;
@@ -222,9 +222,9 @@ p { margin: 0; }
   margin: 1px 0 0;
 }
 .headerSettingBtn {
-  width: 26px; /* 앙증맞은 미니 설정 버튼 */
-  height: 26px;
-  border-radius: 8px;
+  width: 32px; /* 32px로 확대 */
+  height: 32px;
+  border-radius: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -242,8 +242,8 @@ p { margin: 0; }
   transform: translateY(-1px);
 }
 .headerSettingBtn svg {
-  width: 14px;
-  height: 14px;
+  width: 18px; /* SVG 크기도 적절하게 확대 */
+  height: 18px;
   fill: none;
   stroke: currentColor;
   stroke-width: 2;
@@ -1877,18 +1877,18 @@ p { margin: 0; }
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid #FBCB4B;
+  background: #FFFFFF;
+  border: 1px solid #F3E2B3; /* 아주 연한 노랑/베이지 계열 */
   border-radius: 999px;
   padding: 0 12px;
   height: 30px;
-  font-size: 11.5px; /* 2px 축소 */
+  font-size: 11.5px;
   font-weight: 800;
-  color: #B85C00;
+  color: #273142; /* 부드러운 다크 그레이 계열 */
   margin-bottom: 14px;
   position: relative;
   z-index: 2;
-  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04); /* 은은하고 약한 그림자 */
 }
 .heroRankCrown {
   font-size: 12px;
@@ -2024,21 +2024,21 @@ p { margin: 0; }
 
 /* 설명 박스 (흰색 카드) */
 .heroExplanationBox {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 16px;
-  padding: 12px 14px;
+  background: #FFFFFF;
+  border-radius: 18px; /* 더 충분히 둥글게 */
+  padding: 12px 14px 11px;
   display: flex;
-  gap: 10px;
+  gap: 8px; /* 간격을 약간 좁혀 통합감 제공 */
   align-items: flex-start;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
-  border: none;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.03); /* 아주 은은한 그림자 */
+  border: 1px solid #EBF1F8; /* 연하고 맑은 테두리선 */
   width: 100%;
 }
 .heroQuoteIcon {
-  color: #3B82F6;
+  color: #2F80ED; /* 메인 블루 톤 */
   flex-shrink: 0;
-  margin-top: 2px;
-  opacity: 0.9;
+  margin-top: 1.5px; /* 제목 텍스트 높이와 정확히 정렬 */
+  opacity: 0.95;
   display: flex;
   align-items: center;
 }
@@ -2047,7 +2047,7 @@ p { margin: 0; }
   min-width: 0;
 }
 .heroExplanationHighlight {
-  font-size: 11px; /* 2px 축소 */
+  font-size: 11px;
   font-weight: 800;
   color: #2F80ED;
   line-height: 1.4;
@@ -2055,7 +2055,7 @@ p { margin: 0; }
   word-break: keep-all;
 }
 .heroExplanationDetail {
-  font-size: 10px; /* 2px 축소 */
+  font-size: 10px;
   font-weight: 500;
   color: #4B5563;
   line-height: 1.5;
@@ -2122,14 +2122,14 @@ p { margin: 0; }
 }
 
 /* 지표 개별 컬러 테마 */
-.indicator-green .heroIndicatorIcon { color: var(--green); }
-.indicator-green .heroIndicatorValue { color: var(--green); }
-.indicator-blue .heroIndicatorIcon { color: var(--blue); }
-.indicator-blue .heroIndicatorValue { color: var(--blue); }
-.indicator-orange .heroIndicatorIcon { color: var(--orange); }
-.indicator-orange .heroIndicatorValue { color: var(--orange); }
-.indicator-red .heroIndicatorIcon { color: var(--red); }
-.indicator-red .heroIndicatorValue { color: var(--red); }
+.indicator-green .heroIndicatorIcon { color: #21C58E; } /* 민트~그린 */
+.indicator-green .heroIndicatorValue { color: #21C58E; }
+.indicator-blue .heroIndicatorIcon { color: #4F8DF7; } /* 메인 블루 */
+.indicator-blue .heroIndicatorValue { color: #4F8DF7; }
+.indicator-orange .heroIndicatorIcon { color: #F59E0B; } /* 따뜻한 오렌지 */
+.indicator-orange .heroIndicatorValue { color: #F59E0B; }
+.indicator-red .heroIndicatorIcon { color: #EF4444; } /* 경고 레드 */
+.indicator-red .heroIndicatorValue { color: #EF4444; }
 
 .heroDots {
   display: flex;
