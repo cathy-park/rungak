@@ -1799,6 +1799,9 @@ p { margin: 0; }
 /* ─── HERO SECTION ───────────────────────────────────── */
 .heroSection {
   background: linear-gradient(135deg, #F5FAFF 0%, #EAF4FF 100%);
+  background-image: url('/assets/hero_bg.png'), linear-gradient(135deg, #F5FAFF 0%, #EAF4FF 100%); /* 커스텀 배경 이미지 지원 (없을 시 그라디언트 Fallback) */
+  background-size: cover;
+  background-position: center;
   border-radius: 30px;
   border: 1.5px solid #CFE5FF;
   box-shadow: 0 12px 28px rgba(59, 130, 246, 0.08);

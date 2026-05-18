@@ -994,12 +994,7 @@ function Header({ openGuide }) {
     <header className="header">
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         <div className="headerFlaskLogo">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M9 3h6" stroke="var(--blue)" strokeWidth="2.5" strokeLinecap="round"/>
-            <path d="M9 3v7L6 14h12l-3-4V3" stroke="var(--blue)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M6 14c0 3.3 2.7 6 6 6s6-2.7 6-6" stroke="var(--blue)" strokeWidth="2.5" strokeLinecap="round"/>
-            <circle cx="9.5" cy="17.5" r="1.2" fill="var(--blue)"/>
-          </svg>
+          <img src="/assets/logo.svg" alt="Rungak Lab Logo" style={{ width: '18px', height: '18px', display: 'block' }} />
         </div>
         <div>
           <h1 className="headerTitle">런각 연구소</h1>
@@ -1142,9 +1137,14 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
             </div>
 
             {/* 오늘의 런각 1위 pill 뱃지 */}
+            {/* 오늘의 런각 1위 pill 뱃지 */}
             <div className="heroRankBadge">
-              <span className="heroRankCrown">👑</span>
-              <span>오늘의 관계 흐름 TOP 1</span>
+              <svg className="heroRankBadgeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: '4px' }}>
+                <rect x="5" y="10" width="14" height="11" rx="2.5" fill="#FCD34D" />
+                <path d="M8 10V6.5C8 4.5 9.8 2.8 12 2.8C14.2 2.8 16 4.5 16 6.5V10" stroke="#F59E0B" strokeWidth="1.5" strokeLinecap="round" />
+                <path d="M9 13.5L10 12.2L12 13.5L14 12.2L15 13.5V15.8H9V13.5Z" fill="#FFF"/>
+              </svg>
+              <span>오늘의 런각 1위</span>
             </div>
 
             <button className="heroCard" onClick={() => openCandidate(candidate)}>
@@ -1174,9 +1174,7 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
               {/* 설명 박스 (흰색 카드) */}
               <div className="heroExplanationBox">
                 <div className="heroQuoteIcon">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.75-2-2-2H4c-1.25 0-2 .75-2 2v4c0 1.25.75 2 2 2h4c0 3-2 6-5 8M17 21c3 0 7-1 7-8V5c0-1.25-.75-2-2-2h-4c-1.25 0-2 .75-2 2v4c0 1.25.75 2 2 2h4c0 3-2 6-5 8"/>
-                  </svg>
+                  <img src="/assets/quote.svg" alt="Quote Icon" className="heroQuoteIconImg" style={{ width: '14px', height: '11px', display: 'block' }} />
                 </div>
                 <div className="heroExplanationContent">
                   <p className="heroExplanationHighlight">{report.label}</p>
@@ -1191,10 +1189,7 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
                   <span className="heroIndicatorLabel">관계 안정도</span>
                   <div className="heroIndicatorValueRow">
                     <span className="heroIndicatorIcon">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                        <polyline points="22 4 12 14.01 9 11.01" />
-                      </svg>
+                      <img src="/assets/stability.svg" alt="Stability Icon" className="heroIndicatorIconImg" style={{ width: '15px', height: '15px', display: 'block' }} />
                     </span>
                     <span className="heroIndicatorValue">{m.relation}</span>
                   </div>
@@ -1204,10 +1199,7 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
                   <span className="heroIndicatorLabel">신뢰 흐름</span>
                   <div className="heroIndicatorValueRow">
                     <span className="heroIndicatorIcon">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M2 12c.5-2 2-2 4 0s3.5 2 5.5 0 3.5-2 5.5 0 3.5 2 5.5 0" />
-                        <path d="M2 17c.5-2 2-2 4 0s3.5 2 5.5 0 3.5-2 5.5 0 3.5 2 5.5 0" opacity="0.6"/>
-                      </svg>
+                      <img src="/assets/trust.svg" alt="Trust Icon" className="heroIndicatorIconImg" style={{ width: '15px', height: '15px', display: 'block' }} />
                     </span>
                     <span className="heroIndicatorValue">{m.trust}</span>
                   </div>
@@ -1217,11 +1209,7 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
                   <span className="heroIndicatorLabel">조건 적합도</span>
                   <div className="heroIndicatorValueRow">
                     <span className="heroIndicatorIcon">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="10"/>
-                        <circle cx="12" cy="12" r="6"/>
-                        <circle cx="12" cy="12" r="2" fill="currentColor"/>
-                      </svg>
+                      <img src="/assets/condition.svg" alt="Condition Icon" className="heroIndicatorIconImg" style={{ width: '15px', height: '15px', display: 'block' }} />
                     </span>
                     <span className="heroIndicatorValue">{m.condition}</span>
                   </div>
@@ -1231,28 +1219,31 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
                   <span className="heroIndicatorLabel">런각 위험도</span>
                   <div className="heroIndicatorValueRow">
                     <span className="heroIndicatorIcon">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                        <line x1="12" y1="9" x2="12" y2="13"/>
-                        <line x1="12" y1="17" x2="12.01" y2="17"/>
-                      </svg>
+                      <img src="/assets/risk.svg" alt="Risk Icon" className="heroIndicatorIconImg" style={{ width: '15px', height: '15px', display: 'block' }} />
                     </span>
                     <span className="heroIndicatorValue">{m.risk}</span>
                   </div>
                 </div>
               </div>
             </button>
-
-            {/* 페이지네이션 도트 - 시안과 같이 3개의 점 생성 */}
-            <div className="heroDots">
-              <button className={`heroDot active`} />
-              <button className={`heroDot`} />
-              <button className={`heroDot`} />
-            </div>
           </>
         );
       })()}
     </div>
+
+    {/* 페이지네이션 도트 - 히어로 섹션 아래로 완전히 분리하고, 후보자 수에 동적으로 대응 (한명일 때 1개, 두명일 때 2개) */}
+    {hasCandidates && hasRecommendable && (
+      <div className="heroDots">
+        {topRanked.map((_, idx) => (
+          <button
+            key={idx}
+            className={`heroDot ${idx === safeIdx ? 'active' : ''}`}
+            onClick={() => setHeroIdx(idx)}
+            title={`후보 ${idx + 1}`}
+          />
+        ))}
+      </div>
+    )}
 
     {/* ── 후보 목록 ── */}
     <section className="list">
