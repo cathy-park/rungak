@@ -2674,7 +2674,8 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
           display: showCompactHeader ? 'flex' : 'none',
           flexDirection: 'column',
           gap: '3px',
-          padding: '9px 16px 8px',
+          padding: '10px 16px 8px',
+          height: '76px', // 높이 고정 (탭 위치 동기화용)
           background: 'rgba(255,255,255,0.98)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
@@ -2685,12 +2686,12 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
         }}>
           {/* Row 1: 아바타 · 이름 · 나이 · 판정뱃지 | 버튼들 */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
-            <div style={{ width: '40px', height: '40px', flexShrink: 0 }}>
+            <div style={{ width: '36px', height: '36px', flexShrink: 0 }}>
               <Avatar candidate={candidate} size="md" />
             </div>
             {/* 텍스트 영역: flex:1, minWidth:0으로 overflow 제어 */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flex: 1, minWidth: 0, overflow: 'hidden' }}>
-              <span style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-1)', whiteSpace: 'nowrap', flexShrink: 0 }}>{candidate.name || '무명의 후보'}</span>
+              <span style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-1)', whiteSpace: 'nowrap', flexShrink: 0 }}>{candidate.name || '무명의 후보'}</span>
               <span style={{ fontSize: '13px', color: 'var(--text-3)', fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0 }}>{report.age || candidate.age}세</span>
               <span style={{ flexShrink: 0 }}><Badge color={displayReport.color} style={{ fontSize: '11px', padding: '1px 6px', whiteSpace: 'nowrap' }}>{displayReport.verdict}</Badge></span>
             </div>
@@ -2712,7 +2713,7 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
             </div>
           </div>
           {/* Row 2: 점수 · 한줄 요약 (1줄 말줄임) */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', paddingLeft: '48px', minWidth: 0, overflow: 'hidden' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', paddingLeft: '44px', minWidth: 0, overflow: 'hidden' }}>
             <span style={{ fontSize: '14px', fontWeight: 800, color: `var(--${displayReport.color})`, flexShrink: 0 }}>{displayReport.finalScore}점</span>
             <span style={{ fontSize: '12px', color: 'var(--text-3)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1, minWidth: 0 }}>
               {displayReport.copy.detailTitle}
@@ -2720,62 +2721,49 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
           </div>
         </div>
 
-        {/* 상단 확장 헤더 (초기 진입 시 보이는 영역) */}
-        <div className="sheetHeader profile-header" style={{ position: 'relative', padding: '20px 16px 12px', borderBottom: 'none' }}>
+        <div className="sheetHeader profile-header" style={{ position: 'relative', padding: '16px 16px 8px', borderBottom: 'none' }}>
           <div className="profile-summary" style={{
             display: 'grid',
-            gridTemplateColumns: '80px 1fr',
-            columnGap: '16px',
+            gridTemplateColumns: '72px 1fr',
+            columnGap: '12px',
             alignItems: 'start',
             width: '100%',
             paddingRight: '60px' /* 우측 상단 X/더보기 버튼과의 겹침 절대 차단 안전마진 */
           }}>
             {/* 1. 왼쪽 프로필 이미지 */}
-            <div className="profile-avatar-wrap" style={{ width: '80px', height: '80px', flexShrink: 0 }}>
+            <div className="profile-avatar-wrap" style={{ width: '72px', height: '72px', flexShrink: 0 }}>
               <Avatar candidate={candidate} size="xl" />
             </div>
 
             {/* 2. 오른쪽 정보 영역 */}
             <div className="profile-info-wrap" style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <h2 className="profile-name" style={{
-                margin: '0 0 1px',
-                fontSize: '24px',
+                margin: '0',
+                fontSize: '22px',
                 fontWeight: 850,
                 color: 'var(--text-1)',
                 lineHeight: 1.15,
-                letterSpacing: '-0.03em'
+                letterSpacing: '-0.02em'
               }}>
                 {candidate.name || '무명의 후보'}
               </h2>
               <p className="profile-meta-line" style={{
                 margin: 0,
-                fontSize: '15px',
+                fontSize: '14px',
                 fontWeight: 500,
                 color: 'var(--text-3)',
                 lineHeight: '1.4',
                 wordBreak: 'keep-all'
               }}>
-                {report.age || '나이 미상'}세 · {candidate.job || '직업 미상'}
+                {report.age || '나이 미상'}세 · {candidate.job || '직업 미상'} {candidate.location && `· ${candidate.location}`}
               </p>
-              {candidate.location && (
-                <p className="profile-meta-line" style={{
-                  margin: 0,
-                  fontSize: '15px',
-                  fontWeight: 500,
-                  color: 'var(--text-3)',
-                  lineHeight: '1.4',
-                  wordBreak: 'keep-all'
-                }}>
-                  {candidate.location}
-                </p>
-              )}
               {/* 상태 뱃지 가로 배치 및 wrap */}
               <div className="profile-badges-row" style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
+                gap: '4px',
                 flexWrap: 'wrap',
-                marginTop: '4px'
+                marginTop: '2px'
               }}>
                 <Badge color={displayReport.color} style={{ fontSize: '11px', padding: '2px 6px' }}>{displayReport.verdict}</Badge>
                 {(candidate.personalityTags || []).map(id => {
@@ -2858,7 +2846,7 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
           {/* ── Sticky Tabs: compact header(96px) 바로 아래 고정 ── */}
           <div style={{ 
             position: 'sticky',
-            top: showCompactHeader ? '96px' : '0px',
+            top: showCompactHeader ? '76px' : '0px',
             zIndex: 35,
             display: 'flex', 
             gap: '0', 
