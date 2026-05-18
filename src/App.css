@@ -1810,6 +1810,55 @@ p { margin: 0; }
   padding: 20px 18px 18px;
   position: relative;
   overflow: hidden;
+  transition: background 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+/* 히어로 섹션 판정 등급별 동적 컬러 톤앤매너 매칭 */
+.heroSection.verdict-green {
+  background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%);
+  background-image: url('/assets/hero_bg.png'), linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%);
+  border-color: #BBF7D0;
+  box-shadow: 0 12px 28px rgba(22, 163, 74, 0.06);
+}
+.heroSection.verdict-blue {
+  background: linear-gradient(135deg, #F5FAFF 0%, #EAF4FF 100%);
+  background-image: url('/assets/hero_bg.png'), linear-gradient(135deg, #F5FAFF 0%, #EAF4FF 100%);
+  border-color: #CFE5FF;
+  box-shadow: 0 12px 28px rgba(59, 130, 246, 0.08);
+}
+.heroSection.verdict-amber {
+  background: linear-gradient(135deg, #FFFDF5 0%, #FEF3C7 100%);
+  background-image: url('/assets/hero_bg.png'), linear-gradient(135deg, #FFFDF5 0%, #FEF3C7 100%);
+  border-color: #FDE68A;
+  box-shadow: 0 12px 28px rgba(245, 159, 0, 0.06);
+}
+.heroSection.verdict-orange {
+  background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%);
+  background-image: url('/assets/hero_bg.png'), linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%);
+  border-color: #FED7AA;
+  box-shadow: 0 12px 28px rgba(249, 115, 22, 0.06);
+}
+.heroSection.verdict-red {
+  background: linear-gradient(135deg, #FFF7F7 0%, #FECACA 100%);
+  background-image: url('/assets/hero_bg.png'), linear-gradient(135deg, #FFF7F7 0%, #FECACA 100%);
+  border-color: #FCA5A5;
+  box-shadow: 0 12px 28px rgba(239, 68, 68, 0.06);
+}
+
+/* 히어로 카드 스와이프/슬라이드식 전환 마이크로 애니메이션 효과 */
+@keyframes heroCardSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.heroCardActive {
+  animation: heroCardSlideIn 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* 데코레이션 레이어 */

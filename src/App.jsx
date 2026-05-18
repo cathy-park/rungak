@@ -582,7 +582,7 @@ function analyze(candidate) {
     color = 'red';
   } else if (lowVerify || (conditionScore >= 28 && trustScore <= 5)) {
     verdict = '조건 확인 필요';
-    label = '조건은 좋아 보이지만 확인된 정보가 적어요.';
+    label = '✨ 매력적인 조건 뒤에 숨겨진 진짜 모습, 천천히 알아가 볼까요?';
     color = 'amber';
   } else if (totalScore >= 75 && trustScore >= 8) {
     verdict = '계속 만나도 좋음';
@@ -595,7 +595,7 @@ function analyze(candidate) {
   }
   const comments = [];
   if (scoreCap < 100 && capReason) comments.push(capReason);
-  if (lowVerify) comments.push('중요 정보는 확인되면 정보 확인도와 가산점에 반영돼요.');
+  if (lowVerify || verdict === '조건 확인 필요') comments.push('겉으로 보이는 조건은 우수하지만, 아직 온전한 신뢰를 채우기 위한 검증이 더 필요해요. 조급해하지 말고 대화 속에서 팩트 퍼즐을 하나씩 맞춰보세요! 🕵️‍♂️🔍');
   if (flowScore !== 0) comments.push(`타임라인 만남 흐름 점수 ${flowScore > 0 ? '+' : ''}${flowScore}점이 반영됐어요.`);
   if (!comments.length) comments.push('지금은 단정하기보다 관찰에 가까운 상태예요. 다음 만남에서 말과 행동 일치를 확인하세요.');
   return { age, rows, conditionScore, relationScore, trustScore, realityScore, bonusPenalty, flowScore, totalScore, verifiedCount, verdict, label, color, comments };
@@ -1155,7 +1155,7 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
     <main>
     {/* ── 히어로 섹션 ── */}
     <div 
-      className="heroSection"
+      className={`heroSection verdict-${hasRecommendable ? topRanked[safeIdx].report.color : 'default'}`}
       onTouchStart={(e) => handleDragStart(e.touches[0].clientX)}
       onTouchEnd={(e) => {
         if (hasCandidates && hasRecommendable) {
@@ -1221,7 +1221,7 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
               </svg>
             </div>
 
-            <div className="heroCard" style={{ background: 'transparent', border: 'none', padding: 0, width: '100%', textAlign: 'left', pointerEvents: 'none' }}>
+            <div key={candidate.id} className="heroCard heroCardActive" style={{ background: 'transparent', border: 'none', padding: 0, width: '100%', textAlign: 'left', pointerEvents: 'none' }}>
               {/* 프로필 정보 영역 */}
               <div className="heroProfileRow">
                 <div className="heroAvatarWrapper">
