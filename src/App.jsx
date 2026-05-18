@@ -3176,6 +3176,57 @@ export default function App() {
   const [tab, setTab] = useState('home');
   const [appConfirm, setAppConfirm] = useState(null);
   const [toast, setToast] = useState(null);
+
+  // 파비콘 및 모바일 홈화면 아이콘을 8px 곡률로 정교하게 동적 깎아주는 획기적인 효과
+  useEffect(() => {
+    const img = new Image();
+    img.src = '/assets/ico.png';
+    img.crossOrigin = 'anonymous'; // CORS 문제 선제적 방지
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width || 128;
+      canvas.height = img.height || 128;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      const size = canvas.width;
+      const radius = size * 0.22; // 32px 크기 기준 8px 곡률(0.25비율)에 근접하는 골든 레이아웃 비율
+
+      ctx.beginPath();
+      ctx.moveTo(radius, 0);
+      ctx.lineTo(size - radius, 0);
+      ctx.quadraticCurveTo(size, 0, size, radius);
+      ctx.lineTo(size, size - radius);
+      ctx.quadraticCurveTo(size, size, size - radius, size);
+      ctx.lineTo(radius, size);
+      ctx.quadraticCurveTo(0, size, 0, size - radius);
+      ctx.lineTo(0, radius);
+      ctx.quadraticCurveTo(0, 0, radius, 0);
+      ctx.closePath();
+      ctx.clip();
+
+      ctx.drawImage(img, 0, 0, size, size);
+
+      try {
+        const roundedDataUrl = canvas.toDataURL('image/png');
+        
+        // 1. 일반 웹 브라우저 탭용 favicon 갱신
+        const link = document.querySelector("link[rel*='icon']") || document.createElement('link');
+        link.type = 'image/png';
+        link.rel = 'shortcut icon';
+        link.href = roundedDataUrl;
+        document.getElementsByTagName('head')[0].appendChild(link);
+        
+        // 2. 모바일 홈화면에 추가(A2HS) 시 뜨는 apple-touch-icon 갱신
+        const appleLink = document.querySelector("link[rel='apple-touch-icon']") || document.createElement('link');
+        appleLink.rel = 'apple-touch-icon';
+        appleLink.href = roundedDataUrl;
+        document.getElementsByTagName('head')[0].appendChild(appleLink);
+      } catch (err) {
+        console.warn('동적 파비콘 곡률 렌더링 우회 처리 실패 (CORS 또는 로컬 정책):', err);
+      }
+    };
+  }, []);
   const [candidates, setCandidates] = useState(() => {
     try {
       const saved = window.localStorage.getItem(STORAGE_KEY);
