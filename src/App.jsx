@@ -574,11 +574,12 @@ function analyze(candidate) {
   const hardRun = redList.some((label) => redFlags.find((item) => item.label === label)?.hardRun);
   const lowVerify = verifiedCount <= 1 && conditionScore >= 24;
   let verdict = '더 만나며 관찰';
-  let label = '조건과 관계 흐름을 조금 더 봐도 좋아요.';
+  let label = '🔭 섣부른 확신은 잠시 내려놓고, 설레는 여정을 기분 좋게 지켜볼 템포';
   let color = 'blue';
+  
   if (hardRun || totalScore < 40) {
     verdict = '정리 권장';
-    label = '감정 투입 전 거리두기가 필요해요.';
+    label = '🚨 감정의 신호등에 빨간불! 지금은 단호한 거리두기가 필요할 때';
     color = 'red';
   } else if (lowVerify || (conditionScore >= 28 && trustScore <= 5)) {
     verdict = '조건 확인 필요';
@@ -586,16 +587,29 @@ function analyze(candidate) {
     color = 'amber';
   } else if (totalScore >= 75 && trustScore >= 8) {
     verdict = '계속 만나도 좋음';
-    label = '조건·대화·정보 확인 상태가 비교적 안정적이에요.';
+    label = '🌱 맑은 하늘에 순풍이 불어오는 중! 서로에게 스며드는 따뜻한 안정감';
     color = 'green';
   } else if (relationScore < 16 || Number(candidate.relation?.comfort || 10) <= 3) {
     verdict = '감정 투입 보류';
-    label = '대화 후 편안함과 관계 리듬을 더 확인하세요.';
+    label = '⏳ 마음의 시계를 조금만 늦추고, 관계의 리듬을 찬찬히 조율해볼 시기';
     color = 'orange';
   }
+  
   const comments = [];
   if (scoreCap < 100 && capReason) comments.push(capReason);
-  if (lowVerify || verdict === '조건 확인 필요') comments.push('겉으로 보이는 조건은 우수하지만, 아직 온전한 신뢰를 채우기 위한 검증이 더 필요해요. 조급해하지 말고 대화 속에서 팩트 퍼즐을 하나씩 맞춰보세요! 🕵️‍♂️🔍');
+  
+  if (verdict === '정리 권장') {
+    comments.push('상대방에게서 위험 신호가 여러 번 감지되었어요. 더 깊은 상처를 받기 전에 냉정하게 브레이크를 밟고, 나 자신의 평안과 소중한 일상을 최우선으로 지켜내야 해요! 🛑🧘‍♀️');
+  } else if (verdict === '조건 확인 필요') {
+    comments.push('겉으로 보이는 조건은 우수하지만, 아직 온전한 신뢰를 채우기 위한 검증이 더 필요해요. 조급해하지 말고 대화 속에서 팩트 퍼즐을 하나씩 맞춰보세요! 🕵️‍♂️🔍');
+  } else if (verdict === '계속 만나도 좋음') {
+    comments.push('서로에 대한 대화, 성향, 신뢰의 깊이가 균형 있게 잘 잡혀가고 있어요. 급격한 감정 폭풍보다는 자연스레 흐르는 안정된 기류 속에서 소중한 연대를 이어가 보세요! 💑✨');
+  } else if (verdict === '감정 투입 보류') {
+    comments.push('상대방과 대화할 때 느껴지는 편안함이나 미묘한 감정 온도가 아직은 불완전해요. 마음의 문을 성급히 열기보다는 가벼운 템포로 조금 더 만나며 편안함을 확인해 보세요! ☕🍂');
+  } else {
+    comments.push('아직은 호감의 초기 단계를 지나며 서로를 알아가는 아주 흥미로운 구간이에요. 특정한 결론을 내리기보다는 여러 상황 속에서 서로가 빚어내는 케미를 즐겁게 관찰해봐요! 🎈🔎');
+  }
+  
   if (flowScore !== 0) comments.push(`타임라인 만남 흐름 점수 ${flowScore > 0 ? '+' : ''}${flowScore}점이 반영됐어요.`);
   if (!comments.length) comments.push('지금은 단정하기보다 관찰에 가까운 상태예요. 다음 만남에서 말과 행동 일치를 확인하세요.');
   return { age, rows, conditionScore, relationScore, trustScore, realityScore, bonusPenalty, flowScore, totalScore, verifiedCount, verdict, label, color, comments };
@@ -1304,7 +1318,7 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
         {topRanked.map((_, idx) => (
           <button
             key={idx}
-            className={`heroDot ${idx === safeIdx ? 'active' : ''}`}
+            className={`heroDot ${idx === safeIdx ? `active verdict-${topRanked[safeIdx].report.color}` : ''}`}
             onClick={() => setHeroIdx(idx)}
             title={`후보 ${idx + 1}`}
           />

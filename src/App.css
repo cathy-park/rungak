@@ -1820,30 +1820,49 @@ p { margin: 0; }
   border-color: #BBF7D0;
   box-shadow: 0 12px 28px rgba(22, 163, 74, 0.06);
 }
+.heroSection.verdict-green .heroName { color: #14532D; }
+.heroSection.verdict-green .heroStatusScore { color: #16A34A; }
+.heroSection.verdict-green .heroQuoteIconImg { filter: invert(36%) sepia(85%) saturate(542%) hue-rotate(97deg) brightness(92%) contrast(87%); opacity: 0.85; }
+
 .heroSection.verdict-blue {
   background: linear-gradient(135deg, #F5FAFF 0%, #EAF4FF 100%);
   background-image: url('/assets/hero_bg.png'), linear-gradient(135deg, #F5FAFF 0%, #EAF4FF 100%);
   border-color: #CFE5FF;
   box-shadow: 0 12px 28px rgba(59, 130, 246, 0.08);
 }
+.heroSection.verdict-blue .heroName { color: #1E3A8A; }
+.heroSection.verdict-blue .heroStatusScore { color: #2F80ED; }
+.heroSection.verdict-blue .heroQuoteIconImg { filter: none; opacity: 0.85; }
+
 .heroSection.verdict-amber {
   background: linear-gradient(135deg, #FFFDF5 0%, #FEF3C7 100%);
   background-image: url('/assets/hero_bg.png'), linear-gradient(135deg, #FFFDF5 0%, #FEF3C7 100%);
   border-color: #FDE68A;
   box-shadow: 0 12px 28px rgba(245, 159, 0, 0.06);
 }
+.heroSection.verdict-amber .heroName { color: #78350F; }
+.heroSection.verdict-amber .heroStatusScore { color: #D97706; }
+.heroSection.verdict-amber .heroQuoteIconImg { filter: invert(48%) sepia(89%) saturate(728%) hue-rotate(12deg) brightness(96%) contrast(97%); opacity: 0.85; }
+
 .heroSection.verdict-orange {
   background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%);
   background-image: url('/assets/hero_bg.png'), linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%);
   border-color: #FED7AA;
   box-shadow: 0 12px 28px rgba(249, 115, 22, 0.06);
 }
+.heroSection.verdict-orange .heroName { color: #7C2D12; }
+.heroSection.verdict-orange .heroStatusScore { color: #EA580C; }
+.heroSection.verdict-orange .heroQuoteIconImg { filter: invert(36%) sepia(85%) saturate(1450%) hue-rotate(360deg) brightness(92%) contrast(101%); opacity: 0.85; }
+
 .heroSection.verdict-red {
   background: linear-gradient(135deg, #FFF7F7 0%, #FECACA 100%);
   background-image: url('/assets/hero_bg.png'), linear-gradient(135deg, #FFF7F7 0%, #FECACA 100%);
   border-color: #FCA5A5;
   box-shadow: 0 12px 28px rgba(239, 68, 68, 0.06);
 }
+.heroSection.verdict-red .heroName { color: #4C0519; }
+.heroSection.verdict-red .heroStatusScore { color: #E11D48; }
+.heroSection.verdict-red .heroQuoteIconImg { filter: invert(19%) sepia(82%) saturate(4156%) hue-rotate(338deg) brightness(88%) contrast(98%); opacity: 0.85; }
 
 /* 히어로 카드 스와이프/슬라이드식 전환 마이크로 애니메이션 효과 */
 @keyframes heroCardSlideIn {
@@ -2204,9 +2223,13 @@ p { margin: 0; }
   transition: background-color 0.2s ease, transform 0.2s ease;
 }
 .heroDot.active {
-  background: #2F80ED;
   transform: scale(1.1);
 }
+.heroDot.active.verdict-green { background: #22C55E; }
+.heroDot.active.verdict-blue { background: #2F80ED; }
+.heroDot.active.verdict-amber { background: #F59E0B; }
+.heroDot.active.verdict-orange { background: #F97316; }
+.heroDot.active.verdict-red { background: #EF4444; }
 
 /* ─── REDESIGNED CANDIDATE CARDS ─────────────────────── */
 .list {
