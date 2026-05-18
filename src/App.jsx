@@ -1132,7 +1132,7 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
             {/* 오늘의 런각 1위 pill 뱃지 */}
             <div className="heroRankBadge">
               <span className="heroRankCrown">👑</span>
-              <span>오늘의 런각 1위</span>
+              <span>오늘의 관계 흐름 TOP 1</span>
             </div>
 
             <button className="heroCard" onClick={() => openCandidate(candidate)}>
@@ -1150,13 +1150,10 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
                   <Avatar candidate={candidate} size="xl" />
                 </div>
                 <div className="heroNameBlock">
-                  <div className="heroNameAndScoreRow">
-                    <h2 className="heroName">{heroName}</h2>
-                    <span className="heroStatusDot">·</span>
-                    <span className="heroStatusScore">{displayScore}<small>점</small></span>
-                  </div>
+                  <h2 className="heroName">{heroName}</h2>
                   <div className="heroStatusBadgeRow">
                     <span className={`heroStatusBadge badge-${isCho ? 'blue' : report.color}`}>{displayVerdict}</span>
+                    <span className="heroStatusScore">{displayScore}<small>점</small></span>
                   </div>
                   <p className="heroMeta">{displayAge}세 · {displayJob}{displayLoc ? ` · ${displayLoc}` : ''}</p>
                 </div>
@@ -1307,10 +1304,10 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
               <div className="candidateCard2Right">
                 <span className={`candidateCard2Score scoreText-${cColor}`}>{cScore}<small>점</small></span>
               </div>
-              
+
               {isDanger && (
                 <div className="rungakStamp" aria-hidden="true" style={{ filter: 'url(#rungak-grunge)' }}>
-                  <svg width="84" height="84" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg width="120" height="120" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                     {/* 바깥 거친 이중 테두리 원 */}
                     <circle cx="50" cy="50" r="44" stroke="#E11D48" strokeWidth="3" strokeDasharray="320" style={{ opacity: 0.9 }} />
                     <circle cx="50" cy="50" r="39" stroke="#E11D48" strokeWidth="1.2" strokeDasharray="4 4" style={{ opacity: 0.8 }} />
