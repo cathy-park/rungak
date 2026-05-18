@@ -1084,7 +1084,9 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
   }).sort((a, b) => b.report.totalScore - a.report.totalScore);
 
   const recommendable = mapped.filter(({ report }) =>
-    report.verdict === '계속 만나도 좋음' || report.verdict === '더 만나며 관찰'
+    report.verdict === '계속 만나도 좋음' || 
+    report.verdict === '더 만나며 관찰' || 
+    report.verdict === '조건 확인 필요'
   );
   const topRanked = recommendable.slice(0, 3);
   const hasCandidates = candidates.length > 0;
