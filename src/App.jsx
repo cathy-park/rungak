@@ -636,15 +636,73 @@ function analyze(candidate) {
 
 // 조용민 전용 표시 오버라이드 — 분석 로직은 건드리지 않고 표시값만 통일
 function getDisplayReport(candidate, report) {
-  if ((candidate?.name || candidate?.form?.name) !== '조용민') return report;
-  const copy = STATUS_COPY.blue;
+  const cName = candidate?.name || candidate?.form?.name || '무명의 후보';
+  const isCho = cName === '조용민';
+  const isJi = cName === '김지로';
+  const isDanger = cName === '김혁' || report.verdict === '정리 권장';
+
+  if (isCho) {
+    const copy = STATUS_COPY.blue;
+    return {
+      ...report,
+      totalScore: 72,
+      verdict: '더 만나며 관찰',
+      color: 'blue',
+      label: copy.heroTitle || '연애로는 베스트, 결혼으로는 조건 확인 필요',
+      comments: [copy.heroBody || '감정적 친밀도와 안정감은 매우 높은 수준이지만, 장기적인 현실 조건(결혼 가치관 및 재정 계획)에 대해 명확한 조율이 필요합니다.'],
+      metrics: {
+        relation: 80,
+        trust: 72,
+        condition: 55,
+        risk: 21
+      }
+    };
+  } else if (isJi) {
+    return {
+      ...report,
+      totalScore: 55,
+      verdict: '조건 확인 필요',
+      color: 'orange',
+      label: '관계의 정서는 평온하나 현실 조건에 대한 깊은 조율 필요',
+      comments: ['기본적인 대화와 일상적인 가치는 무난하게 공유되나, 거주 문제(서울/풍세) 및 향후 커리어 경로의 불확실성에 대한 현실적 조건 분석이 필수적입니다.'],
+      metrics: {
+        relation: 62,
+        trust: 58,
+        condition: 42,
+        risk: 48
+      }
+    };
+  } else if (isDanger) {
+    return {
+      ...report,
+      totalScore: 21,
+      verdict: '정리 권장',
+      color: 'red',
+      label: '정서적 불안정성과 높은 갈등 빈도로 관계 발전의 적신호',
+      comments: ['소통 방식에서의 지속적인 마찰과 상호 신뢰의 저하가 누적되고 있습니다. 감정적 소모를 막기 위해 객관적인 거리두기가 절실히 필요합니다.'],
+      metrics: {
+        relation: 18,
+        trust: 22,
+        condition: 30,
+        risk: 85
+      }
+    };
+  }
+
+  // 일반 등록 후보들을 위한 감정 점수 기반의 자동 동적 4대 지표 환산 계산
+  const relationVal = Math.round(report.relationScore * 10) || 50;
+  const trustVal = Math.round(report.trustScore * 10) || 50;
+  const conditionVal = Math.round(report.conditionScore * 10) || 50;
+  const riskVal = Math.max(15, Math.min(95, 100 - report.totalScore)) || 50;
+
   return {
     ...report,
-    totalScore: 72,
-    verdict: '더 만나며 관찰',
-    color: 'blue',
-    label: copy.heroTitle,
-    comments: [copy.heroBody],
+    metrics: {
+      relation: relationVal,
+      trust: trustVal,
+      condition: conditionVal,
+      risk: riskVal
+    }
   };
 }
 
@@ -1161,12 +1219,11 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
   const safeIdx = Math.min(heroIdx, Math.max(0, topRanked.length - 1));
 
   function heroMetrics(candidate, report) {
-    // 시안 상의 지표 값을 무조건 고정
-    return {
-      relation: 80,
-      trust: 72,
-      condition: 55,
-      risk: 21,
+    return report.metrics || {
+      relation: 50,
+      trust: 50,
+      condition: 50,
+      risk: 50
     };
   }
 
@@ -1181,9 +1238,9 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
         </filter>
       </defs>
     </svg>
-
+ 
     <Header openGuide={openGuide} />
-
+ 
     <main>
     {/* ── 히어로 섹션 캐러셀 (권장 물리 스냅 Carousel 및 스크롤 연동 시스템) ── */}
     {!hasCandidates ? (
@@ -1224,9 +1281,25 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
             const heroName = candidate.name || '무명의 후보';
             const isCho = heroName === '조용민';
             const isJi = heroName === '김지로';
-            const displayAge = isCho ? 38 : (report.age || '??');
-            const displayJob = isCho ? 'IT CEO(미스틸게임즈)' : (candidate.job || '직업 미상');
-            const displayLoc = isCho ? '과천, 평촌' : (candidate.location || '');
+            const isDanger = heroName === '김혁' || report.verdict === '정리 권장';
+ 
+            let displayAge = report.age || '??';
+            let displayJob = candidate.job || '직업 미상';
+            let displayLoc = candidate.location || '';
+ 
+            if (isCho) {
+              displayAge = 38;
+              displayJob = 'IT CEO(미스틸게임즈)';
+              displayLoc = '과천, 평촌';
+            } else if (isJi) {
+              displayAge = 34;
+              displayJob = '공보의(마취통증의학과 전공)';
+              displayLoc = '풍세(본가 서울)';
+            } else if (isDanger) {
+              displayAge = '나이 미상';
+              displayJob = '직업 미상';
+              displayLoc = '';
+            }
 
             return (
               <div 
