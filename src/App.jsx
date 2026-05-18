@@ -2551,6 +2551,14 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
   const [confirm, setConfirm] = useState(null);
   const [pendingSection, setPendingSection] = useState(null);
 
+  const sheetRef = React.useRef(null);
+  const [showCompactHeader, setShowCompactHeader] = useState(false);
+
+  const handleScroll = (e) => {
+    const scrollTop = e.currentTarget.scrollTop;
+    setShowCompactHeader(scrollTop > 90);
+  };
+
   const startSectionEdit = (sectionId) => {
     if (editingSection && editingSection !== sectionId) {
       setPendingSection(sectionId);
@@ -2651,27 +2659,124 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
   return (
     <>
     <div className="sheetBackdrop" onClick={close}>
-      <div className="sheet" onClick={(e) => e.stopPropagation()}>
-        <div className="sheetHeader profile-header" style={{ position: 'relative', padding: '24px 20px 16px', borderBottom: 'none' }}>
+      <div 
+        className="sheet" 
+        ref={sheetRef}
+        onScroll={handleScroll}
+        onClick={(e) => e.stopPropagation()}
+        style={{ position: 'relative', overflowY: 'auto' }}
+      >
+        {/* 스크롤 시 상단 정보를 축약한 Sticky Header */}
+        {showCompactHeader && (
+          <div style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 100,
+            background: 'rgba(255, 255, 255, 0.98)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            borderBottom: '1px solid var(--divider)',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+            padding: '10px 16px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '4px',
+            width: '100%',
+            boxSizing: 'border-box'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
+                <div style={{ width: '36px', height: '36px', flexShrink: 0 }}>
+                  <Avatar candidate={candidate} size="md" />
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0, flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '16px', fontWeight: 850, color: 'var(--text-1)', whiteSpace: 'nowrap' }}>{candidate.name || '무명의 후보'}</span>
+                  <span style={{ fontSize: '13px', color: 'var(--text-3)', fontWeight: 600, whiteSpace: 'nowrap' }}>{report.age || candidate.age}세</span>
+                  <Badge color={displayReport.color} style={{ fontSize: '10px', padding: '1px 5px', whiteSpace: 'nowrap' }}>{displayReport.verdict}</Badge>
+                </div>
+              </div>
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                <button 
+                  className="iconButton"
+                  onClick={() => setShowMenu(!showMenu)}
+                  style={{ width: '28px', height: '28px' }}
+                >
+                  <MoreVertical size={16} />
+                </button>
+                {showMenu && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '40px',
+                    right: '48px',
+                    background: 'var(--surface)',
+                    border: '1px solid var(--divider)',
+                    boxShadow: 'var(--shadow-md)',
+                    borderRadius: '10px',
+                    zIndex: 999,
+                    minWidth: '160px',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column'
+                  }}>
+                    <button onClick={() => { edit(candidate); setShowMenu(false); }} style={{ padding: '12px 14px', fontSize: '13px', border: 'none', background: 'none', textAlign: 'left', color: 'var(--text-body)', cursor: 'pointer', borderBottom: '1px solid var(--divider)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      ✏️ 전체 상세 정보 편집
+                    </button>
+                    <button onClick={() => { copy(); setShowMenu(false); }} style={{ padding: '12px 14px', fontSize: '13px', border: 'none', background: 'none', textAlign: 'left', color: 'var(--text-body)', cursor: 'pointer', borderBottom: '1px solid var(--divider)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      📋 마크다운 전체 복사
+                    </button>
+                    <button onClick={() => { setShowMenu(false); setConfirm({ message: `'${candidate.name}' 기록을 삭제할까요?`, sub: '삭제 후 복구할 수 없습니다.', confirmLabel: '삭제', danger: true, onConfirm: () => { remove(candidate.id); close(); setConfirm(null); }, onCancel: () => setConfirm(null) }); }} style={{ padding: '12px 14px', fontSize: '13px', border: 'none', background: 'none', textAlign: 'left', color: 'var(--red)', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Trash2 size={14} /> 이 후보 기록 삭제
+                    </button>
+                  </div>
+                )}
+                <button 
+                  className="iconButton" 
+                  onClick={close}
+                  style={{ width: '28px', height: '28px' }}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', paddingLeft: '44px', width: '100%', boxSizing: 'border-box', minWidth: 0 }}>
+              <span style={{ fontWeight: 800, color: `var(--${displayReport.color})`, flexShrink: 0 }}>{displayReport.finalScore}점</span>
+              <span style={{
+                color: 'var(--text-3)',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                flex: 1,
+                minWidth: 0
+              }}>
+                {displayReport.copy.detailTitle}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* 상단 확장 헤더 (초기 진입 시 보이는 영역) */}
+        <div className="sheetHeader profile-header" style={{ position: 'relative', padding: '20px 16px 12px', borderBottom: 'none' }}>
           <div className="profile-summary" style={{
             display: 'grid',
-            gridTemplateColumns: '84px 1fr',
+            gridTemplateColumns: '80px 1fr',
             columnGap: '16px',
             alignItems: 'start',
             width: '100%',
             paddingRight: '60px' /* 우측 상단 X/더보기 버튼과의 겹침 절대 차단 안전마진 */
           }}>
             {/* 1. 왼쪽 프로필 이미지 */}
-            <div className="profile-avatar-wrap" style={{ width: '84px', height: '84px', flexShrink: 0 }}>
+            <div className="profile-avatar-wrap" style={{ width: '80px', height: '80px', flexShrink: 0 }}>
               <Avatar candidate={candidate} size="xl" />
             </div>
 
             {/* 2. 오른쪽 정보 영역 */}
-            <div className="profile-info-wrap" style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: '5px' }}>
+            <div className="profile-info-wrap" style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <h2 className="profile-name" style={{
-                margin: '0 0 2px',
-                fontSize: '26px',
-                fontWeight: 900,
+                margin: '0 0 1px',
+                fontSize: '24px',
+                fontWeight: 850,
                 color: 'var(--text-1)',
                 lineHeight: 1.15,
                 letterSpacing: '-0.03em'
@@ -2680,9 +2785,9 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
               </h2>
               <p className="profile-meta-line" style={{
                 margin: 0,
-                fontSize: '14.5px',
-                fontWeight: 600,
-                color: '#64748B',
+                fontSize: '15px',
+                fontWeight: 500,
+                color: 'var(--text-3)',
                 lineHeight: '1.4',
                 wordBreak: 'keep-all'
               }}>
@@ -2691,9 +2796,9 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
               {candidate.location && (
                 <p className="profile-meta-line" style={{
                   margin: 0,
-                  fontSize: '14.5px',
-                  fontWeight: 600,
-                  color: '#64748B',
+                  fontSize: '15px',
+                  fontWeight: 500,
+                  color: 'var(--text-3)',
                   lineHeight: '1.4',
                   wordBreak: 'keep-all'
                 }}>
@@ -2704,14 +2809,14 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
               <div className="profile-badges-row" style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
+                gap: '6px',
                 flexWrap: 'wrap',
                 marginTop: '4px'
               }}>
-                <Badge color={displayReport.color}>{displayReport.verdict}</Badge>
+                <Badge color={displayReport.color} style={{ fontSize: '11px', padding: '2px 6px' }}>{displayReport.verdict}</Badge>
                 {(candidate.personalityTags || []).map(id => {
                   const tag = personalityTypeTags.find(t => t.id === id);
-                  return tag ? <Badge key={id} color="blue">{tag.emoji} {tag.label}</Badge> : null;
+                  return tag ? <Badge key={id} color="blue" style={{ fontSize: '11px', padding: '2px 6px' }}>{tag.emoji} {tag.label}</Badge> : null;
                 })}
               </div>
             </div>
@@ -2720,8 +2825,8 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
           {/* 3. 더보기/닫기 버튼 (우측 상단 독립 액션 배치) */}
           <div className="profile-actions-wrap" style={{
             position: 'absolute',
-            top: '20px',
-            right: '18px',
+            top: '16px',
+            right: '16px',
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
@@ -2742,7 +2847,7 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
             >
               <MoreVertical size={20} />
             </button>
-            {showMenu && (
+            {showMenu && !showCompactHeader && (
               <div style={{
                 position: 'absolute',
                 top: '34px',
@@ -2784,54 +2889,62 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
             </button>
           </div>
         </div>
-        <main className="sheetBody">
-          {/* 관계 관찰 요약 (기본 노출 - 펼쳐진 상태) */}
-          <Card className={`final ${scoreTone(displayReport.color).className}`}>
-            <div>
-              <Badge color={displayReport.color}>{scoreTone(displayReport.color).label}</Badge>
-              <p>최종 총점</p>
-              <strong>{displayReport.finalScore}</strong>
-            </div>
-            <aside>
-              <span>판정</span>
-              <b>{displayReport.verdict}</b>
-            </aside>
-            <section style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <b style={{ fontSize: '15.5px', color: 'var(--text-1)', lineHeight: '1.4' }}>{displayReport.copy.detailTitle}</b>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '4px' }}>
-                {displayReport.copy.detailComments.map((c, i) => (
-                  <p key={i} style={{ fontSize: '13px', color: 'var(--text-2)', lineHeight: '1.6', margin: 0, paddingLeft: '12px', position: 'relative', wordBreak: 'keep-all' }}>
-                    <span style={{ position: 'absolute', left: 0, color: 'var(--blue)' }}>•</span>
-                    {c}
-                  </p>
-                ))}
-              </div>
-            </section>
-            <div className="miniGrid">
-              <MiniScore label="조건/스펙" value={report.conditionScore} max={40} />
-              <MiniScore label="대화/태도" value={report.relationScore} max={30} />
-              <MiniScore label="정보확인" value={report.trustScore} max={15} />
-              <MiniScore label="지속가능성" value={report.realityScore} max={10} />
-              <MiniScore label="플래그가산" value={report.bonusPenalty} />
-              <MiniScore label="만남흐름" value={report.flowScore} />
-            </div>
-            <button className="copyButton" onClick={copy}>
-              {copied ? '관계 리포트 복사 완료!' : 'LLM 분석용 마크다운 복사'}
-            </button>
-          </Card>
 
-          {/* 🌟 5분할 탭 네비게이션 바 */}
+        <main className="sheetBody" style={{ padding: '0 16px 40px' }}>
+          {/* 가볍게 정돈된 상단 정보 요약 카드 (Expanded Summary Header) */}
+          <div style={{
+            padding: '16px',
+            borderRadius: '16px',
+            background: displayReport.color === 'green' ? 'var(--green-light)' :
+                        displayReport.color === 'blue' ? 'var(--blue-light)' :
+                        displayReport.color === 'amber' ? 'var(--amber-light)' :
+                        displayReport.color === 'orange' ? 'var(--orange-light)' :
+                        'var(--red-light)',
+            border: `1px solid var(--${displayReport.color}-border)`,
+            marginBottom: '16px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-2)' }}>최종 총점</span>
+                <strong style={{ fontSize: '32px', fontWeight: 800, color: 'var(--text-1)', fontFamily: 'var(--font-display)', lineHeight: 1 }}>{displayReport.finalScore}</strong>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', textAlign: 'right' }}>
+                <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-2)' }}>판정</span>
+                <b style={{ fontSize: '16px', fontWeight: 800, color: `var(--${displayReport.color})` }}>{displayReport.verdict}</b>
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', borderTop: '1px dashed rgba(0,0,0,0.06)', paddingTop: '8px' }}>
+              <b style={{ fontSize: '15px', color: 'var(--text-1)', lineHeight: '1.4' }}>{displayReport.copy.detailTitle}</b>
+              <p style={{ fontSize: '13px', color: 'var(--text-2)', lineHeight: '1.5', margin: 0, wordBreak: 'keep-all' }}>
+                {displayReport.copy.detailComments?.[0] || '관계의 전반적인 정량 데이터 분석이 완료되었습니다.'}
+              </p>
+            </div>
+          </div>
+
+          {/* 🌟 Sticky Tabs */}
           <div style={{ 
+            position: 'sticky',
+            top: showCompactHeader ? '76px' : '0px',
+            zIndex: 90,
             display: 'flex', 
             gap: '4px', 
             overflowX: 'auto', 
-            paddingBottom: '4px', 
+            padding: '8px 16px', 
+            margin: '0 -16px 16px', 
+            background: 'rgba(255, 255, 255, 0.98)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
             borderBottom: '1px solid var(--divider)', 
-            marginBottom: '16px',
             whiteSpace: 'nowrap',
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
-            WebkitOverflowScrolling: 'touch'
+            WebkitOverflowScrolling: 'touch',
+            boxShadow: showCompactHeader ? '0 4px 6px -1px rgba(0, 0, 0, 0.03)' : 'none',
+            transition: 'box-shadow 0.2s ease, top 0.2s ease'
           }}>
             {[
               { id: 'summary', label: '요약', icon: '📊' },
@@ -2846,7 +2959,7 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
                   key={t.id}
                   onClick={() => setActiveTab(t.id)}
                   style={{
-                    padding: '10px 14px',
+                    padding: '8px 12px',
                     fontSize: '13.5px',
                     fontWeight: isActive ? 800 : 600,
                     border: 'none',
@@ -2874,6 +2987,46 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
             {/* 1) 요약 탭 */}
             {activeTab === 'summary' && (
               <>
+                <Card className={`final ${scoreTone(displayReport.color).className}`} style={{ marginTop: '0px' }}>
+                  <div>
+                    <Badge color={displayReport.color}>{scoreTone(displayReport.color).label}</Badge>
+                    <p>최종 총점</p>
+                    <strong>{displayReport.finalScore}</strong>
+                  </div>
+                  <aside>
+                    <span>판정</span>
+                    <b>{displayReport.verdict}</b>
+                  </aside>
+                  <section style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <b style={{ fontSize: '15px', color: 'var(--text-1)', lineHeight: '1.4' }}>{displayReport.copy.detailTitle}</b>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '4px' }}>
+                      {displayReport.copy.detailComments.map((c, i) => (
+                        <p key={i} style={{ fontSize: '13px', color: 'var(--text-2)', lineHeight: '1.6', margin: 0, paddingLeft: '12px', position: 'relative', wordBreak: 'keep-all' }}>
+                          <span style={{ position: 'absolute', left: 0, color: 'var(--blue)' }}>•</span>
+                          {c}
+                        </p>
+                      ))}
+                    </div>
+                  </section>
+                  <div className="miniGrid">
+                    <MiniScore label="조건/스펙" value={report.conditionScore} max={40} />
+                    <MiniScore label="대화/태도" value={report.relationScore} max={30} />
+                    <MiniScore label="정보확인" value={report.trustScore} max={15} />
+                    <MiniScore label="지속가능성" value={report.realityScore} max={10} />
+                    <MiniScore label="플래그가산" value={report.bonusPenalty} />
+                    <MiniScore label="만남흐름" value={report.flowScore} />
+                  </div>
+                  <button className="copyButton" onClick={copy}>
+                    {copied ? '관계 리포트 복사 완료!' : 'LLM 분석용 마크다운 복사'}
+                  </button>
+                </Card>
+              </>
+            )}
+
+            {/* 2) 관찰 탭 */}
+            {activeTab === 'observe' && (
+              <>
+                {/* 요약 탭에서 이동된 관계 에너지 및 플래그 섹션 */}
                 <DetailAccordion title="관계 에너지 방향" subtitle="이 관계가 나에게 유발하는 에너지" defaultOpen={true}>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                     {(candidate.energyTags || []).map(id => {
@@ -2908,12 +3061,7 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
                     </div>
                   </div>
                 </DetailAccordion>
-              </>
-            )}
-
-            {/* 2) 관찰 탭 */}
-            {activeTab === 'observe' && (
-              <>
+              
                 <DetailAccordion title="빠른 기록 히스토리" subtitle="날짜 기반 한줄평 및 관찰 메모 누적 기록" defaultOpen={true}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {!isAddingQuickMemo && (
