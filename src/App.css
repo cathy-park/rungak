@@ -186,45 +186,45 @@ p { margin: 0; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 0 16px;
+  padding: 10px 0 8px; /* 헤더 여백 초밀착 */
 }
 .headerFlaskLogo {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  width: 26px; /* 앙증맞은 미니 로고 박스 */
+  height: 26px;
+  border-radius: 8px;
   background: #FFFFFF;
   border: 1px solid #D1E3FA;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(49, 130, 246, 0.05);
+  box-shadow: 0 1.5px 5px rgba(49, 130, 246, 0.03);
 }
 .headerFlaskLogo svg {
-  width: 24px;
-  height: 24px;
+  width: 14px;
+  height: 14px;
 }
 .headerTitle {
-  font-size: 24px;
-  font-weight: 900;
+  font-size: 12px; /* 절반으로 축소 */
+  font-weight: 800;
   letter-spacing: -0.03em;
   color: var(--text-1);
   margin: 0;
-  line-height: 1.1;
+  line-height: 1.15;
   font-family: var(--font-display);
 }
 .headerSub {
-  font-size: 13px;
+  font-size: 6.5px; /* 절반으로 축소 */
   font-weight: 800;
   color: var(--blue);
-  letter-spacing: 1.8px;
+  letter-spacing: 0.9px;
   text-transform: uppercase;
-  margin: 2px 0 0;
+  margin: 1px 0 0;
 }
 .headerSettingBtn {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  width: 26px; /* 앙증맞은 미니 설정 버튼 */
+  height: 26px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -232,7 +232,7 @@ p { margin: 0; }
   border: 1px solid #D1E3FA;
   color: #6A798F;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 1.5px 4px rgba(0, 0, 0, 0.01);
   transition: background-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
 }
 .headerSettingBtn:hover {
@@ -242,12 +242,14 @@ p { margin: 0; }
   transform: translateY(-1px);
 }
 .headerSettingBtn svg {
-  width: 24px;
-  height: 24px;
+  width: 14px;
+  height: 14px;
   fill: none;
   stroke: currentColor;
   stroke-width: 2;
   stroke-linecap: round;
+  stroke-linejoin: round;
+}
   stroke-linejoin: round;
 }
 
@@ -1876,22 +1878,22 @@ p { margin: 0; }
 .heroRankBadge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   background: rgba(255, 255, 255, 0.95);
   border: 1px solid #FBCB4B;
   border-radius: 999px;
-  padding: 0 14px;
-  height: 34px;
-  font-size: 14px;
+  padding: 0 12px;
+  height: 30px;
+  font-size: 11.5px; /* 2px 축소 */
   font-weight: 800;
   color: #B85C00;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
   position: relative;
   z-index: 2;
-  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.12);
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.1);
 }
 .heroRankCrown {
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .heroCard {
@@ -1912,7 +1914,7 @@ p { margin: 0; }
 /* 프로필 행 */
 .heroProfileRow {
   display: grid;
-  grid-template-columns: 96px 1fr;
+  grid-template-columns: 88px 1fr; /* 아바타에 맞춰 최적화 */
   column-gap: 14px;
   align-items: center;
 }
@@ -1921,24 +1923,24 @@ p { margin: 0; }
   flex-shrink: 0;
 }
 .avatar.xl {
-  width: 88px;
-  height: 88px;
+  width: 84px;
+  height: 84px;
   border-radius: 50%;
-  border: 4px solid #FFFFFF;
-  box-shadow: 0 4px 18px rgba(49, 130, 246, 0.14);
+  border: none; /* 하얀 테두리 없애기 */
+  box-shadow: 0 4px 16px rgba(49, 130, 246, 0.12);
   background: #DFF5F2;
 }
 .heroCrownWrap {
   position: absolute;
-  top: -14px;
+  top: -12px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 5;
-  filter: drop-shadow(0 2px 6px rgba(234, 179, 8, 0.3));
+  filter: drop-shadow(0 2px 5px rgba(234, 179, 8, 0.25));
 }
 .heroCrownSvg {
-  width: 34px;
-  height: 30px;
+  width: 30px;
+  height: 26px;
 }
 
 .heroNameBlock {
@@ -1958,8 +1960,8 @@ p { margin: 0; }
 
 .heroName {
   font-family: var(--font-display);
-  font-size: 24px;
-  font-weight: 900;
+  font-size: 21px; /* 2px 축소 */
+  font-weight: 800;
   color: var(--text-1);
   margin: 0;
   line-height: 1.1;
@@ -1977,8 +1979,8 @@ p { margin: 0; }
   display: inline-flex;
   align-items: center;
   border-radius: 7px;
-  padding: 4px 8px;
-  font-size: 12px;
+  padding: 3px 7px;
+  font-size: 10px; /* 2px 축소 */
   font-weight: 700;
   letter-spacing: 0.01em;
   width: auto;
@@ -1991,31 +1993,31 @@ p { margin: 0; }
 .heroStatusBadge.badge-red { background: #FFEBEF; color: #E11D48; }
 
 .heroStatusDot {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 900;
   color: #D1D5DB;
   line-height: 1;
 }
 .heroStatusScore {
   font-family: var(--font-display);
-  font-size: 24px;
+  font-size: 21px; /* 2px 축소 */
   font-weight: 900;
   color: #2F80ED;
   letter-spacing: -0.04em;
   line-height: 1;
 }
 .heroStatusScore small {
-  font-size: 14px;
+  font-size: 12px; /* 2px 축소 */
   font-weight: 700;
   color: #2F80ED;
   margin-left: 1px;
 }
 
 .heroMeta {
-  font-size: 12px;
+  font-size: 10px; /* 2px 축소 */
   color: #4B5563;
   font-weight: 500;
-  margin: 5px 0 0;
+  margin: 4px 0 0;
   line-height: 1.4;
   white-space: nowrap;
   overflow: hidden;
@@ -2026,9 +2028,9 @@ p { margin: 0; }
 .heroExplanationBox {
   background: rgba(255, 255, 255, 0.95);
   border-radius: 16px;
-  padding: 11px 14px;
+  padding: 12px 14px;
   display: flex;
-  gap: 8px;
+  gap: 10px;
   align-items: flex-start;
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
   border: none;
@@ -2037,16 +2039,17 @@ p { margin: 0; }
 .heroQuoteIcon {
   color: #3B82F6;
   flex-shrink: 0;
-  margin-top: 1px;
-  opacity: 0.7;
-  font-size: 22px;
+  margin-top: 2px;
+  opacity: 0.9;
+  display: flex;
+  align-items: center;
 }
 .heroExplanationContent {
   flex: 1;
   min-width: 0;
 }
 .heroExplanationHighlight {
-  font-size: 13px;
+  font-size: 11px; /* 2px 축소 */
   font-weight: 800;
   color: #2F80ED;
   line-height: 1.4;
@@ -2054,7 +2057,7 @@ p { margin: 0; }
   word-break: keep-all;
 }
 .heroExplanationDetail {
-  font-size: 12px;
+  font-size: 10px; /* 2px 축소 */
   font-weight: 500;
   color: #4B5563;
   line-height: 1.5;
@@ -2086,7 +2089,7 @@ p { margin: 0; }
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.02);
 }
 .heroIndicatorLabel {
-  font-size: 11px;
+  font-size: 8px; /* 2px 이상 축소하여 모바일 레이아웃 확보 */
   font-weight: 700;
   color: #8A97A8;
   text-align: center;
@@ -2109,13 +2112,12 @@ p { margin: 0; }
   flex-shrink: 0;
 }
 .heroIndicatorIcon svg {
-  width: 14px;
-  height: 14px;
-  stroke: currentColor;
+  width: 15px;
+  height: 15px;
 }
 .heroIndicatorValue {
   font-family: var(--font-display);
-  font-size: 22px;
+  font-size: 20px; /* 2px 축소 */
   font-weight: 900;
   letter-spacing: -0.03em;
   line-height: 1;
@@ -2160,32 +2162,32 @@ p { margin: 0; }
   background: transparent;
   border-radius: 0;
   padding: 0;
-  margin-top: 30px;
+  margin-top: 24px;
   border: none;
 }
 .sectionTitle {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
   padding: 0;
 }
 .sectionTitle h2 {
-  font-size: 24px;
-  font-weight: 900;
+  font-size: 14px; /* 후보 목록 글씨 절반 수준으로 대폭 축소 */
+  font-weight: 800;
   color: var(--text-1);
   margin: 0;
   letter-spacing: -0.03em;
 }
 .sectionTitle span {
-  font-size: 17px;
+  font-size: 11px; /* 2px 축소 */
   font-weight: 800;
   color: #8A97A8;
 }
 
 .candidateCardWrap {
   position: relative;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .candidateCard2 {
@@ -2254,7 +2256,7 @@ p { margin: 0; }
 
 .candidateCard2Name {
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: 14px; /* 2px 축소 */
   font-weight: 800;
   color: #111827;
   margin: 0;
@@ -2273,7 +2275,7 @@ p { margin: 0; }
 }
 
 .candidateCard2Meta {
-  font-size: 12px;
+  font-size: 10px; /* 2px 축소 */
   color: #4B5563;
   font-weight: 500;
   margin: 0;
@@ -2290,7 +2292,7 @@ p { margin: 0; }
   white-space: nowrap;
   border-radius: 6px;
   padding: 2px 7px;
-  font-size: 10px;
+  font-size: 8px; /* 2px 축소 */
   font-weight: 700;
 }
 .candidateCard2Badge.badge-blue { background: #EBF4FF; color: #3182F6; }
@@ -2310,7 +2312,7 @@ p { margin: 0; }
 
 .candidateCard2Score {
   font-family: var(--font-display);
-  font-size: 22px;
+  font-size: 20px; /* 2px 축소 */
   font-weight: 900;
   letter-spacing: -0.03em;
   white-space: nowrap;
@@ -2322,7 +2324,7 @@ p { margin: 0; }
 .scoreText-red { color: #E11D48; }
 
 .candidateCard2Score small {
-  font-size: 13px;
+  font-size: 11px; /* 2px 축소 */
   font-weight: 600;
   color: inherit;
   opacity: 0.75;
