@@ -709,11 +709,11 @@ function getDisplayReport(candidate, report) {
   // 100% 이름 검사 없는 무결한 데이터 카피 매핑
   const copy = generateHeroCopy(report);
 
-  // 모든 등록 후보에 대하여 동일하고 무결하게 정량 분석 점수를 기반으로 4대 지표 환산 계산
-  const relationVal = Math.round(report.relationScore * 10) || 50;
-  const trustVal = Math.round(report.trustScore * 10) || 50;
-  const conditionVal = Math.round(report.conditionScore * 10) || 50;
-  const riskVal = Math.max(15, Math.min(95, 100 - report.totalScore)) || 50;
+  // 모든 등록 후보에 대하여 동일하고 무결하게 정량 분석 점수를 기반으로 4대 지표 환산 계산 (100점 백분율 스케일업)
+  const relationVal = Math.round((report.relationScore / 30) * 100) || 50;
+  const trustVal = Math.round((report.trustScore / 15) * 100) || 50;
+  const conditionVal = Math.round((report.conditionScore / 40) * 100) || 50;
+  const riskVal = Math.max(15, Math.min(95, Math.round(100 - report.totalScore))) || 50;
 
   // 기존 comments 리스트에서 정량 계산된 추가 사유(예: capReason, flowScore) 등이 소실되지 않도록 정교한 배열 머지 수행
   const baseComments = [copy.body];
