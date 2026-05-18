@@ -2953,21 +2953,20 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
             {/* 1) 요약 탭 */}
             {activeTab === 'summary' && (
               <>
-                <Card className={`final ${scoreTone(displayReport.color).className}`} style={{ marginTop: '0px' }}>
-                  {/* ── 상단: 점수 + 판정 compact 한 행 ── */}
-                  <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '8px' }}>
-                    <div>
+                <Card className={`final ${scoreTone(displayReport.color).className}`} style={{ marginTop: '0px', padding: '14px 16px 16px' }}>
+                  {/* ── 상단: badge + 판정 + 점수 compact ── */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                       <Badge color={displayReport.color}>{scoreTone(displayReport.color).label}</Badge>
-                      <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-2)', margin: '8px 0 2px', letterSpacing: '0.01em' }}>최종 총점</p>
-                      <strong style={{ fontFamily: 'var(--font-display)', fontSize: '48px', fontWeight: 700, letterSpacing: '-0.045em', lineHeight: 1, color: 'var(--text-1)', display: 'block' }}>
+                      <span style={{ fontSize: '23px', fontFamily: 'var(--font-display)', fontWeight: 700, letterSpacing: '-0.025em', color: `var(--${displayReport.color})` }}>
+                        {displayReport.verdict}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                      <strong style={{ fontFamily: 'var(--font-display)', fontSize: '40px', fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1, color: 'var(--text-1)' }}>
                         {displayReport.finalScore}
                       </strong>
-                    </div>
-                    <div style={{ textAlign: 'right', paddingBottom: '2px' }}>
-                      <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-2)', display: 'block' }}>판정</span>
-                      <b style={{ fontSize: '22px', fontFamily: 'var(--font-display)', fontWeight: 700, letterSpacing: '-0.02em', display: 'block', marginTop: '2px', color: 'var(--text-1)' }}>
-                        {displayReport.verdict}
-                      </b>
+                      <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-3)', letterSpacing: '0.01em' }}>점</span>
                     </div>
                   </div>
 
