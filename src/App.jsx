@@ -633,70 +633,120 @@ function analyze(candidate) {
   if (flowScore !== 0) comments.push(`타임라인 만남 흐름 점수 ${flowScore > 0 ? '+' : ''}${flowScore}점이 반영됐어요.`);
   return { age, rows, conditionScore, relationScore, trustScore, realityScore, bonusPenalty, flowScore, totalScore, verifiedCount, verdict, label, color, comments };
 }
+// ─── 상태별/데이터 점수 구간별 정교한 UX Writing 룰셋 ──────────────────────────────
+const STATUS_COPY_RULES = {
+  green: {
+    titleTemplates: [
+      "미래의 동반자로서 높은 안정성과 정서적 일치감을 보입니다.",
+      "서로에 대한 상호 신뢰와 탄탄한 소통이 구축된 최고의 관계입니다.",
+      "안정된 관계 형성의 최적화, 결혼 가치관 정렬도가 훌륭합니다."
+    ],
+    bodyTemplates: [
+      "정서적 친밀도와 현실적 조건의 정렬도가 매우 높은 최상급의 관계입니다. 장기적 비전을 함께 설계하기에 최고의 시점입니다.",
+      "두 사람의 가치관 일치도가 돋보입니다. 신뢰를 기반으로 깊은 대화를 이어나가며 미래를 구체적으로 이야기해 보세요."
+    ]
+  },
+  blue: {
+    titleTemplates: [
+      "관계의 호감은 분명하나 현실 조건의 추가 교차가 필요해요.",
+      "연애로는 베스트, 결혼으로는 조건 확인 필요 상태입니다.",
+      "대화와 호감의 흐름은 좋지만 아직은 속도를 조절할 시기입니다."
+    ],
+    bodyTemplates: [
+      "감정적인 케미스트리는 무난하게 훌륭하지만, 장기적인 현실 생활 가치관(재정, 생활 방식 등)에 대해 좀 더 차분하게 조율해 보는 편이 좋습니다.",
+      "호감은 안정적으로 유지하되, 아직은 관계를 성급하게 확정하기보다 일관된 행동과 배려를 조금 더 지켜보며 관찰하는 것이 안전합니다."
+    ]
+  },
+  amber: {
+    titleTemplates: [
+      "정서적 편안함의 결여로 감정 투자의 조절이 필요합니다.",
+      "대화의 긴장도와 안정성의 편차가 커 감정을 아낄 때입니다.",
+      "장기적인 편안함이 불확실하여 한 걸음 물러선 관찰이 절실해요."
+    ],
+    bodyTemplates: [
+      "대화 속 긴장도가 잦고 상호 정서적 지지 기반이 다소 불안정합니다. 상대방에게 감정을 과도하게 몰입하기 전에 심리적 편안함이 충분한지 냉정히 검증하세요.",
+      "서로의 리액션 편차가 크거나 소통의 안정도가 부족합니다. 조급하게 다가가기보다 상대방의 감정적 기복과 관계에 대한 책무감을 더 지켜보아야 합니다."
+    ]
+  },
+  orange: {
+    titleTemplates: [
+      "조건 스펙은 화려하나 교차 검증되지 않은 신뢰 확인이 필수입니다.",
+      "조건보다 실제 행동 태도와 일관성을 먼저 관찰해보세요.",
+      "겉으로 드러난 가치보다 행동의 투명성이 더 검증되어야 합니다."
+    ],
+    bodyTemplates: [
+      "조건은 만족스러워 보일지 모르나, 주요 신뢰 정보(직업, 자산 등)의 실질적 검증 수치가 다소 낮습니다. 겉으로 드러난 배경에 현혹되지 마세요.",
+      "관계의 안정감은 일방적인 호조건이 아닌 일상의 작은 태도와 약속 이행력에서 옵니다. 투명하지 못한 부분에 대해 대화를 통해 자연스럽게 검증할 필요가 있습니다."
+    ]
+  },
+  red: {
+    titleTemplates: [
+      "지속 관여할수록 심리적 에너지 소모와 충돌 리스크가 큽니다.",
+      "반복적인 불안정과 신뢰 저하로 객관적인 거리두기가 시급합니다.",
+      "안정성이 훼손된 관계로 감정 소모를 차단하는 선택이 필요해요."
+    ],
+    bodyTemplates: [
+      "정서적 갈등 빈도가 잦고 신뢰를 반복적으로 위협하는 부정적 신호(Red Flag)들이 누적되어 있습니다. 개선을 위해 혼자 애쓰기보다 명확한 심리적 경계를 설정하세요.",
+      "상대의 소통 거부나 신뢰를 무너뜨리는 태도가 반복된다면, 더 설득하려 하기보다 자신의 정서적 에너지를 지키기 위해 건강하게 물러서야 하는 시점입니다."
+    ]
+  }
+};
 
-// 조용민 전용 표시 오버라이드 — 분석 로직은 건드리지 않고 표시값만 통일
-function getDisplayReport(candidate, report) {
-  const cName = candidate?.name || candidate?.form?.name || '무명의 후보';
-  const isCho = cName === '조용민';
-  const isJi = cName === '김지로';
-  const isDanger = cName === '김혁' || report.verdict === '정리 권장';
+function generateHeroCopy(report) {
+  const color = report.color || 'blue';
+  const rules = STATUS_COPY_RULES[color] || STATUS_COPY_RULES.blue;
 
-  if (isCho) {
-    const copy = STATUS_COPY.blue;
-    return {
-      ...report,
-      totalScore: 72,
-      verdict: '더 만나며 관찰',
-      color: 'blue',
-      label: copy.heroTitle || '연애로는 베스트, 결혼으로는 조건 확인 필요',
-      comments: [copy.heroBody || '감정적 친밀도와 안정감은 매우 높은 수준이지만, 장기적인 현실 조건(결혼 가치관 및 재정 계획)에 대해 명확한 조율이 필요합니다.'],
-      metrics: {
-        relation: 80,
-        trust: 72,
-        condition: 55,
-        risk: 21
-      }
-    };
-  } else if (isJi) {
-    return {
-      ...report,
-      totalScore: 55,
-      verdict: '조건 확인 필요',
-      color: 'orange',
-      label: '관계의 정서는 평온하나 현실 조건에 대한 깊은 조율 필요',
-      comments: ['기본적인 대화와 일상적인 가치는 무난하게 공유되나, 거주 문제(서울/풍세) 및 향후 커리어 경로의 불확실성에 대한 현실적 조건 분석이 필수적입니다.'],
-      metrics: {
-        relation: 62,
-        trust: 58,
-        condition: 42,
-        risk: 48
-      }
-    };
-  } else if (isDanger) {
-    return {
-      ...report,
-      totalScore: 21,
-      verdict: '정리 권장',
-      color: 'red',
-      label: '정서적 불안정성과 높은 갈등 빈도로 관계 발전의 적신호',
-      comments: ['소통 방식에서의 지속적인 마찰과 상호 신뢰의 저하가 누적되고 있습니다. 감정적 소모를 막기 위해 객관적인 거리두기가 절실히 필요합니다.'],
-      metrics: {
-        relation: 18,
-        trust: 22,
-        condition: 30,
-        risk: 85
-      }
-    };
+  // 순수 점수와 세부 지표 수치 오프셋을 결합한 결정론적 인덱스 분기 (하드코딩 실명 검사 완전 배제)
+  const titleIdx = Math.abs(Math.round(report.totalScore) + (report.relationScore || 0)) % rules.titleTemplates.length;
+  const bodyIdx = Math.abs(Math.round(report.totalScore) + (report.trustScore || 0)) % rules.bodyTemplates.length;
+
+  let title = rules.titleTemplates[titleIdx];
+  let body = rules.bodyTemplates[bodyIdx];
+
+  // 정량 분석 스펙에 근거한 스마트 분기
+  if (color === 'red') {
+    if (report.totalScore < 25) {
+      title = "객관적인 경고 신호들이 다수 감지되어 정리 권장을 강력 건의해요.";
+      body = "소통 과정에서의 심각한 마찰과 안전성을 훼손하는 결정적 경고 요소들이 누적되어 있습니다. 마음을 비우고 정서적 거리를 두는 편이 안전합니다.";
+    }
+  } else if (color === 'orange') {
+    if (report.verifiedCount <= 1) {
+      title = "조건보다 실제 행동 태도와 투명성을 먼저 확인해보세요.";
+      body = "조건은 화려해 보여도 관계의 신뢰도는 대화 속 태도와 정보의 투명성에서 시작됩니다. 조급하게 감정을 쏟기 전에 신뢰가 확보되는지 깊이 살펴보세요.";
+    }
+  } else if (color === 'blue') {
+    if (report.relationScore >= 24) {
+      title = "대화 정서와 정서 친밀감은 무난히 잘 흐르고 있는 상태입니다.";
+      body = "전체적인 감정 소통은 긍정적이나, 결혼 등 진지한 미래 계획에 대해서는 차분하고 일관성 있게 추가적인 관찰을 계속 진행하는 것이 최선입니다.";
+    }
   }
 
-  // 일반 등록 후보들을 위한 감정 점수 기반의 자동 동적 4대 지표 환산 계산
+  return { title, body };
+}
+
+function getDisplayReport(candidate, report) {
+  // 100% 이름 검사 없는 무결한 데이터 카피 매핑
+  const copy = generateHeroCopy(report);
+
+  // 모든 등록 후보에 대하여 동일하고 무결하게 정량 분석 점수를 기반으로 4대 지표 환산 계산
   const relationVal = Math.round(report.relationScore * 10) || 50;
   const trustVal = Math.round(report.trustScore * 10) || 50;
   const conditionVal = Math.round(report.conditionScore * 10) || 50;
   const riskVal = Math.max(15, Math.min(95, 100 - report.totalScore)) || 50;
 
+  // 기존 comments 리스트에서 정량 계산된 추가 사유(예: capReason, flowScore) 등이 소실되지 않도록 정교한 배열 머지 수행
+  const baseComments = [copy.body];
+  const existingExtras = (report.comments || []).filter(c => 
+    c !== STATUS_COPY[report.color]?.heroBody && 
+    !c.includes("감정적 친밀도와 안정감은 매우 높은 수준이지만") && 
+    !c.includes("기본적인 대화와 일상적인 가치는") && 
+    !c.includes("소통 방식에서의 지속적인 마찰과")
+  );
+
   return {
     ...report,
+    label: copy.title,
+    comments: [...baseComments, ...existingExtras],
     metrics: {
       relation: relationVal,
       trust: trustVal,
@@ -1279,27 +1329,10 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
             const { candidate, report } = item;
             const m = heroMetrics(candidate, report);
             const heroName = candidate.name || '무명의 후보';
-            const isCho = heroName === '조용민';
-            const isJi = heroName === '김지로';
-            const isDanger = heroName === '김혁' || report.verdict === '정리 권장';
  
-            let displayAge = report.age || '??';
-            let displayJob = candidate.job || '직업 미상';
-            let displayLoc = candidate.location || '';
- 
-            if (isCho) {
-              displayAge = 38;
-              displayJob = 'IT CEO(미스틸게임즈)';
-              displayLoc = '과천, 평촌';
-            } else if (isJi) {
-              displayAge = 34;
-              displayJob = '공보의(마취통증의학과 전공)';
-              displayLoc = '풍세(본가 서울)';
-            } else if (isDanger) {
-              displayAge = '나이 미상';
-              displayJob = '직업 미상';
-              displayLoc = '';
-            }
+            const displayAge = report.age || calcAge(candidate.birthDate) || '나이 미상';
+            const displayJob = candidate.job || '직업 미상';
+            const displayLoc = candidate.location || '';
 
             return (
               <div 
@@ -1424,34 +1457,20 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
         <span>{candidates.length}명</span>
       </div>
       {candidates.slice().reverse().map((candidate) => {
-        const report = analyze(candidate);
+        const displayReport = getDisplayReport(candidate, analyze(candidate));
         const cName = candidate.name || '무명의 후보';
-        const isDanger = report.verdict === '정리 권장' || cName === '김혁';
-        const isCho = cName === '조용민';
-        const isJi = cName === '김지로';
+        const cScore = displayReport.totalScore;
+        const cVerdict = displayReport.verdict;
+        const cColor = displayReport.color;
+        const isDanger = cVerdict === '정리 권장';
 
-        // 3인 데이터 피그마 시안 100% 매칭 데이터 렌더링용 매핑
-        let cScore = report.totalScore;
-        let cVerdict = report.verdict;
-        let cColor = report.color;
-
-        if (isJi) {
-          cScore = 55;
-          cVerdict = '조건 확인 필요';
-          cColor = 'orange';
-        } else if (isCho) {
-          cScore = 72;
-          cVerdict = '더 만나며 관찰';
-          cColor = 'blue';
-        } else if (isDanger) {
-          cScore = 21;
-          cVerdict = '정리 권장';
-          cColor = 'red';
-        }
+        const displayAge = displayReport.age || calcAge(candidate.birthDate) || '나이 미상';
+        const displayJob = candidate.job || '직업 미상';
+        const displayLoc = candidate.location || '';
 
         return (
           <div key={candidate.id} className="candidateCardWrap">
-            <button className={`candidateCard2 verdict-${cColor} card-${cName === '김혁' ? 'danger' : 'normal'}`} onClick={() => openCandidate(candidate)}>
+            <button className={`candidateCard2 verdict-${cColor} card-${isDanger ? 'danger' : 'normal'}`} onClick={() => openCandidate(candidate)}>
               <Avatar candidate={candidate} size="sm" />
               <div className="candidateCard2Body">
                 <div className="candidateCard2NameRow">
@@ -1459,21 +1478,9 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
                   <span className={`candidateCard2Badge badge-${cColor}`}>{cVerdict}</span>
                 </div>
 
-                {isJi ? (
-                  <div className="candidateCard2MetaBlock">
-                    <p className="candidateCard2Meta">34세 · 공보의(마취통증의학과 전공)</p>
-                    <p className="candidateCard2Meta">풍세(본가 서울)</p>
-                  </div>
-                ) : isCho ? (
-                  <div className="candidateCard2MetaBlock">
-                    <p className="candidateCard2Meta">38세 · IT CEO(미스틸게임즈)</p>
-                    <p className="candidateCard2Meta">과천, 평촌</p>
-                  </div>
-                ) : (
-                  <div className="candidateCard2MetaBlock">
-                    <p className="candidateCard2Meta">44세 · 자산운용사 · 서울</p>
-                  </div>
-                )}
+                <div className="candidateCard2MetaBlock">
+                  <p className="candidateCard2Meta">{displayAge}세 · {displayJob}{displayLoc ? ` · ${displayLoc}` : ''}</p>
+                </div>
               </div>
               
               <div className="candidateCard2Right">
