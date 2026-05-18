@@ -455,6 +455,7 @@ p { margin: 0; }
 .tone-amber  { background: var(--amber-light);  color: var(--amber-text);  border: 1px solid var(--amber-border); }
 .tone-orange { background: var(--orange-light); color: var(--orange-text); border: 1px solid var(--orange-border); }
 .tone-red    { background: var(--red-light);    color: var(--red-text);    border: 1px solid var(--red-border); }
+.tone-slate  { background: #F1F5F9;             color: #475569;            border: 1px solid #CBD5E1; }
 .tone-gray   { background: var(--bg);           color: var(--text-2);      border: 1px solid var(--divider); }
 
 .tone-bg-green  { background: var(--green); }

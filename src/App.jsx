@@ -158,15 +158,46 @@ const signalOptions = [
 
 // ─── 인간 유형 태그 ───────────────────────────────────
 const personalityTypeTags = [
-  { id: 'achiever-creator', label: '성취형 창작자', emoji: '🎯' },
-  { id: 'self-world', label: '자기세계형', emoji: '🌌' },
-  { id: 'growth-type', label: '성장형 인간', emoji: '🌱' },
-  { id: 'emotion-avoid', label: '감정회피형', emoji: '🧊' },
-  { id: 'structure-design', label: '구조설계형', emoji: '🔧' },
-  { id: 'sensitive-analyst', label: '감성형 분석가', emoji: '💫' },
-  { id: 'workaholic', label: '워커홀릭형', emoji: '⚡' },
-  { id: 'free-spirit', label: '자유영혼형', emoji: '🕊️' },
-  { id: 'stable-reliable', label: '안정형 신뢰형', emoji: '🏛️' },
+  // ── 긍정형 ────────────────────────────────────────────
+  { id: 'achiever-creator',      label: '성취형 창작자',   emoji: '🎯', category: 'positive', tone: 'blue',   description: '목표와 성취를 중심으로 자기 세계를 만들어가는 성향' },
+  { id: 'growth-type',           label: '성장형 인간',     emoji: '🌱', category: 'positive', tone: 'green',  description: '끊임없이 배우고 변화하는 것을 삶의 방향으로 삼는 성향' },
+  { id: 'stable-reliable',       label: '안정형 신뢰형',   emoji: '🏛️', category: 'positive', tone: 'green',  description: '일관된 행동과 말로 신뢰를 쌓아가는 성향' },
+  { id: 'responsible-leader',    label: '책임형 리더',     emoji: '🧭', category: 'positive', tone: 'blue',   description: '주도적으로 상황을 이끌며 책임을 회피하지 않는 성향' },
+  { id: 'communicator',          label: '소통형 조율자',   emoji: '💬', category: 'positive', tone: 'blue',   description: '감정과 의견을 차분하게 나누며 관계를 조율하는 성향' },
+  { id: 'caring-partner',        label: '배려형 동반자',   emoji: '🤝', category: 'positive', tone: 'green',  description: '상대의 필요를 먼저 살피고 함께하는 것을 중요시하는 성향' },
+  { id: 'problem-solver',        label: '문제해결형',      emoji: '🧩', category: 'positive', tone: 'blue',   description: '어려운 상황에서 현실적인 해결책을 찾아내는 성향' },
+  { id: 'self-reflective',       label: '자기성찰형',      emoji: '🔍', category: 'positive', tone: 'green',  description: '자신의 행동과 감정을 돌아보며 관계를 개선하려는 성향' },
+  { id: 'emotionally-stable',    label: '정서 안정형',     emoji: '🌊', category: 'positive', tone: 'green',  description: '감정의 흔들림 없이 일관된 에너지를 유지하는 성향' },
+  { id: 'learning-explorer',     label: '학습형 탐구자',   emoji: '📚', category: 'positive', tone: 'blue',   description: '새로운 것에 관심이 많고 지식과 경험을 공유하는 성향' },
+  // ── 중립형 ────────────────────────────────────────────
+  { id: 'self-world',            label: '자기세계형',      emoji: '🌌', category: 'neutral',  tone: 'slate',  description: '뚜렷한 자기만의 세계와 기준을 가진 성향' },
+  { id: 'emotion-avoid',         label: '감정회피형',      emoji: '🧊', category: 'neutral',  tone: 'slate',  description: '감정적 대화보다 논리적 거리를 선호하는 성향' },
+  { id: 'structure-design',      label: '구조설계형',      emoji: '🛠️', category: 'neutral',  tone: 'slate',  description: '계획과 틀을 먼저 세우고 움직이는 성향' },
+  { id: 'free-spirit',           label: '자유영혼형',      emoji: '🪶', category: 'neutral',  tone: 'slate',  description: '틀에 얽매이지 않고 자유로운 방식으로 살아가는 성향' },
+  { id: 'sensitive-analyst',     label: '분석형 관찰자',   emoji: '🧠', category: 'neutral',  tone: 'slate',  description: '관찰하고 분석하며 패턴을 읽어내는 성향' },
+  { id: 'cautious-defensive',    label: '신중 방어형',     emoji: '🛡️', category: 'neutral',  tone: 'slate',  description: '쉽게 마음을 열지 않고 신중하게 관계를 쌓아가는 성향' },
+  { id: 'slow-trust',            label: '느린 신뢰형',     emoji: '🕰️', category: 'neutral',  tone: 'slate',  description: '시간과 경험이 쌓여야 신뢰가 형성되는 성향' },
+  { id: 'image-manager',         label: '이미지 관리형',   emoji: '🎭', category: 'neutral',  tone: 'slate',  description: '자신이 어떻게 보이는지를 중요하게 여기는 성향' },
+  { id: 'independent-type',      label: '독립형 개인주의', emoji: '🧍', category: 'neutral',  tone: 'slate',  description: '혼자만의 시간과 공간을 강하게 필요로 하는 성향' },
+  { id: 'privacy-keeper',        label: '사생활 중시형',   emoji: '🔒', category: 'neutral',  tone: 'slate',  description: '개인 영역을 명확히 구분하고 침범을 불편해하는 성향' },
+  // ── 주의형 ────────────────────────────────────────────
+  { id: 'workaholic',            label: '워커홀릭형',      emoji: '⚡', category: 'caution',  tone: 'amber',  description: '일에 몰입도가 높아 관계에 쏟을 에너지가 부족할 수 있는 성향' },
+  { id: 'obsession-first',       label: '몰입 우선형',     emoji: '🔭', category: 'caution',  tone: 'amber',  description: '현재 집중 대상 외의 것은 후순위로 미루는 성향' },
+  { id: 'mood-swing',            label: '감정기복형',      emoji: '🎢', category: 'caution',  tone: 'amber',  description: '감정의 진폭이 크고 주변에 영향을 미칠 수 있는 성향' },
+  { id: 'talk-first',            label: '말우선형',        emoji: '🗣️', category: 'caution',  tone: 'amber',  description: '말이 앞서고 행동이 뒤따르지 않을 수 있는 성향' },
+  { id: 'avoidance-delay',       label: '회피성 미루기형', emoji: '🌫️', category: 'caution',  tone: 'amber',  description: '불편한 상황이나 결정을 회피하거나 뒤로 미루는 성향' },
+  { id: 'condition-focused',     label: '조건중심형',      emoji: '📊', category: 'caution',  tone: 'amber',  description: '관계에서 이점과 조건을 먼저 계산하는 성향' },
+  { id: 'relation-low-priority', label: '관계후순위형',    emoji: '📵', category: 'caution',  tone: 'orange', description: '관계보다 개인 목표나 일을 우선순위에 두는 성향' },
+  { id: 'approval-seeker',       label: '인정욕구형',      emoji: '🪞', category: 'caution',  tone: 'orange', description: '타인의 인정과 반응에 민감하게 영향받는 성향' },
+  // ── 위험형 ────────────────────────────────────────────
+  { id: 'responsibility-avoid',  label: '책임회피형',      emoji: '🚩', category: 'danger',   tone: 'red',    description: '문제가 생겼을 때 원인을 외부로 돌리거나 책임을 회피하는 패턴' },
+  { id: 'word-changer',          label: '말바꾸기형',      emoji: '🌀', category: 'danger',   tone: 'red',    description: '상황에 따라 이전 말을 번복하거나 기억을 왜곡하는 패턴' },
+  { id: 'overstatement',         label: '과장표현형',      emoji: '📣', category: 'danger',   tone: 'red',    description: '자신의 능력·상황·감정을 과장해 전달하는 패턴' },
+  { id: 'conflict-amplifier',    label: '갈등증폭형',      emoji: '🧨', category: 'danger',   tone: 'red',    description: '작은 갈등을 확대하거나 주변 관계에 문제를 일으키는 패턴' },
+  { id: 'empathy-blocker',       label: '공감차단형',      emoji: '🪟', category: 'danger',   tone: 'red',    description: '상대의 감정을 인정하지 않고 자기 관점만 밀어붙이는 패턴' },
+  { id: 'info-opaque',           label: '정보불투명형',    emoji: '🕶️', category: 'danger',   tone: 'red',    description: '핵심 정보를 숨기거나 선택적으로만 공개하는 패턴' },
+  { id: 'boundary-violator',     label: '경계침범형',      emoji: '🪤', category: 'danger',   tone: 'red',    description: '상대의 거절이나 경계 설정을 무시하는 패턴' },
+  { id: 'emotional-drain',       label: '감정소모형',      emoji: '🔥', category: 'danger',   tone: 'red',    description: '관계에서 지속적으로 감정적 에너지를 고갈시키는 패턴' },
 ];
 
 // ─── 관계 에너지 태그 ──────────────────────────────────
@@ -1726,6 +1757,64 @@ function TagPickerGroup({ title, tags, selected, onToggle, maxSelect = 3 }) {
   );
 }
 
+const PERSONALITY_CATEGORIES = [
+  { key: 'positive', label: '긍정형', color: '#16A34A' },
+  { key: 'neutral',  label: '중립형', color: '#64748B' },
+  { key: 'caution',  label: '주의형', color: '#D97706' },
+  { key: 'danger',   label: '위험형', color: '#BE123C' },
+];
+
+function PersonalityTagPicker({ selected, onToggle, maxSelect = 3 }) {
+  return (
+    <div className="flatFlagGroup">
+      <div className="groupLabel" style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <span>인간 유형 태그 (성향)</span>
+        <span style={{ fontSize: '11px', fontWeight: 500, color: 'var(--text-3)' }}>최대 {maxSelect}개</span>
+      </div>
+      {PERSONALITY_CATEGORIES.map(cat => {
+        const tags = personalityTypeTags.filter(t => t.category === cat.key);
+        return (
+          <div key={cat.key} style={{ marginTop: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '7px' }}>
+              <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: cat.color, display: 'inline-block', flexShrink: 0 }} />
+              <span style={{ fontSize: '11px', fontWeight: 600, color: cat.color, letterSpacing: '0.02em' }}>{cat.label}</span>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+              {tags.map(tag => {
+                const isSelected = selected.includes(tag.id);
+                return (
+                  <button
+                    key={tag.id}
+                    type="button"
+                    className={`badge ${isSelected ? `tone-${tag.tone}` : 'tone-gray'}`}
+                    style={{
+                      padding: '7px 11px',
+                      fontSize: '12px',
+                      borderRadius: '10px',
+                      opacity: !isSelected && selected.length >= maxSelect ? 0.4 : 1,
+                      cursor: !isSelected && selected.length >= maxSelect ? 'default' : 'pointer',
+                      transition: 'all 0.15s',
+                    }}
+                    onClick={() => {
+                      if (isSelected) {
+                        onToggle(selected.filter(id => id !== tag.id));
+                      } else if (selected.length < maxSelect) {
+                        onToggle([...selected, tag.id]);
+                      }
+                    }}
+                  >
+                    {tag.emoji} {tag.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function ObservationSection({ notes, onChange, memo = '', onMemoChange }) {
   const [recommended, setRecommended] = useState(() => {
     // Shuffle and pick 3
@@ -1863,9 +1952,7 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
           <div className="accordionBody">
             <CharacterPicker form={form} update={update} handlePhoto={photo}/>
             <div style={{ marginTop: '20px' }}>
-              <TagPickerGroup 
-                title="인간 유형 태그 (성향)"
-                tags={personalityTypeTags}
+              <PersonalityTagPicker
                 selected={form.personalityTags || []}
                 onToggle={(tags) => update('personalityTags', tags)}
                 maxSelect={3}
@@ -1981,9 +2068,7 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
           <StepTitle step="1" title="프로필 & 유형" desc="캐릭터와 기본적 성향을 기록해요."/>
           <CharacterPicker form={form} update={update} handlePhoto={photo}/>
           <div className="flatStack" style={{ marginTop: '20px' }}>
-            <TagPickerGroup 
-              title="인간 유형 태그"
-              tags={personalityTypeTags}
+            <PersonalityTagPicker
               selected={form.personalityTags || []}
               onToggle={(tags) => update('personalityTags', tags)}
               maxSelect={3}
@@ -2803,7 +2888,7 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
               <span className={`badge tone-${displayReport.color}`} style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>{displayReport.verdict}</span>
               {(candidate.personalityTags || []).map(id => {
                 const tag = personalityTypeTags.find(t => t.id === id);
-                return tag ? <span key={id} className="badge tone-blue" style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>{tag.emoji} {tag.label}</span> : null;
+                return tag ? <span key={id} className={`badge tone-${tag.tone || 'blue'}`} style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>{tag.emoji} {tag.label}</span> : null;
               })}
             </div>
           </div>
