@@ -1078,6 +1078,41 @@ const renderRankCrown = (idx) => {
 function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
   const [heroIdx, setHeroIdx] = useState(0);
 
+  // 스와이프 & 마우스 드래그 인식을 위한 정밀 제스처 리스너 Refs
+  const dragStartRef = React.useRef(0);
+  const isDraggingRef = React.useRef(false);
+
+  const handleDragStart = (clientX) => {
+    dragStartRef.current = clientX;
+    isDraggingRef.current = true;
+  };
+
+  const handleDragEnd = (clientX, candidate) => {
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
+    const diff = dragStartRef.current - clientX;
+    const threshold = 40; // 스와이프 인식 물리 임계치 40px
+
+    if (Math.abs(diff) > threshold) {
+      if (diff > 0) {
+        // 왼쪽으로 슬라이드 -> 다음 카드로
+        if (safeIdx < topRanked.length - 1) {
+          setHeroIdx(safeIdx + 1);
+        }
+      } else {
+        // 오른쪽으로 슬라이드 -> 이전 카드로
+        if (safeIdx > 0) {
+          setHeroIdx(safeIdx - 1);
+        }
+      }
+    } else {
+      // 드래그 임계치 미만의 단순 탭/클릭 시 상세 모달 오픈
+      if (candidate) {
+        openCandidate(candidate);
+      }
+    }
+  };
+
   const mapped = candidates.map(candidate => {
     const report = getDisplayReport(candidate, analyze(candidate));
     return { candidate, report };
@@ -1119,7 +1154,27 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
 
     <main>
     {/* ── 히어로 섹션 ── */}
-    <div className="heroSection">
+    <div 
+      className="heroSection"
+      onTouchStart={(e) => handleDragStart(e.touches[0].clientX)}
+      onTouchEnd={(e) => {
+        if (hasCandidates && hasRecommendable) {
+          const { candidate } = topRanked[safeIdx];
+          handleDragEnd(e.changedTouches[0].clientX, candidate);
+        }
+      }}
+      onMouseDown={(e) => handleDragStart(e.clientX)}
+      onMouseUp={(e) => {
+        if (hasCandidates && hasRecommendable) {
+          const { candidate } = topRanked[safeIdx];
+          handleDragEnd(e.clientX, candidate);
+        }
+      }}
+      onMouseLeave={() => {
+        isDraggingRef.current = false;
+      }}
+      style={{ cursor: hasRecommendable ? 'grab' : 'default', userSelect: 'none' }}
+    >
       {!hasCandidates ? (
         <div className="heroEmpty">
           <Avatar candidate={emptyCandidate} size="lg" />
@@ -1166,9 +1221,7 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
               </svg>
             </div>
 
-
-
-            <button className="heroCard" onClick={() => openCandidate(candidate)}>
+            <div className="heroCard" style={{ background: 'transparent', border: 'none', padding: 0, width: '100%', textAlign: 'left', pointerEvents: 'none' }}>
               {/* 프로필 정보 영역 */}
               <div className="heroProfileRow">
                 <div className="heroAvatarWrapper">
@@ -1239,7 +1292,7 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
                   </div>
                 </div>
               </div>
-            </button>
+            </div>
           </>
         );
       })()}
