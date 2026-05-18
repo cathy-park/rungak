@@ -737,6 +737,57 @@ function getDisplayReport(candidate, report) {
   };
 }
 
+function generateHeroSummary(report) {
+  const summaries = {
+    green: "정서와 신뢰 일치도가 매우 우수하여 깊은 관계로 가기에 적합합니다.",
+    blue: "호감은 기분 좋게 유지하되, 속도를 늦추며 일관성을 검증할 때입니다.",
+    orange: "겉으로 보이는 조건보다 대화 속 태도와 정보의 투명성 확인이 필요해요.",
+    amber: "감정을 쏟기 전에 본인의 정서적 피로도와 편안함을 먼저 챙기세요.",
+    red: "반복적인 피로와 갈등 누적으로 건강한 정서적 거리두기가 시급합니다."
+  };
+  return summaries[report.color] || summaries.blue;
+}
+
+function normalizeCandidate(raw) {
+  const analysis = analyze(raw);
+  const report = getDisplayReport(raw, analysis);
+  const finalScore = Math.round(report.totalScore);
+
+  return {
+    ...raw,
+    ...report,
+    finalScore: finalScore,
+    displayScore: finalScore,
+    totalScore: finalScore,
+    verdict: report.verdict,
+    color: report.color,
+    metrics: report.metrics,
+    copy: {
+      heroTitle: report.label,
+      heroSummary: generateHeroSummary(report),
+      detailTitle: report.label,
+      detailBody: report.comments?.[0] || '관계의 전반적인 정량 데이터 분석이 완료되었습니다.',
+      detailComments: report.comments || []
+    }
+  };
+}
+
+function rankCandidates(normalizedList) {
+  return [...normalizedList].sort((a, b) => {
+    if (b.finalScore !== a.finalScore) {
+      return b.finalScore - a.finalScore;
+    }
+    const riskA = a.metrics?.risk || 50;
+    const riskB = b.metrics?.risk || 50;
+    if (riskA !== riskB) {
+      return riskA - riskB;
+    }
+    const relB = b.metrics?.relation || 50;
+    const relA = a.metrics?.relation || 50;
+    return relB - relA;
+  });
+}
+
 function scoreTone(color) {
   return {
     green:  { className: 'tone-green',  label: '안정' },
@@ -1234,10 +1285,7 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
     setHeroIdx(idx);
   };
 
-  const mapped = candidates.map(candidate => {
-    const report = getDisplayReport(candidate, analyze(candidate));
-    return { candidate, report };
-  }).sort((a, b) => b.report.totalScore - a.report.totalScore);
+  const mapped = candidates.map(c => ({ candidate: c, report: c }));
 
   const recommendable = mapped.filter(({ report }) =>
     report.verdict === '계속 만나도 좋음' || 
@@ -1348,7 +1396,7 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
                       <h2 className="heroName">{heroName}</h2>
                       <div className="heroStatusBadgeRow">
                         <span className={`heroStatusBadge badge-${report.color}`}>{report.verdict}</span>
-                        <span className="heroStatusScore">{report.totalScore}<small>점</small></span>
+                        <span className="heroStatusScore">{report.finalScore}<small>점</small></span>
                       </div>
                       <p className="heroMeta">{displayAge}세 · {displayJob}{displayLoc ? ` · ${displayLoc}` : ''}</p>
                     </div>
@@ -1360,8 +1408,15 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
                       <img src="/assets/quote.svg" alt="Quote Icon" className="heroQuoteIconImg" style={{ width: '14px', height: '11px', display: 'block' }} />
                     </div>
                     <div className="heroExplanationContent">
-                      <p className="heroExplanationHighlight">{report.label}</p>
-                      <p className="heroExplanationDetail">{report.comments?.[0] || '지금은 단정하기보다 관찰에 가까운 상태예요.'}</p>
+                      <p className="heroExplanationHighlight">{report.copy.heroTitle}</p>
+                      <p className="heroExplanationDetail hero-summary" style={{
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        lineHeight: 1.4
+                      }}>{report.copy.heroSummary}</p>
                     </div>
                   </div>
 
@@ -1437,15 +1492,14 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
         <h2>후보 목록</h2>
         <span>{candidates.length}명</span>
       </div>
-      {candidates.slice().reverse().map((candidate) => {
-        const displayReport = getDisplayReport(candidate, analyze(candidate));
+      {candidates.map((candidate) => {
         const cName = candidate.name || '무명의 후보';
-        const cScore = displayReport.totalScore;
-        const cVerdict = displayReport.verdict;
-        const cColor = displayReport.color;
+        const cScore = candidate.finalScore;
+        const cVerdict = candidate.verdict;
+        const cColor = candidate.color;
         const isDanger = cVerdict === '정리 권장';
 
-        const displayAge = displayReport.age || calcAge(candidate.birthDate) || '나이 미상';
+        const displayAge = candidate.age || '나이 미상';
         const displayJob = candidate.job || '직업 미상';
         const displayLoc = candidate.location || '';
 
@@ -2482,8 +2536,8 @@ function DynamicListSection({ items = [], type, onChange }) {
   );
 }
 function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField }) {
-  const report = analyze(candidate);
-  const displayReport = getDisplayReport(candidate, report);
+  const displayReport = normalizeCandidate(candidate);
+  const report = analyze(candidate); // 상세 탭 개별 지표 렌더링용 보존
   const [copied, setCopied] = useState(false);
   const markdownText = candidateMarkdown(candidate, report);
   const [isAddingQuickMemo, setIsAddingQuickMemo] = useState(false);
@@ -2736,15 +2790,22 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
             <div>
               <Badge color={displayReport.color}>{scoreTone(displayReport.color).label}</Badge>
               <p>최종 총점</p>
-              <strong>{displayReport.totalScore}</strong>
+              <strong>{displayReport.finalScore}</strong>
             </div>
             <aside>
               <span>판정</span>
               <b>{displayReport.verdict}</b>
             </aside>
-            <section>
-              <b>{displayReport.label}</b>
-              <p>{displayReport.comments[0]}</p>
+            <section style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <b style={{ fontSize: '15.5px', color: 'var(--text-1)', lineHeight: '1.4' }}>{displayReport.copy.detailTitle}</b>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '4px' }}>
+                {displayReport.copy.detailComments.map((c, i) => (
+                  <p key={i} style={{ fontSize: '13px', color: 'var(--text-2)', lineHeight: '1.6', margin: 0, paddingLeft: '12px', position: 'relative', wordBreak: 'keep-all' }}>
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--blue)' }}>•</span>
+                    {c}
+                  </p>
+                ))}
+              </div>
             </section>
             <div className="miniGrid">
               <MiniScore label="조건/스펙" value={report.conditionScore} max={40} />
@@ -3482,6 +3543,17 @@ export default function App() {
 
   useEffect(() => { try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(candidates)); } catch {} }, [candidates]);
 
+  const viewModel = useMemo(() => {
+    const analyzed = candidates.map(normalizeCandidate);
+    const ranked = rankCandidates(analyzed);
+
+    return {
+      rankedCandidates: ranked,
+      heroCandidates: ranked,
+      topCandidate: ranked[0]
+    };
+  }, [candidates]);
+
   function save(candidate) {
     const previous = candidates.find((item) => item.id === candidate.id);
     const saved = { ...(previous || {}), ...candidate, id: candidate.id || Date.now(), updatedAt: new Date().toISOString() };
@@ -3723,5 +3795,5 @@ export default function App() {
     }
   }
 
-  return <div className="app"><div className="phone"><main>{tab === 'home' && <Home candidates={candidates} openCandidate={setSelected} goAdd={() => { setEditing(null); setTab('add'); }} openGuide={() => setGuideOpen(true)} openQuickMemo={setQuickMemoCandidate}/>} {tab === 'add' && <AddCandidate initialCandidate={editing} onSave={save} onCancel={() => { setEditing(null); setTab('home'); }}/>}</main>{tab === 'home' && <FloatingAdd onClick={() => { setEditing(null); setTab('add'); }}/>} {selected && <DetailModal candidate={selected} close={() => setSelected(null)} edit={startEdit} remove={remove} saveTimeline={saveTimeline} updateField={updateCandidateField}/>} {quickMemoCandidate && <QuickMemoModal candidate={quickMemoCandidate} close={() => setQuickMemoCandidate(null)} onSave={addQuickMemo} />} {guideOpen && <GuideModal close={() => setGuideOpen(false)} onExport={exportData} onImport={importData} onSyncUpload={generateAndUploadData} onSyncDownload={downloadDataByCode}/>} {appConfirm && <ConfirmModal {...appConfirm} />} {toast && <Toast {...toast} onDone={() => setToast(null)} />}</div></div>;
+  return <div className="app"><div className="phone"><main>{tab === 'home' && <Home candidates={viewModel.rankedCandidates} openCandidate={setSelected} goAdd={() => { setEditing(null); setTab('add'); }} openGuide={() => setGuideOpen(true)} openQuickMemo={setQuickMemoCandidate}/>} {tab === 'add' && <AddCandidate initialCandidate={editing} onSave={save} onCancel={() => { setEditing(null); setTab('home'); }}/>}</main>{tab === 'home' && <FloatingAdd onClick={() => { setEditing(null); setTab('add'); }}/>} {selected && <DetailModal candidate={selected} close={() => setSelected(null)} edit={startEdit} remove={remove} saveTimeline={saveTimeline} updateField={updateCandidateField}/>} {quickMemoCandidate && <QuickMemoModal candidate={quickMemoCandidate} close={() => setQuickMemoCandidate(null)} onSave={addQuickMemo} />} {guideOpen && <GuideModal close={() => setGuideOpen(false)} onExport={exportData} onImport={importData} onSyncUpload={generateAndUploadData} onSyncDownload={downloadDataByCode}/>} {appConfirm && <ConfirmModal {...appConfirm} />} {toast && <Toast {...toast} onDone={() => setToast(null)} />}</div></div>;
 }
