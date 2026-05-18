@@ -633,93 +633,74 @@ function analyze(candidate) {
   if (flowScore !== 0) comments.push(`타임라인 만남 흐름 점수 ${flowScore > 0 ? '+' : ''}${flowScore}점이 반영됐어요.`);
   return { age, rows, conditionScore, relationScore, trustScore, realityScore, bonusPenalty, flowScore, totalScore, verifiedCount, verdict, label, color, comments };
 }
-// ─── 상태별/데이터 점수 구간별 정교한 UX Writing 룰셋 ──────────────────────────────
-const STATUS_COPY_RULES = {
-  green: {
-    titleTemplates: [
-      "미래의 동반자로서 높은 안정성과 정서적 일치감을 보입니다.",
-      "서로에 대한 상호 신뢰와 탄탄한 소통이 구축된 최고의 관계입니다.",
-      "안정된 관계 형성의 최적화, 결혼 가치관 정렬도가 훌륭합니다."
-    ],
-    bodyTemplates: [
-      "정서적 친밀도와 현실적 조건의 정렬도가 매우 높은 최상급의 관계입니다. 장기적 비전을 함께 설계하기에 최고의 시점입니다.",
-      "두 사람의 가치관 일치도가 돋보입니다. 신뢰를 기반으로 깊은 대화를 이어나가며 미래를 구체적으로 이야기해 보세요."
-    ]
-  },
-  blue: {
-    titleTemplates: [
-      "관계의 호감은 분명하나 현실 조건의 추가 교차가 필요해요.",
-      "연애로는 베스트, 결혼으로는 조건 확인 필요 상태입니다.",
-      "대화와 호감의 흐름은 좋지만 아직은 속도를 조절할 시기입니다."
-    ],
-    bodyTemplates: [
-      "감정적인 케미스트리는 무난하게 훌륭하지만, 장기적인 현실 생활 가치관(재정, 생활 방식 등)에 대해 좀 더 차분하게 조율해 보는 편이 좋습니다.",
-      "호감은 안정적으로 유지하되, 아직은 관계를 성급하게 확정하기보다 일관된 행동과 배려를 조금 더 지켜보며 관찰하는 것이 안전합니다."
-    ]
-  },
-  amber: {
-    titleTemplates: [
-      "정서적 편안함의 결여로 감정 투자의 조절이 필요합니다.",
-      "대화의 긴장도와 안정성의 편차가 커 감정을 아낄 때입니다.",
-      "장기적인 편안함이 불확실하여 한 걸음 물러선 관찰이 절실해요."
-    ],
-    bodyTemplates: [
-      "대화 속 긴장도가 잦고 상호 정서적 지지 기반이 다소 불안정합니다. 상대방에게 감정을 과도하게 몰입하기 전에 심리적 편안함이 충분한지 냉정히 검증하세요.",
-      "서로의 리액션 편차가 크거나 소통의 안정도가 부족합니다. 조급하게 다가가기보다 상대방의 감정적 기복과 관계에 대한 책무감을 더 지켜보아야 합니다."
-    ]
-  },
-  orange: {
-    titleTemplates: [
-      "조건 스펙은 화려하나 교차 검증되지 않은 신뢰 확인이 필수입니다.",
-      "조건보다 실제 행동 태도와 일관성을 먼저 관찰해보세요.",
-      "겉으로 드러난 가치보다 행동의 투명성이 더 검증되어야 합니다."
-    ],
-    bodyTemplates: [
-      "조건은 만족스러워 보일지 모르나, 주요 신뢰 정보(직업, 자산 등)의 실질적 검증 수치가 다소 낮습니다. 겉으로 드러난 배경에 현혹되지 마세요.",
-      "관계의 안정감은 일방적인 호조건이 아닌 일상의 작은 태도와 약속 이행력에서 옵니다. 투명하지 못한 부분에 대해 대화를 통해 자연스럽게 검증할 필요가 있습니다."
-    ]
-  },
-  red: {
-    titleTemplates: [
-      "지속 관여할수록 심리적 에너지 소모와 충돌 리스크가 큽니다.",
-      "반복적인 불안정과 신뢰 저하로 객관적인 거리두기가 시급합니다.",
-      "안정성이 훼손된 관계로 감정 소모를 차단하는 선택이 필요해요."
-    ],
-    bodyTemplates: [
-      "정서적 갈등 빈도가 잦고 신뢰를 반복적으로 위협하는 부정적 신호(Red Flag)들이 누적되어 있습니다. 개선을 위해 혼자 애쓰기보다 명확한 심리적 경계를 설정하세요.",
-      "상대의 소통 거부나 신뢰를 무너뜨리는 태도가 반복된다면, 더 설득하려 하기보다 자신의 정서적 에너지를 지키기 위해 건강하게 물러서야 하는 시점입니다."
-    ]
-  }
-};
-
 function generateHeroCopy(report) {
   const color = report.color || 'blue';
-  const rules = STATUS_COPY_RULES[color] || STATUS_COPY_RULES.blue;
+  const score = report.totalScore || 50;
 
-  // 순수 점수와 세부 지표 수치 오프셋을 결합한 결정론적 인덱스 분기 (하드코딩 실명 검사 완전 배제)
-  const titleIdx = Math.abs(Math.round(report.totalScore) + (report.relationScore || 0)) % rules.titleTemplates.length;
-  const bodyIdx = Math.abs(Math.round(report.totalScore) + (report.trustScore || 0)) % rules.bodyTemplates.length;
+  // 1. 상태 기반 기본 타이틀 & 가이드 톤 결정
+  const baseTitles = {
+    green: "미래의 동반자로서 높은 안정성과 정서적 일치감을 보입니다.",
+    blue: "관계의 호감은 분명하나 현실 조건의 추가 관찰이 필요해요.",
+    amber: "정서적 comfort의 부족으로 감정 투자의 조절이 필요합니다.",
+    orange: "조건 스펙은 화려하나 교차 검증되지 않은 신뢰 확인이 필수입니다.",
+    red: "지속 관여할수록 심리적 에너지 소모와 충돌 리스크가 큽니다."
+  };
 
-  let title = rules.titleTemplates[titleIdx];
-  let body = rules.bodyTemplates[bodyIdx];
+  let title = baseTitles[color] || baseTitles.blue;
 
-  // 정량 분석 스펙에 근거한 스마트 분기
-  if (color === 'red') {
-    if (report.totalScore < 25) {
-      title = "객관적인 경고 신호들이 다수 감지되어 정리 권장을 강력 건의해요.";
-      body = "소통 과정에서의 심각한 마찰과 안전성을 훼손하는 결정적 경고 요소들이 누적되어 있습니다. 마음을 비우고 정서적 거리를 두는 편이 안전합니다.";
-    }
-  } else if (color === 'orange') {
-    if (report.verifiedCount <= 1) {
-      title = "조건보다 실제 행동 태도와 투명성을 먼저 확인해보세요.";
-      body = "조건은 화려해 보여도 관계의 신뢰도는 대화 속 태도와 정보의 투명성에서 시작됩니다. 조급하게 감정을 쏟기 전에 신뢰가 확보되는지 깊이 살펴보세요.";
-    }
-  } else if (color === 'blue') {
-    if (report.relationScore >= 24) {
-      title = "대화 정서와 정서 친밀감은 무난히 잘 흐르고 있는 상태입니다.";
-      body = "전체적인 감정 소통은 긍정적이나, 결혼 등 진지한 미래 계획에 대해서는 차분하고 일관성 있게 추가적인 관찰을 계속 진행하는 것이 최선입니다.";
-    }
+  // 2. 세부 지표 기반의 강조 포인트 분기 (이름 검사 절대 금지!)
+  if (color === 'orange' && report.verifiedCount <= 1) {
+    title = "조건보다 실제 행동 태도와 투명성을 먼저 확인해보세요.";
+  } else if (color === 'blue' && report.relationScore >= 24) {
+    title = "조건과 관계 정서 흐름을 조금 더 긍정적으로 봐도 좋은 흐름입니다.";
+  } else if (color === 'red' && score < 25) {
+    title = "객관적인 경고 신호들이 다수 감지되어 확실한 거리두기를 강력 권장해요.";
+  } else if (color === 'amber' && report.relationScore < 12) {
+    title = "정서적 comfort 결여로 감정을 깊게 쓰기 전 완급조절 필요";
   }
+
+  // 3. 네 마디 문단 합성 알고리즘 (Sentence Composition)
+  const segments = [];
+
+  // [마디 1: 관계의 감정/정서적 안정도 평가]
+  if (report.relationScore >= 22) {
+    segments.push("두 사람의 대화 밀도와 소통의 일치감은 비교적 원만하고 긍정적인 수준을 보여줍니다.");
+  } else if (report.relationScore >= 12) {
+    segments.push("일상적인 소통 흐름은 평온하나, 갈등이나 깊은 가치관을 조율할 때 다소 편차가 느껴집니다.");
+  } else {
+    segments.push("대화 템포의 기복이 잦고 서로의 정서적 편안함과 지지 기반이 우려되는 상황입니다.");
+  }
+
+  // [마디 2: 정보 신뢰 및 현실 스펙 가치 정합도 평가]
+  if (report.conditionScore >= 26 && report.trustScore >= 8) {
+    segments.push("주요한 현실 스펙 정보들이 투명하게 교차 검증되어 신뢰도의 깊이가 단단합니다.");
+  } else if (report.conditionScore >= 26 && report.trustScore <= 5) {
+    segments.push("겉으로 드러난 가치 조건은 좋아 보이지만 교차 확인된 검증도가 낮아 섣부른 감정 투자는 신중해야 합니다.");
+  } else {
+    segments.push("장기적인 관점에서의 현실 가치관 조율과 거주지 등 구체적 정합성에 대해 좀 더 밀도 높은 대화가 필요합니다.");
+  }
+
+  // [마디 3: 경고/위험 플래그 및 Cap Reason 영향 반영]
+  const capFiltered = (report.comments || []).find(c => c.includes("제한되었") || c.includes("제한이 걸려"));
+  if (capFiltered) {
+    segments.push(capFiltered);
+  } else if (report.verifiedCount <= 1 && report.conditionScore >= 24) {
+    segments.push("주요 정보들의 실질적 검증 수치가 다소 투명하지 못해 겉보기에 현혹되지 않도록 교차 확인이 필수적입니다.");
+  } else {
+    segments.push("관계 안정성을 해치는 뚜렷한 심리적 유해 신호나 결정적 이상 패턴은 아직 감지되지 않았습니다.");
+  }
+
+  // [마디 4: 최종 액션 권장 가이드 (Next Action Guide)]
+  const guides = {
+    green: "장기적인 동반자 비전을 아름답게 설계하며 관계를 진지하게 구축해 볼 타이밍입니다.",
+    blue: "호감은 기분 좋게 이어가되, 아직은 감정을 과속하기보다 약속 이행과 일관성을 지켜보는 편이 좋습니다.",
+    orange: "스펙 조건에 취하기보다 상대방의 일상적인 신용과 약속 이행 투명성을 차분하게 교차 관찰하세요.",
+    amber: "상대방에게 조급하게 끌려가기보다 본인의 심리적 편안함과 경계선이 충분히 지켜지는지 먼저 조율해야 합니다.",
+    red: "추가적인 심리 소모와 감정적 매몰을 단호하게 차단하기 위해 차갑고 객관적인 거리두기가 절실합니다."
+  };
+  segments.push(guides[color] || guides.blue);
+
+  const body = segments.join(" ");
 
   return { title, body };
 }
