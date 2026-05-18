@@ -1820,10 +1820,10 @@ p { margin: 0; }
 }
 
 .hero-slide {
-  flex: 0 0 100%; /* 부모 너비 전체 100%를 온전히 꽉 채우는 풀폭! */
-  width: 100%;
-  max-width: 100%; /* 절대 화면 밖으로 넘치지 않게 방어 */
-  scroll-snap-align: center;
+  flex: 0 0 calc(100% - 40px);
+  width: calc(100% - 40px);
+  max-width: calc(100% - 40px);
+  scroll-snap-align: start;
   box-sizing: border-box;
   background: linear-gradient(135deg, #F5FAFF 0%, #EAF4FF 100%);
   background-image: url('/assets/hero_bg.png'), linear-gradient(135deg, #F5FAFF 0%, #EAF4FF 100%);
