@@ -250,8 +250,6 @@ p { margin: 0; }
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-  stroke-linejoin: round;
-}
 
 /* ─── CARDS ─────────────────────────────────────────── */
 .card {
