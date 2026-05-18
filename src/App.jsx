@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { MoreVertical, X, Pencil, Trash2, Clipboard, ChevronDown, ChevronUp, Plus, StickyNote } from 'lucide-react';
 import './App.css';
-import { db, doc, setDoc, getDoc } from './firebase';
+import { db, doc, setDoc, getDoc, onSnapshot } from './firebase';
 
 const STORAGE_KEY = 'rungak_lab_vite_v1';
+const SYNC_CODE_KEY = 'rungak_sync_code_v1';
 const AVATAR_BASE = '/characters';
 
 const characters = [
@@ -2577,7 +2578,7 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
     if (sectionId === 'relation') setSectionForm({ relation: candidate.relation || {} });
     if (sectionId === 'profile') setSectionForm({
       name: candidate.name || '', age: candidate.age || '', birthDate: candidate.birthDate || '',
-      mbti: candidate.mbti || '', job: candidate.job || '', route: candidate.route || '', memo: candidate.memo || ''
+      mbti: candidate.mbti || '', job: candidate.job || '', location: candidate.location || '', memo: candidate.memo || ''
     });
     if (sectionId === 'condition') setSectionForm({
       height: candidate.height || '', asset: candidate.asset || '', income: candidate.income || '',
@@ -3111,7 +3112,7 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
                       <Field label="생년월일" value={sectionForm.birthDate} onChange={(v) => setSectionForm(p => ({...p, birthDate: v}))} />
                       <Field label="MBTI" value={sectionForm.mbti} onChange={(v) => setSectionForm(p => ({...p, mbti: v}))} />
                       <Field label="직업" value={sectionForm.job} onChange={(v) => setSectionForm(p => ({...p, job: v}))} />
-                      <Field label="만난 경로" value={sectionForm.route} onChange={(v) => setSectionForm(p => ({...p, route: v}))} />
+                      <Field label="거주지" value={sectionForm.location} onChange={(v) => setSectionForm(p => ({...p, location: v}))} />
                       <Field label="첫인상 메모" textarea value={sectionForm.memo} onChange={(v) => setSectionForm(p => ({...p, memo: v}))} rows={3} />
                       <div className="twoButtons" style={{ marginTop: '10px' }}>
                         <button onClick={cancelSectionEdit}>취소</button>
@@ -3142,8 +3143,8 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
                           <b style={{ fontSize: '13px', color: 'var(--text-1)' }}>{candidate.job || '미확인'}</b>
                         </div>
                         <div style={{ padding: '10px', border: '1px solid var(--divider)', borderRadius: '10px', background: 'var(--bg)' }}>
-                          <small style={{ fontSize: '10px', color: 'var(--text-3)', display: 'block' }}>만난 경로</small>
-                          <b style={{ fontSize: '13px', color: 'var(--text-1)' }}>{candidate.route || '미확인'}</b>
+                          <small style={{ fontSize: '10px', color: 'var(--text-3)', display: 'block' }}>거주지</small>
+                          <b style={{ fontSize: '13px', color: 'var(--text-1)' }}>{candidate.location || '미확인'}</b>
                         </div>
                       </div>
                       <div style={{ padding: '12px', background: 'var(--surface)', border: '1px solid var(--divider)', borderRadius: '10px' }}>
@@ -3244,7 +3245,7 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
 function Info({ label, value, checked }) {
   return <div className="info"><small>{label}</small><b>{value}</b>{checked && <Badge color="green">확인됨</Badge>}</div>;
 }
-function GuideModal({ close, onExport, onImport, onSyncUpload, onSyncDownload }) {
+function GuideModal({ close, onExport, onImport, onSyncUpload, onSyncDownload, activeSyncCode, onDisconnectSync }) {
   const [syncCode, setSyncCode] = useState('');
   const [inputCode, setInputCode] = useState('');
   const [isUploading, setIsUploading] = useState(false);
@@ -3282,9 +3283,21 @@ function GuideModal({ close, onExport, onImport, onSyncUpload, onSyncDownload })
         
         {/* 기기간 데이터 연동 카드 */}
         <Card>
-          <h3>기기간 데이터 연동 (8자리 코드)</h3>
-          <p style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '6px', lineHeight: 1.45 }}>
-            현재 기기의 데이터를 서버에 임시 업로드하여 생성된 8자리 코드를 다른 기기에 입력하면 안전하게 데이터를 연동할 수 있습니다.
+          <h3>기기간 실시간 동기화</h3>
+
+          {/* 현재 연동 중 상태 표시 */}
+          {activeSyncCode && (
+            <div style={{ marginTop: '10px', padding: '12px 14px', background: 'color-mix(in srgb, var(--blue) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--blue) 25%, transparent)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+              <div>
+                <span style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--blue)', marginBottom: '2px' }}>● 실시간 동기화 중</span>
+                <span style={{ fontSize: '18px', fontWeight: 800, letterSpacing: '2px', color: 'var(--text-1)' }}>{activeSyncCode}</span>
+              </div>
+              <button onClick={onDisconnectSync} style={{ padding: '6px 12px', border: '1px solid var(--divider)', borderRadius: '8px', background: 'var(--surface)', fontSize: '12px', fontWeight: 700, color: 'var(--text-2)', cursor: 'pointer', whiteSpace: 'nowrap' }}>연동 해제</button>
+            </div>
+          )}
+
+          <p style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '10px', lineHeight: 1.45 }}>
+            코드로 한 번 연결하면 이후 변경 사항이 두 기기에 자동으로 반영됩니다.
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '16px', borderTop: '1px solid var(--divider)', paddingTop: '16px' }}>
@@ -3538,6 +3551,57 @@ export default function App() {
 
   useEffect(() => { try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(candidates)); } catch {} }, [candidates]);
 
+  const [activeSyncCode, setActiveSyncCode] = useState(() => localStorage.getItem(SYNC_CODE_KEY) || null);
+  const lastSyncedJsonRef = useRef(null); // null = 아직 초기화 전 (첫 렌더 시 자동업로드 방지)
+  const uploadTimerRef = useRef(null);
+  const isSyncingFromLocalRef = useRef(false);
+
+  // 연동 코드 localStorage 유지
+  useEffect(() => {
+    if (activeSyncCode) localStorage.setItem(SYNC_CODE_KEY, activeSyncCode);
+    else localStorage.removeItem(SYNC_CODE_KEY);
+  }, [activeSyncCode]);
+
+  // 후보 데이터 변경 시 자동 업로드 (2초 디바운스)
+  useEffect(() => {
+    if (!activeSyncCode) return;
+    const currentJson = JSON.stringify(candidates);
+    if (lastSyncedJsonRef.current === null) { lastSyncedJsonRef.current = currentJson; return; } // 앱 최초 로드 시 업로드 생략
+    if (currentJson === lastSyncedJsonRef.current) return; // 원격 수신 데이터와 동일하면 재업로드 생략
+    clearTimeout(uploadTimerRef.current);
+    uploadTimerRef.current = setTimeout(async () => {
+      isSyncingFromLocalRef.current = true;
+      try {
+        const sanitized = await Promise.all(candidates.map(async (c) => {
+          if (c.photo && c.photo.length > 30000) {
+            try { return { ...c, photo: await compressBase64Image(c.photo, 100, 100, 0.5) }; }
+            catch { return { ...c, photo: '' }; }
+          }
+          return c;
+        }));
+        await setDoc(doc(db, 'sync_codes', activeSyncCode), { candidates: sanitized, updatedAt: Date.now() });
+        lastSyncedJsonRef.current = currentJson;
+      } catch (e) { console.error('Auto-sync upload failed:', e); }
+      finally { setTimeout(() => { isSyncingFromLocalRef.current = false; }, 3000); }
+    }, 2000);
+    return () => clearTimeout(uploadTimerRef.current);
+  }, [candidates, activeSyncCode]);
+
+  // 실시간 수신 리스너
+  useEffect(() => {
+    if (!activeSyncCode) return;
+    const unsub = onSnapshot(doc(db, 'sync_codes', activeSyncCode), (snap) => {
+      if (!snap.exists() || isSyncingFromLocalRef.current) return;
+      const data = snap.data();
+      if (!data?.candidates || !Array.isArray(data.candidates)) return;
+      const remoteJson = JSON.stringify(data.candidates);
+      if (remoteJson === lastSyncedJsonRef.current) return; // 동일 데이터 무시
+      lastSyncedJsonRef.current = remoteJson;
+      setCandidates(data.candidates);
+    }, (err) => console.error('Sync listener error:', err));
+    return () => unsub();
+  }, [activeSyncCode]);
+
   const viewModel = useMemo(() => {
     const analyzed = candidates.map(normalizeCandidate);
     const ranked = rankCandidates(analyzed);
@@ -3710,6 +3774,8 @@ export default function App() {
 
     try {
       const result = await Promise.race([uploadPromise, timeoutPromise]);
+      lastSyncedJsonRef.current = JSON.stringify(sanitizedCandidates); // 방금 업로드한 데이터를 기준으로 설정
+      setActiveSyncCode(result); // 실시간 동기화 활성화
       return result;
     } catch (err) {
       console.error('Firebase Upload Error:', err);
@@ -3761,8 +3827,10 @@ export default function App() {
             confirmLabel: '가져오기',
             danger: true,
             onConfirm: () => {
+              lastSyncedJsonRef.current = JSON.stringify(data.candidates);
               setCandidates(data.candidates);
-              setToast({ message: `데이터 연동 완료 (${data.candidates.length}명)`, type: 'success' });
+              setActiveSyncCode(cleanCode); // 실시간 동기화 활성화
+              setToast({ message: `데이터 연동 완료 (${data.candidates.length}명) — 이제 실시간 동기화됩니다.`, type: 'success' });
               setGuideOpen(false);
               setAppConfirm(null);
             },
@@ -3790,5 +3858,11 @@ export default function App() {
     }
   }
 
-  return <div className="app"><div className="phone"><main>{tab === 'home' && <Home candidates={viewModel.rankedCandidates} openCandidate={setSelected} goAdd={() => { setEditing(null); setTab('add'); }} openGuide={() => setGuideOpen(true)} openQuickMemo={setQuickMemoCandidate}/>} {tab === 'add' && <AddCandidate initialCandidate={editing} onSave={save} onCancel={() => { setEditing(null); setTab('home'); }}/>}</main>{tab === 'home' && <FloatingAdd onClick={() => { setEditing(null); setTab('add'); }}/>} {selected && <DetailModal candidate={selected} close={() => setSelected(null)} edit={startEdit} remove={remove} saveTimeline={saveTimeline} updateField={updateCandidateField}/>} {quickMemoCandidate && <QuickMemoModal candidate={quickMemoCandidate} close={() => setQuickMemoCandidate(null)} onSave={addQuickMemo} />} {guideOpen && <GuideModal close={() => setGuideOpen(false)} onExport={exportData} onImport={importData} onSyncUpload={generateAndUploadData} onSyncDownload={downloadDataByCode}/>} {appConfirm && <ConfirmModal {...appConfirm} />} {toast && <Toast {...toast} onDone={() => setToast(null)} />}</div></div>;
+  function disconnectSync() {
+    setActiveSyncCode(null);
+    lastSyncedJsonRef.current = null;
+    setToast({ message: '실시간 동기화가 해제되었습니다.', type: 'info' });
+  }
+
+  return <div className="app"><div className="phone"><main>{tab === 'home' && <Home candidates={viewModel.rankedCandidates} openCandidate={setSelected} goAdd={() => { setEditing(null); setTab('add'); }} openGuide={() => setGuideOpen(true)} openQuickMemo={setQuickMemoCandidate}/>} {tab === 'add' && <AddCandidate initialCandidate={editing} onSave={save} onCancel={() => { setEditing(null); setTab('home'); }}/>}</main>{tab === 'home' && <FloatingAdd onClick={() => { setEditing(null); setTab('add'); }}/>} {selected && <DetailModal candidate={selected} close={() => setSelected(null)} edit={startEdit} remove={remove} saveTimeline={saveTimeline} updateField={updateCandidateField}/>} {quickMemoCandidate && <QuickMemoModal candidate={quickMemoCandidate} close={() => setQuickMemoCandidate(null)} onSave={addQuickMemo} />} {guideOpen && <GuideModal close={() => setGuideOpen(false)} onExport={exportData} onImport={importData} onSyncUpload={generateAndUploadData} onSyncDownload={downloadDataByCode} activeSyncCode={activeSyncCode} onDisconnectSync={disconnectSync}/>} {appConfirm && <ConfirmModal {...appConfirm} />} {toast && <Toast {...toast} onDone={() => setToast(null)} />}</div></div>;
 }
