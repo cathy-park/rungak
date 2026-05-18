@@ -1858,19 +1858,10 @@ p { margin: 0; }
   position: absolute;
   right: 10px;
   top: 62px;
-  width: 130px;
-  height: 140px;
-  opacity: 0.42;
+  width: 110px;
+  height: 120px;
+  opacity: 0.25;
   z-index: 1;
-}
-
-.avatar.xl {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  border: 5px solid #FFFFFF;
-  box-shadow: 0 4px 18px rgba(49, 130, 246, 0.14);
-  background: #EAF4FF;
 }
 
 .heroEmpty {
@@ -1921,8 +1912,8 @@ p { margin: 0; }
 /* 프로필 행 */
 .heroProfileRow {
   display: grid;
-  grid-template-columns: 112px 1fr;
-  column-gap: 18px;
+  grid-template-columns: 96px 1fr;
+  column-gap: 14px;
   align-items: center;
 }
 .heroAvatarWrapper {
@@ -1930,24 +1921,24 @@ p { margin: 0; }
   flex-shrink: 0;
 }
 .avatar.xl {
-  width: 104px;
-  height: 104px;
+  width: 88px;
+  height: 88px;
   border-radius: 50%;
-  border: 5px solid #FFFFFF;
+  border: 4px solid #FFFFFF;
   box-shadow: 0 4px 18px rgba(49, 130, 246, 0.14);
   background: #DFF5F2;
 }
 .heroCrownWrap {
   position: absolute;
-  top: -18px;
+  top: -14px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 5;
   filter: drop-shadow(0 2px 6px rgba(234, 179, 8, 0.3));
 }
 .heroCrownSvg {
-  width: 42px;
-  height: 38px;
+  width: 34px;
+  height: 30px;
 }
 
 .heroNameBlock {
@@ -1967,28 +1958,28 @@ p { margin: 0; }
 
 .heroName {
   font-family: var(--font-display);
-  font-size: 30px;
+  font-size: 24px;
   font-weight: 900;
   color: var(--text-1);
   margin: 0;
   line-height: 1.1;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.03em;
 }
 
 .heroStatusBadgeRow {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 6px;
+  gap: 8px;
+  margin-top: 5px;
 }
 
 .heroStatusBadge {
   display: inline-flex;
   align-items: center;
-  border-radius: 9px;
-  padding: 6px 10px;
-  font-size: 14px;
-  font-weight: 800;
+  border-radius: 7px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 700;
   letter-spacing: 0.01em;
   width: auto;
   height: auto;
@@ -2007,24 +1998,24 @@ p { margin: 0; }
 }
 .heroStatusScore {
   font-family: var(--font-display);
-  font-size: 30px;
+  font-size: 24px;
   font-weight: 900;
   color: #2F80ED;
   letter-spacing: -0.04em;
   line-height: 1;
 }
 .heroStatusScore small {
-  font-size: 17px;
-  font-weight: 800;
+  font-size: 14px;
+  font-weight: 700;
   color: #2F80ED;
   margin-left: 1px;
 }
 
 .heroMeta {
-  font-size: 14px;
+  font-size: 12px;
   color: #4B5563;
-  font-weight: 600;
-  margin: 8px 0 0;
+  font-weight: 500;
+  margin: 5px 0 0;
   line-height: 1.4;
   white-space: nowrap;
   overflow: hidden;
@@ -2034,39 +2025,39 @@ p { margin: 0; }
 /* 설명 박스 (흰색 카드) */
 .heroExplanationBox {
   background: rgba(255, 255, 255, 0.95);
-  border-radius: 20px;
-  padding: 14px 18px;
+  border-radius: 16px;
+  padding: 11px 14px;
   display: flex;
-  gap: 10px;
+  gap: 8px;
   align-items: flex-start;
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
   border: none;
   width: 100%;
 }
 .heroQuoteIcon {
   color: #3B82F6;
   flex-shrink: 0;
-  margin-top: 2px;
-  opacity: 0.9;
-  font-size: 32px;
+  margin-top: 1px;
+  opacity: 0.7;
+  font-size: 22px;
 }
 .heroExplanationContent {
   flex: 1;
   min-width: 0;
 }
 .heroExplanationHighlight {
-  font-size: 15px;
-  font-weight: 900;
+  font-size: 13px;
+  font-weight: 800;
   color: #2F80ED;
   line-height: 1.4;
-  margin: 0 0 5px;
+  margin: 0 0 3px;
   word-break: keep-all;
 }
 .heroExplanationDetail {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   color: #4B5563;
-  line-height: 1.55;
+  line-height: 1.5;
   margin: 0;
   word-break: keep-all;
 }
@@ -2254,6 +2245,13 @@ p { margin: 0; }
   gap: 2px;
 }
 
+.candidateCard2NameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
 .candidateCard2Name {
   font-family: var(--font-display);
   font-size: 16px;
@@ -2265,6 +2263,7 @@ p { margin: 0; }
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex-shrink: 1;
 }
 
 .candidateCard2MetaBlock {
@@ -2286,13 +2285,13 @@ p { margin: 0; }
 
 .candidateCard2Badge {
   display: inline-flex;
-  align-self: flex-start;
   align-items: center;
+  flex-shrink: 0;
+  white-space: nowrap;
   border-radius: 6px;
-  padding: 3px 8px;
-  font-size: 11px;
-  font-weight: 800;
-  margin-top: 4px;
+  padding: 2px 7px;
+  font-size: 10px;
+  font-weight: 700;
 }
 .candidateCard2Badge.badge-blue { background: #EBF4FF; color: #3182F6; }
 .candidateCard2Badge.badge-green { background: #EAFDF3; color: #16A34A; }
