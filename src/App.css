@@ -2230,6 +2230,12 @@ p { margin: 0; }
 .candidateCard2.card-danger {
   background: #FFF7F7;
   border-color: #FECACA;
+  opacity: 0.72; /* 런각 도장 찍힌 카드는 72% 투명도로 흐릿하게 낮춰 시각적 피로도 경감 및 경고 효과 극대화 */
+  transition: opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.22s ease, border-color 0.22s, transform 0.22s;
+}
+.candidateCard2.verdict-red:hover,
+.candidateCard2.card-danger:hover {
+  opacity: 0.95; /* 호버 시에는 선명해져 디테일한 정보를 기분 좋게 확인 가능 */
 }
 
 /* left verdict color bar — sits within 20px left padding, no content overlap */
