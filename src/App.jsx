@@ -2638,9 +2638,9 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
           }}>
             {[
               { id: 'summary', label: '요약', icon: '📊' },
-              { id: 'observe', label: '관찰', icon: '🔍' },
-              { id: 'chat', label: '대화·정서', icon: '💬' },
               { id: 'spec', label: '조건', icon: '⚖️' },
+              { id: 'chat', label: '대화·정서', icon: '💬' },
+              { id: 'observe', label: '관찰', icon: '🔍' },
               { id: 'record', label: '기록', icon: '📖' }
             ].map(t => {
               const isActive = activeTab === t.id;

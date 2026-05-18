@@ -1806,6 +1806,7 @@ p { margin: 0; }
 .hero-track {
   display: flex;
   width: 100%;
+  gap: 16px; /* 카드와 카드 사이의 우아한 가로 여백 간격 추가 */
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
