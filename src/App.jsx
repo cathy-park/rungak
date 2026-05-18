@@ -2671,9 +2671,10 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
           position: 'sticky',
           top: 0,
           zIndex: 40,
-          display: showCompactHeader ? 'flex' : 'none',
+          display: showCompactHeader ? 'grid' : 'none',
+          gridTemplateColumns: '40px 1fr auto',
+          columnGap: '10px',
           alignItems: 'center',
-          gap: '10px',
           padding: '0 16px',
           height: '64px',
           background: 'rgba(255,255,255,0.98)',
@@ -2684,25 +2685,21 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
           boxSizing: 'border-box',
           width: '100%'
         }}>
-          {/* 아바타 */}
-          <div style={{ width: '40px', height: '40px', flexShrink: 0 }}>
-            <Avatar candidate={candidate} size="md" />
+          {/* 아바타 — overflow:hidden으로 이미지가 탭 영역 침범 방지 */}
+          <div style={{ width: '40px', height: '40px', flexShrink: 0, borderRadius: '50%', overflow: 'hidden' }}>
+            <Avatar candidate={candidate} size="sm" />
           </div>
-          {/* 이름·점수 (1행) + 판정뱃지 (2행) */}
-          <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
-              <span style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 1 }}>
-                {candidate.name || '무명의 후보'}
-              </span>
-              <span style={{ fontSize: '14px', fontWeight: 800, color: `var(--${displayReport.color})`, whiteSpace: 'nowrap', flexShrink: 0 }}>
-                {displayReport.finalScore}점
-              </span>
-            </div>
-            <div style={{ marginTop: '3px' }}>
-              <Badge color={displayReport.color} style={{ fontSize: '10px', padding: '1px 6px' }}>
-                {displayReport.verdict}
-              </Badge>
-            </div>
+          {/* 이름 · 점수 · 판정뱃지 — 한 줄 정렬 */}
+          <div style={{ minWidth: 0, display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
+            <span style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 1 }}>
+              {candidate.name || '무명의 후보'}
+            </span>
+            <span style={{ fontSize: '14px', fontWeight: 800, color: `var(--${displayReport.color})`, whiteSpace: 'nowrap', flexShrink: 0 }}>
+              {displayReport.finalScore}점
+            </span>
+            <Badge color={displayReport.color} style={{ fontSize: '10px', padding: '1px 6px', flexShrink: 0, whiteSpace: 'nowrap' }}>
+              {displayReport.verdict}
+            </Badge>
           </div>
           {/* 액션 버튼 */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0, position: 'relative' }}>
@@ -2725,14 +2722,14 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
         <div className="sheetHeader profile-header" style={{ position: 'relative', padding: '16px 16px 8px', borderBottom: 'none' }}>
           <div className="profile-summary" style={{
             display: 'grid',
-            gridTemplateColumns: '72px 1fr',
-            columnGap: '12px',
+            gridTemplateColumns: '84px 1fr',
+            columnGap: '14px',
             alignItems: 'start',
             width: '100%',
-            paddingRight: '60px' /* 우측 상단 X/더보기 버튼과의 겹침 절대 차단 안전마진 */
+            paddingRight: '76px' /* 우측 상단 X/더보기 버튼 공간 확보 */
           }}>
-            {/* 1. 왼쪽 프로필 이미지 */}
-            <div className="profile-avatar-wrap" style={{ width: '72px', height: '72px', flexShrink: 0 }}>
+            {/* 1. 왼쪽 프로필 이미지 — .avatar.xl은 84px이므로 컨테이너도 84px로 맞춤 */}
+            <div className="profile-avatar-wrap" style={{ width: '84px', height: '84px', flexShrink: 0, borderRadius: '50%', overflow: 'hidden' }}>
               <Avatar candidate={candidate} size="xl" />
             </div>
 
