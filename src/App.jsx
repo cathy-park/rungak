@@ -542,8 +542,10 @@ function analyze(candidate) {
   const verifiedCount = verifiedKeys.filter((key) => verified(candidate, key)).length;
   const moneyVerified = (verified(candidate, 'asset') ? 1 : 0) + (verified(candidate, 'income') ? 1 : 0);
   const importantVerified = ['height', 'asset', 'income', 'job'].filter((key) => verified(candidate, key)).length;
-  const trustScore = clamp(Math.round(verifiedCount * 0.9 + importantVerified * 1.2 + moneyVerified * 1.1 + Number(candidate.relation?.action || 5) * 0.35), 0, 15);
-  const realityScore = clamp(Math.round((Number(candidate.relation?.present || 5) + Number(candidate.relation?.action || 5) + Number(candidate.jobStability || 3) + Number(candidate.distanceFit || 3)) * 0.5), 0, 10);
+  // trustScore: 순수 정보 검증 지표 (action 제거 — relationScore/realityScore와 중복)
+  const trustScore = clamp(Math.round(verifiedCount * 0.9 + importantVerified * 1.2 + moneyVerified * 1.1), 0, 15);
+  // realityScore: 행동 일치도만 반영 (jobStability/distanceFit 제거 — conditionScore와 중복)
+  const realityScore = clamp(Math.round((Number(candidate.relation?.present || 5) + Number(candidate.relation?.action || 5)) * 0.75), 0, 10);
   const greenScore = (candidate.green || []).reduce((sum, label) => sum + (greenFlags.find((item) => item.label === label)?.score || 0), 0);
   const yellowScore = (candidate.yellow || []).reduce((sum, label) => sum + (yellowFlags.find((item) => item.label === label)?.score || 0), 0);
   const redList = candidate.red || [];
@@ -562,7 +564,8 @@ function analyze(candidate) {
     return sum + Math.max(flag.score, -8);
   }, 0);
   
-  const bonusPenalty = clamp(greenScore + yellowScore + redScore + importantVerified * 1.5 + moneyVerified * 1.5, -18, 10);
+  // bonusPenalty: 플래그만 반영 (importantVerified/moneyVerified 제거 — trustScore와 중복)
+  const bonusPenalty = clamp(greenScore + yellowScore + redScore, -18, 10);
   const currentTimeline = candidate.dateTimeline || candidate.timeline || [];
   const flowScore = timelineScore(currentTimeline, redList);
   const preScore = Math.round(conditionScore + relationScore + trustScore + realityScore + bonusPenalty + flowScore);
