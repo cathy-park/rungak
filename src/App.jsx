@@ -1084,20 +1084,38 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
         const m = heroMetrics(candidate, report);
         return (
           <>
+            <div className="heroDecoWrap" aria-hidden="true">
+              <span className="heroBubble heroBubble-1" />
+              <span className="heroBubble heroBubble-2" />
+              <span className="heroBubble heroBubble-3" />
+              <svg className="heroFlaskDeco" viewBox="0 0 48 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18 4v22L6 52a4 4 0 003.5 6h29A4 4 0 0042 52L30 26V4" stroke="#3182F6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" strokeOpacity="0.18"/>
+                <path d="M14 4h20" stroke="#3182F6" strokeWidth="2.5" strokeLinecap="round" strokeOpacity="0.18"/>
+                <circle cx="18" cy="46" r="3" fill="#3182F6" fillOpacity="0.12"/>
+                <circle cx="30" cy="52" r="2" fill="#3182F6" fillOpacity="0.1"/>
+              </svg>
+            </div>
+
             <div className="heroRankLabel">
-              <span>★</span>
-              <span>오늘의 런각 {safeIdx + 1}위</span>
+              <span>👑</span>
+              <span>오늘의 관계 흐름 TOP {safeIdx + 1}</span>
             </div>
 
             <button className="heroCard" onClick={() => openCandidate(candidate)}>
               {/* 프로필 행 */}
               <div className="heroProfileRow">
-                <Avatar candidate={candidate} size="lg" />
+                <div className="heroAvatarWrapper">
+                  <span className="heroCrownBadge" aria-hidden="true">👑</span>
+                  <Avatar candidate={candidate} size="xl" />
+                </div>
                 <div className="heroNameBlock">
                   <h2 className="heroName">{candidate.name || '무명의 후보'}</h2>
                   <div className="heroVerdictRow">
                     <Badge color={report.color}>{report.verdict}</Badge>
-                    <span className={`heroScore scoreText-${report.color}`}>{report.totalScore}<small>점</small></span>
+                  </div>
+                  <div className="heroScoreDisplay">
+                    <span className={`heroScoreNum scoreText-${report.color}`}>{report.totalScore}</span>
+                    <small className="heroScoreUnit">점</small>
                   </div>
                   <p className="heroMeta">{report.age || '??'}세 · {candidate.job || '직업 미상'}{candidate.location ? ` · ${candidate.location}` : ''}</p>
                 </div>
@@ -1114,25 +1132,33 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
 
               {/* 4대 지표 */}
               <div className="heroMetricGrid">
-                <div className="heroMetricItem">
-                  <div className="heroMetricIcon heroMetricIcon-green">✓</div>
-                  <span className="heroMetricLabel">관계 안도도</span>
-                  <b className="heroMetricValue">{m.relation}</b>
+                <div className="heroMetricItem heroMetricItem-green">
+                  <div className="heroMetricIcon heroMetricIcon-green">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  </div>
+                  <span className="heroMetricLabel">관계 안정도</span>
+                  <b className="heroMetricValue heroMetricValue-green">{m.relation}</b>
                 </div>
-                <div className="heroMetricItem">
-                  <div className="heroMetricIcon heroMetricIcon-blue">∿</div>
+                <div className="heroMetricItem heroMetricItem-blue">
+                  <div className="heroMetricIcon heroMetricIcon-blue">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7c1.5-3 3.5-3 5 0s3.5 3 5 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+                  </div>
                   <span className="heroMetricLabel">신뢰 흐름</span>
-                  <b className="heroMetricValue">{m.trust}</b>
+                  <b className="heroMetricValue heroMetricValue-blue">{m.trust}</b>
                 </div>
-                <div className="heroMetricItem">
-                  <div className="heroMetricIcon heroMetricIcon-blue">◎</div>
+                <div className="heroMetricItem heroMetricItem-orange">
+                  <div className="heroMetricIcon heroMetricIcon-orange">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="4" stroke="currentColor" strokeWidth="2"/><circle cx="7" cy="7" r="1.5" fill="currentColor"/></svg>
+                  </div>
                   <span className="heroMetricLabel">조건 적합도</span>
-                  <b className="heroMetricValue">{m.condition}</b>
+                  <b className="heroMetricValue heroMetricValue-orange">{m.condition}</b>
                 </div>
-                <div className="heroMetricItem">
-                  <div className="heroMetricIcon heroMetricIcon-red">⚠</div>
-                  <span className="heroMetricLabel">현각 위험도</span>
-                  <b className="heroMetricValue">{m.risk}</b>
+                <div className="heroMetricItem heroMetricItem-red">
+                  <div className="heroMetricIcon heroMetricIcon-red">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v5M7 10v.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/><path d="M1.5 12.5L7 1.5l5.5 11H1.5z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/></svg>
+                  </div>
+                  <span className="heroMetricLabel">런각 위험도</span>
+                  <b className="heroMetricValue heroMetricValue-red">{m.risk}</b>
                 </div>
               </div>
             </button>
@@ -1161,7 +1187,7 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
         const isDanger = report.verdict === '정리 권장';
         return (
           <div key={candidate.id} style={{ position: 'relative', marginBottom: '8px' }}>
-            <button className="candidateCard2" onClick={() => openCandidate(candidate)}>
+            <button className={`candidateCard2 verdict-${report.color}`} onClick={() => openCandidate(candidate)}>
               <Avatar candidate={candidate} size="sm" />
               <div className="candidateCard2Body">
                 <h3 className="candidateCard2Name">{candidate.name || '무명의 후보'}</h3>
@@ -1171,7 +1197,10 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
               <span className={`candidateCard2Score scoreText-${report.color}`}>{report.totalScore}<small>점</small></span>
               {isDanger && (
                 <div className="rungakStamp" aria-hidden="true">
-                  <span>런각!</span>
+                  <span className="rungakStampFlask">🧪</span>
+                  <span className="rungakStampText">런각!</span>
+                  <span className="rungakSparkle rungakSparkle-1">✦</span>
+                  <span className="rungakSparkle rungakSparkle-2">✦</span>
                 </div>
               )}
             </button>
