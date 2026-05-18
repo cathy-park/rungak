@@ -2719,124 +2719,61 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
           </div>
         </div>
 
-        <div className="sheetHeader profile-header" style={{ position: 'relative', padding: '16px 16px 8px', borderBottom: 'none' }}>
-          <div className="profile-summary" style={{
+        <div className="sheetHeader profile-header" style={{ padding: '16px 16px 12px', borderBottom: 'none' }}>
+          {/* 3열 그리드: [사진 84px] [정보 1fr] [버튼 auto] */}
+          <div style={{
             display: 'grid',
-            gridTemplateColumns: '84px 1fr',
+            gridTemplateColumns: '84px 1fr auto',
             columnGap: '14px',
             alignItems: 'start',
-            width: '100%',
-            paddingRight: '76px' /* 우측 상단 X/더보기 버튼 공간 확보 */
+            width: '100%'
           }}>
-            {/* 1. 왼쪽 프로필 이미지 — .avatar.xl은 84px이므로 컨테이너도 84px로 맞춤 */}
-            <div className="profile-avatar-wrap" style={{ width: '84px', height: '84px', flexShrink: 0, borderRadius: '50%', overflow: 'hidden' }}>
+            {/* Col 1: 프로필 사진 */}
+            <div style={{ width: '84px', height: '84px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
               <Avatar candidate={candidate} size="xl" />
             </div>
 
-            {/* 2. 오른쪽 정보 영역 */}
-            <div className="profile-info-wrap" style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <h2 className="profile-name" style={{
-                margin: '0',
-                fontSize: '22px',
-                fontWeight: 850,
-                color: 'var(--text-1)',
-                lineHeight: 1.15,
-                letterSpacing: '-0.02em'
-              }}>
-                {candidate.name || '무명의 후보'}
-              </h2>
-              <p className="profile-meta-line" style={{
-                margin: 0,
-                fontSize: '14px',
-                fontWeight: 500,
-                color: 'var(--text-3)',
-                lineHeight: '1.4',
-                wordBreak: 'keep-all'
-              }}>
-                {report.age || '나이 미상'}세 · {candidate.job || '직업 미상'} {candidate.location && `· ${candidate.location}`}
+            {/* Col 2: 정보 3줄 */}
+            <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: '5px', paddingTop: '2px' }}>
+              {/* 줄 1: 이름 + 나이 */}
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-1)', lineHeight: 1.2, letterSpacing: '-0.02em' }}>
+                  {candidate.name || '무명의 후보'}
+                </span>
+                <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-3)', whiteSpace: 'nowrap' }}>
+                  {report.age || '나이 미상'}세
+                </span>
+              </div>
+              {/* 줄 2: 직업 · 지역 */}
+              <p style={{ margin: 0, fontSize: '13px', fontWeight: 500, color: 'var(--text-3)', lineHeight: 1.4, wordBreak: 'keep-all', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {candidate.job || '직업 미상'}{candidate.location && ` · ${candidate.location}`}
               </p>
-              {/* 상태 뱃지 가로 배치 및 wrap */}
-              <div className="profile-badges-row" style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                flexWrap: 'wrap',
-                marginTop: '2px'
-              }}>
-                <Badge color={displayReport.color} style={{ fontSize: '11px', padding: '2px 6px' }}>{displayReport.verdict}</Badge>
+              {/* 줄 3: 상태 뱃지 + 성향 뱃지 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', marginTop: '2px' }}>
+                <Badge color={displayReport.color} style={{ fontSize: '11px', padding: '2px 8px', whiteSpace: 'nowrap' }}>{displayReport.verdict}</Badge>
                 {(candidate.personalityTags || []).map(id => {
                   const tag = personalityTypeTags.find(t => t.id === id);
-                  return tag ? <Badge key={id} color="blue" style={{ fontSize: '11px', padding: '2px 6px' }}>{tag.emoji} {tag.label}</Badge> : null;
+                  return tag ? <Badge key={id} color="blue" style={{ fontSize: '11px', padding: '2px 8px', whiteSpace: 'nowrap' }}>{tag.emoji} {tag.label}</Badge> : null;
                 })}
               </div>
             </div>
-          </div>
 
-          {/* 3. 더보기/닫기 버튼 (우측 상단 독립 액션 배치) */}
-          <div className="profile-actions-wrap" style={{
-            position: 'absolute',
-            top: '16px',
-            right: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            zIndex: 10
-          }}>
-            <button 
-              className="iconButton"
-              onClick={() => setShowMenu(!showMenu)}
-              title="후보 전체 관리"
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--text-2)',
-                cursor: 'pointer',
-                display: 'flex',
-                padding: '4px'
-              }}
-            >
-              <MoreVertical size={20} />
-            </button>
-            {showMenu && !showCompactHeader && (
-              <div style={{
-                position: 'absolute',
-                top: '34px',
-                right: '28px',
-                background: 'var(--surface)',
-                border: '1px solid var(--divider)',
-                boxShadow: 'var(--shadow-md)',
-                borderRadius: '10px',
-                zIndex: 999,
-                minWidth: '160px',
-                overflow: 'hidden',
-                display: 'flex',
-                flexDirection: 'column'
-              }}>
-                <button onClick={() => { edit(candidate); setShowMenu(false); }} style={{ padding: '12px 14px', fontSize: '13px', border: 'none', background: 'none', textAlign: 'left', color: 'var(--text-body)', cursor: 'pointer', borderBottom: '1px solid var(--divider)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  ✏️ 전체 상세 정보 편집
-                </button>
-                <button onClick={() => { copy(); setShowMenu(false); }} style={{ padding: '12px 14px', fontSize: '13px', border: 'none', background: 'none', textAlign: 'left', color: 'var(--text-body)', cursor: 'pointer', borderBottom: '1px solid var(--divider)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  📋 마크다운 전체 복사
-                </button>
-                <button onClick={() => { setShowMenu(false); setConfirm({ message: `'${candidate.name}' 기록을 삭제할까요?`, sub: '삭제 후 복구할 수 없습니다.', confirmLabel: '삭제', danger: true, onConfirm: () => { remove(candidate.id); close(); setConfirm(null); }, onCancel: () => setConfirm(null) }); }} style={{ padding: '12px 14px', fontSize: '13px', border: 'none', background: 'none', textAlign: 'left', color: 'var(--red)', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Trash2 size={14} /> 이 후보 기록 삭제
-                </button>
-              </div>
-            )}
-            <button 
-              className="iconButton" 
-              onClick={close} 
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--text-2)',
-                cursor: 'pointer',
-                display: 'flex',
-                padding: '4px'
-              }}
-            >
-              <X size={20} />
-            </button>
+            {/* Col 3: 더보기 / 닫기 버튼 */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0, position: 'relative' }}>
+              <button className="iconButton" onClick={() => setShowMenu(!showMenu)} title="후보 전체 관리" style={{ background: 'transparent', border: 'none', color: 'var(--text-2)', cursor: 'pointer', display: 'flex', padding: '4px' }}>
+                <MoreVertical size={20} />
+              </button>
+              {showMenu && !showCompactHeader && (
+                <div style={{ position: 'absolute', top: '34px', right: '0', background: 'var(--surface)', border: '1px solid var(--divider)', boxShadow: 'var(--shadow-md)', borderRadius: '10px', zIndex: 999, minWidth: '160px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                  <button onClick={() => { edit(candidate); setShowMenu(false); }} style={{ padding: '12px 14px', fontSize: '13px', border: 'none', background: 'none', textAlign: 'left', color: 'var(--text-body)', cursor: 'pointer', borderBottom: '1px solid var(--divider)', display: 'flex', alignItems: 'center', gap: '8px' }}>✏️ 전체 상세 정보 편집</button>
+                  <button onClick={() => { copy(); setShowMenu(false); }} style={{ padding: '12px 14px', fontSize: '13px', border: 'none', background: 'none', textAlign: 'left', color: 'var(--text-body)', cursor: 'pointer', borderBottom: '1px solid var(--divider)', display: 'flex', alignItems: 'center', gap: '8px' }}>📋 마크다운 전체 복사</button>
+                  <button onClick={() => { setShowMenu(false); setConfirm({ message: `'${candidate.name}' 기록을 삭제할까요?`, sub: '삭제 후 복구할 수 없습니다.', confirmLabel: '삭제', danger: true, onConfirm: () => { remove(candidate.id); close(); setConfirm(null); }, onCancel: () => setConfirm(null) }); }} style={{ padding: '12px 14px', fontSize: '13px', border: 'none', background: 'none', textAlign: 'left', color: 'var(--red)', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}><Trash2 size={14} /> 이 후보 기록 삭제</button>
+                </div>
+              )}
+              <button className="iconButton" onClick={close} style={{ background: 'transparent', border: 'none', color: 'var(--text-2)', cursor: 'pointer', display: 'flex', padding: '4px' }}>
+                <X size={20} />
+              </button>
+            </div>
           </div>
         </div>
 
