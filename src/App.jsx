@@ -994,7 +994,7 @@ function Header({ openGuide }) {
     <header className="header">
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         <div className="headerFlaskLogo">
-          <img src="/assets/logo.svg" alt="Rungak Lab Logo" style={{ width: '18px', height: '18px', display: 'block' }} />
+          <img src="/ico.png" alt="Rungak Lab Logo" style={{ width: '20px', height: '20px', display: 'block', borderRadius: '4px' }} />
         </div>
         <div>
           <h1 className="headerTitle">런각 연구소</h1>
