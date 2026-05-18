@@ -993,9 +993,7 @@ function Header({ openGuide }) {
   return (
     <header className="header">
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <div className="headerFlaskLogo">
-          <img src="/assets/ico.png" alt="Rungak Lab Logo" style={{ width: '20px', height: '20px', display: 'block', borderRadius: '4px' }} />
-        </div>
+        <img src="/assets/ico.png" alt="Rungak Lab Logo" style={{ width: '32px', height: '32px', display: 'block', objectFit: 'contain' }} />
         <div>
           <h1 className="headerTitle">런각 연구소</h1>
           <p className="headerSub">RUN ANGLE LAB</p>
@@ -1323,8 +1321,25 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
               </div>
 
               {isDanger && (
-                <div className="rungakStamp" aria-hidden="true" style={{ transform: 'rotate(-12deg)' }}>
-                  <img src="/assets/stamp.png" alt="런각 도장" style={{ width: '85px', height: '85px', display: 'block', opacity: 0.92 }} />
+                <div className="rungakStamp" aria-hidden="true" style={{ filter: 'url(#rungak-grunge)' }}>
+                  <svg width="120" height="120" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    {/* 바깥 거친 이중 테두리 원 */}
+                    <circle cx="50" cy="50" r="44" stroke="#E11D48" strokeWidth="3" strokeDasharray="320" style={{ opacity: 0.9 }} />
+                    <circle cx="50" cy="50" r="39" stroke="#E11D48" strokeWidth="1.2" strokeDasharray="4 4" style={{ opacity: 0.8 }} />
+                    
+                    {/* 플라스크 캐릭터 */}
+                    <path d="M44 28h12M47 28v6L36 50a4 4 0 003.5 6h21a4 4 0 003.5-6L53 34v-6" stroke="#E11D48" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
+                    <circle cx="46" cy="42" r="1.5" fill="#E11D48" />
+                    <circle cx="54" cy="42" r="1.5" fill="#E11D48" />
+                    <path d="M47 47q3 1.5 6 0" stroke="#E11D48" strokeWidth="1.5" strokeLinecap="round" />
+                    
+                    {/* 런각! 굵은 텍스트 */}
+                    <text x="50" y="75" fill="#E11D48" fontSize="15" fontWeight="900" textAnchor="middle" fontFamily="'Noto Sans KR', sans-serif" letterSpacing="0.08em">런각!</text>
+                    
+                    {/* 반짝이 데코 */}
+                    <path d="M26 38l1.5 2.5L30 39l-2.5-1.5L26 38zM74 38l1.5-2.5L72 34l-1 2.5L74 38z" fill="#E11D48" />
+                    <path d="M22 62h3v3h-3zM76 60h2v2h-2z" fill="#E11D48" />
+                  </svg>
                 </div>
               )}
             </button>

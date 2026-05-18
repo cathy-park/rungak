@@ -2374,11 +2374,9 @@ p { margin: 0; }
   opacity: 0.78;
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
-.rungakStamp svg,
-.rungakStamp img {
+.rungakStamp svg {
   width: 100%;
   height: 100%;
-  object-fit: contain;
 }
 .candidateCardWrap:hover .rungakStamp {
   transform: translateY(-50%) rotate(-4deg) scale(1.04);
