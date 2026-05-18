@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { MoreVertical, X, Pencil, Trash2, Clipboard, ChevronDown, ChevronUp, Plus } from 'lucide-react';
+import { MoreVertical, X, Pencil, Trash2, Clipboard, ChevronDown, ChevronUp, Plus, StickyNote } from 'lucide-react';
 import './App.css';
 import { db, doc, setDoc, getDoc } from './firebase';
 
@@ -1348,7 +1348,7 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
               onClick={(e) => { e.stopPropagation(); openQuickMemo(candidate); }}
               title="빠른 메모"
             >
-              <Pencil size={13} />
+              <StickyNote size={15} className="quickMemoIconColor" />
             </button>
           </div>
         );

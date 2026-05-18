@@ -2370,17 +2370,23 @@ p { margin: 0; }
   color: #8B95A1;
   cursor: pointer;
   z-index: 5;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.15s;
 }
 .candidateCard2EditBtn:hover {
-  background: #3B82F6;
-  color: #FFFFFF;
+  background: #EFF6FF;
   border-color: #3B82F6;
-  transform: translateY(-50%) scale(1.06);
+  transform: translateY(-50%) scale(1.08);
+}
+.candidateCard2EditBtn:hover .quickMemoIconColor {
+  color: #2F80ED;
 }
 .candidateCard2EditBtn:active {
-  opacity: 1;
-  transform: translateY(-50%);
+  opacity: 0.85;
+  transform: translateY(-50%) scale(0.96);
+}
+.quickMemoIconColor {
+  color: #F59E0B; /* 포스트잇 옐로우 골드 컬러 */
+  transition: color 0.15s ease;
 }
 
 /* ─── RUNGAK DANGER STAMP ────────────────────────────── */
