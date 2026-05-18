@@ -994,7 +994,7 @@ function Header({ openGuide }) {
     <header className="header">
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         <div className="headerFlaskLogo">
-          <img src="/ico.png" alt="Rungak Lab Logo" style={{ width: '20px', height: '20px', display: 'block', borderRadius: '4px' }} />
+          <img src="/assets/ico.png" alt="Rungak Lab Logo" style={{ width: '20px', height: '20px', display: 'block', borderRadius: '4px' }} />
         </div>
         <div>
           <h1 className="headerTitle">런각 연구소</h1>
@@ -1047,6 +1047,36 @@ function ScoreCard({ title, value, max, desc }) {
   const level = scoreLevel(percent);
   return <Card className="scoreCard"><div className="scoreHead"><div><p>{title}</p><strong>{value}<small>/{max}</small></strong></div><div className="right"><Badge color={level.color}>{level.label}</Badge><em>{percent}%</em></div></div><div className="bar"><i className={`tone-bg-${level.color}`} style={{ width: `${percent}%` }} /></div>{desc && <small className="desc">{desc}</small>}</Card>;
 }
+const renderRankCrown = (idx) => {
+  let fill, stroke, num;
+  if (idx === 0) {
+    fill = "#FACC15"; // 금색
+    stroke = "#EAB308";
+    num = "1";
+  } else if (idx === 1) {
+    fill = "#CBD5E1"; // 은색
+    stroke = "#94A3B8";
+    num = "2";
+  } else if (idx === 2) {
+    fill = "#FDBA74"; // 동색
+    stroke = "#CA8A04";
+    num = "3";
+  } else {
+    return null;
+  }
+
+  return (
+    <div className={`heroCrownWrap rank-${num}`}>
+      <svg className="heroCrownSvg" viewBox="0 0 24 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 19L4.5 8L9 12L12 3L15 12L19.5 8L21 19H3Z" fill={fill} stroke={stroke} strokeWidth="1.5" strokeLinejoin="round"/>
+        <circle cx="12" cy="3" r="1.5" fill={fill} stroke={stroke}/>
+        <circle cx="4.5" cy="8" r="1.5" fill={fill} stroke={stroke}/>
+        <circle cx="19.5" cy="8" r="1.5" fill={fill} stroke={stroke}/>
+        <text x="12" y="15" fill={idx === 1 ? "#475569" : "#78350F"} fontSize="7.5" fontWeight="900" textAnchor="middle" fontFamily="sans-serif">{num}</text>
+      </svg>
+    </div>
+  );
+};
 function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
   const [heroIdx, setHeroIdx] = useState(0);
 
@@ -1142,14 +1172,7 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
               {/* 프로필 정보 영역 */}
               <div className="heroProfileRow">
                 <div className="heroAvatarWrapper">
-                  <div className="heroCrownWrap">
-                    <svg className="heroCrownSvg" viewBox="0 0 24 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M3 19L4.5 8L9 12L12 3L15 12L19.5 8L21 19H3Z" fill="#FACC15" stroke="#EAB308" strokeWidth="1.5" strokeLinejoin="round"/>
-                      <circle cx="12" cy="3" r="1.5" fill="#FACC15" stroke="#EAB308"/>
-                      <circle cx="4.5" cy="8" r="1.5" fill="#FACC15" stroke="#EAB308"/>
-                      <circle cx="19.5" cy="8" r="1.5" fill="#FACC15" stroke="#EAB308"/>
-                    </svg>
-                  </div>
+                  {renderRankCrown(safeIdx)}
                   <Avatar candidate={candidate} size="xl" />
                 </div>
                 <div className="heroNameBlock">
@@ -1300,25 +1323,8 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
               </div>
 
               {isDanger && (
-                <div className="rungakStamp" aria-hidden="true" style={{ filter: 'url(#rungak-grunge)' }}>
-                  <svg width="120" height="120" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    {/* 바깥 거친 이중 테두리 원 */}
-                    <circle cx="50" cy="50" r="44" stroke="#E11D48" strokeWidth="3" strokeDasharray="320" style={{ opacity: 0.9 }} />
-                    <circle cx="50" cy="50" r="39" stroke="#E11D48" strokeWidth="1.2" strokeDasharray="4 4" style={{ opacity: 0.8 }} />
-                    
-                    {/* 플라스크 캐릭터 */}
-                    <path d="M44 28h12M47 28v6L36 50a4 4 0 003.5 6h21a4 4 0 003.5-6L53 34v-6" stroke="#E11D48" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
-                    <circle cx="46" cy="42" r="1.5" fill="#E11D48" />
-                    <circle cx="54" cy="42" r="1.5" fill="#E11D48" />
-                    <path d="M47 47q3 1.5 6 0" stroke="#E11D48" strokeWidth="1.5" strokeLinecap="round" />
-                    
-                    {/* 런각! 굵은 텍스트 */}
-                    <text x="50" y="75" fill="#E11D48" fontSize="15" fontWeight="900" textAnchor="middle" fontFamily="'Noto Sans KR', sans-serif" letterSpacing="0.08em">런각!</text>
-                    
-                    {/* 반짝이 데코 */}
-                    <path d="M26 38l1.5 2.5L30 39l-2.5-1.5L26 38zM74 38l1.5-2.5L72 34l-1 2.5L74 38z" fill="#E11D48" />
-                    <path d="M22 62h3v3h-3zM76 60h2v2h-2z" fill="#E11D48" />
-                  </svg>
+                <div className="rungakStamp" aria-hidden="true" style={{ transform: 'rotate(-12deg)' }}>
+                  <img src="/assets/stamp.png" alt="런각 도장" style={{ width: '85px', height: '85px', display: 'block', opacity: 0.92 }} />
                 </div>
               )}
             </button>
