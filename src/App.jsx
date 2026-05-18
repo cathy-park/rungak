@@ -1185,15 +1185,11 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
     <Header openGuide={openGuide} />
 
     <main>
-    {/* ── 히어로 섹션 캐러셀 (물리 스냅 캐러셀 및 스크롤 연동 시스템) ── */}
-    <div className="heroCarouselViewport">
-      <div 
-        className="heroCarouselTrack" 
-        ref={carouselTrackRef} 
-        onScroll={handleCarouselScroll}
-      >
-        {!hasCandidates ? (
-          <div className="heroSection verdict-default" style={{ margin: '0 auto', scrollSnapAlign: 'center' }}>
+    {/* ── 히어로 섹션 캐러셀 (권장 물리 스냅 Carousel 및 스크롤 연동 시스템) ── */}
+    {!hasCandidates ? (
+      <div className="hero-carousel">
+        <div className="hero-track" style={{ padding: '0 18px', justifyContent: 'center' }}>
+          <div className="hero-slide verdict-default" style={{ flex: '1', maxWidth: '440px', scrollSnapAlign: 'center' }}>
             <div className="heroEmpty">
               <Avatar candidate={emptyCandidate} size="lg" />
               <h3 style={{ fontSize: '17px', fontWeight: 800, margin: '10px 0 4px', color: 'var(--text-1)' }}>기록된 후보가 없어요</h3>
@@ -1201,16 +1197,28 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
               <button className="heroCTA" onClick={goAdd}>첫 후보 기록하기</button>
             </div>
           </div>
-        ) : !hasRecommendable ? (
-          <div className="heroSection verdict-default" style={{ margin: '0 auto', scrollSnapAlign: 'center' }}>
+        </div>
+      </div>
+    ) : !hasRecommendable ? (
+      <div className="hero-carousel">
+        <div className="hero-track" style={{ padding: '0 18px', justifyContent: 'center' }}>
+          <div className="hero-slide verdict-default" style={{ flex: '1', maxWidth: '440px', scrollSnapAlign: 'center' }}>
             <div className="heroEmpty">
               <div style={{ fontSize: '28px', marginBottom: '8px', opacity: 0.5 }}>🔍</div>
               <h3 style={{ fontSize: '16px', fontWeight: 700, margin: '0 0 6px', color: 'var(--text-1)' }}>지금은 추천 후보가 없어요</h3>
               <p style={{ fontSize: '13px', color: 'var(--text-2)', lineHeight: '1.5', wordBreak: 'keep-all', textAlign: 'center', margin: 0 }}>현재 후보들은 모두 보류/정리 권장 상태예요.<br/>감정보다 관찰을 우선해보세요.</p>
             </div>
           </div>
-        ) : (
-          topRanked.map((item, idx) => {
+        </div>
+      </div>
+    ) : (
+      <div className="hero-carousel">
+        <div 
+          className="hero-track" 
+          ref={carouselTrackRef} 
+          onScroll={handleCarouselScroll}
+        >
+          {topRanked.map((item, idx) => {
             const { candidate, report } = item;
             const m = heroMetrics(candidate, report);
             const heroName = candidate.name || '무명의 후보';
@@ -1223,7 +1231,7 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
             return (
               <div 
                 key={candidate.id} 
-                className={`heroSection verdict-${report.color}`}
+                className={`hero-slide verdict-${report.color}`}
                 onClick={() => openCandidate(candidate)}
                 style={{ cursor: 'pointer' }}
               >
@@ -1312,13 +1320,13 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
                 </div>
               </div>
             );
-          })
-        )}
+          })}
+        </div>
       </div>
-    </div>
+    )}
 
-    {/* 페이지네이션 도트 - 히어로 섹션 아래로 완전히 분리하고, 후보자 수에 동적으로 대응 (한명일 때 1개, 두명일 때 2개) */}
-    {hasCandidates && hasRecommendable && (
+    {/* 페이지네이션 도트 - 슬라이드가 2개 이상일 때만 표시하여 오해 소지 완전 방지 */}
+    {hasCandidates && hasRecommendable && topRanked.length > 1 && (
       <div className="heroDots">
         {topRanked.map((_, idx) => (
           <button
