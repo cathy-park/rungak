@@ -784,14 +784,14 @@ function DetailAccordion({ title, subtitle, children, defaultOpen = false, onEdi
   const [open, setOpen] = useState(defaultOpen);
   return (
     <Card className="accordion" style={{ padding: 0 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', padding: '16px 20px', cursor: 'pointer' }} onClick={() => setOpen(!open)}>
+      <button type="button" aria-expanded={open} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', padding: '16px 20px', cursor: 'pointer', background: 'none', border: 'none', textAlign: 'left' }} onClick={() => setOpen(!open)}>
         <div style={{ flex: 1, paddingRight: '12px' }}>
           <b style={{ display: 'block', fontSize: '15px', fontWeight: 700, color: 'var(--text-1)' }}>{title}</b>
           {subtitle && <span style={{ display: 'block', marginTop: '4px', fontSize: '11px', color: 'var(--text-3)', fontWeight: 500, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{subtitle}</span>}
         </div>
         <div className="section-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {onEdit && (
-            <button 
+            <button
               type="button"
               title="이 섹션 수정"
               onClick={(e) => { e.stopPropagation(); onEdit(); setOpen(true); }}
@@ -805,7 +805,7 @@ function DetailAccordion({ title, subtitle, children, defaultOpen = false, onEdi
             {open ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
           </div>
         </div>
-      </div>
+      </button>
       {open && (
         <div className="accordionBody" style={{ padding: '16px 20px', background: 'var(--surface)', borderTop: '1px solid var(--divider)' }}>
           {children}
@@ -957,7 +957,7 @@ function ConfirmModal({ message, sub, confirmLabel = '확인', danger = false, o
   const confirmButtonStyle = danger ? dangerStyle : primaryStyle;
 
   return (
-    <div className="sheetBackdrop confirmBackdrop" onClick={onCancel}>
+    <div className="sheetBackdrop confirmBackdrop" role="dialog" aria-modal="true" onClick={onCancel}>
       <div className="confirmBox" onClick={e => e.stopPropagation()}>
         <p className="confirmMsg">{message}</p>
         {sub && <p className="confirmSub">{sub}</p>}
@@ -1076,6 +1076,7 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
 
     <Header openGuide={openGuide} />
 
+    <main>
     {/* ── 히어로 섹션 ── */}
     <div className="heroSection">
       {!hasCandidates ? (
@@ -1339,6 +1340,7 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
         );
       })}
     </section>
+    </main>
   </>;
 }
 function StepTitle({ step, title, desc }) {
