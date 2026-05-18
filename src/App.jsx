@@ -1137,13 +1137,7 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
             </div>
 
             {/* 오늘의 런각 1위 pill 뱃지 */}
-            {/* 오늘의 런각 1위 pill 뱃지 */}
             <div className="heroRankBadge">
-              <svg className="heroRankBadgeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: '4px' }}>
-                <rect x="5" y="10" width="14" height="11" rx="2.5" fill="#FCD34D" />
-                <path d="M8 10V6.5C8 4.5 9.8 2.8 12 2.8C14.2 2.8 16 4.5 16 6.5V10" stroke="#F59E0B" strokeWidth="1.5" strokeLinecap="round" />
-                <path d="M9 13.5L10 12.2L12 13.5L14 12.2L15 13.5V15.8H9V13.5Z" fill="#FFF"/>
-              </svg>
               <span>오늘의 런각 1위</span>
             </div>
 
