@@ -2306,19 +2306,17 @@ p { margin: 0; }
   transition: box-shadow 0.22s ease, border-color 0.22s, transform 0.22s;
 }
 
-/* 런각 도장을 제외한 콘텐츠 자식 요소들만 어둡고 묵직하게 가라앉혀 하얗게 뜨는 현상을 완벽 차단 */
+/* 런각 도장을 제외한 콘텐츠 자식 요소들만 맑고 깨끗하게, 하지만 확실히 흐려지도록(35% 투명도) 조율하여 미체결 카드와 완벽 대비 */
 .candidateCard2.verdict-red > *:not(.rungakStamp),
 .candidateCard2.card-danger > *:not(.rungakStamp) {
-  opacity: 0.55; 
-  filter: brightness(0.65); /* 어둡게 가라앉혀 경고 및 실루엣 대조감 상승 */
-  transition: opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1), filter 0.22s ease;
+  opacity: 0.35; 
+  transition: opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* 호버 시에는 콘텐츠 투명도와 밝기도 기분 좋게 본래 선명도로 충전 */
+/* 호버 시에는 콘텐츠 투명도도 기분 좋게 맑고 선명히 충전 */
 .candidateCard2.verdict-red:hover > *:not(.rungakStamp),
 .candidateCard2.card-danger:hover > *:not(.rungakStamp) {
   opacity: 0.95;
-  filter: brightness(1);
 }
 
 /* left verdict color bar — sits within 20px left padding, no content overlap */
