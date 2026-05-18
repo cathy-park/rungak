@@ -601,6 +601,19 @@ function analyze(candidate) {
   return { age, rows, conditionScore, relationScore, trustScore, realityScore, bonusPenalty, flowScore, totalScore, verifiedCount, verdict, label, color, comments };
 }
 
+// 조용민 전용 표시 오버라이드 — 분석 로직은 건드리지 않고 표시값만 통일
+function getDisplayReport(candidate, report) {
+  if ((candidate?.name || candidate?.form?.name) !== '조용민') return report;
+  return {
+    ...report,
+    totalScore: 72,
+    verdict: '더 만나며 관찰',
+    color: 'blue',
+    label: '조건과 관계 흐름을 조금 더 봐도 좋아요.',
+    comments: ['지금은 단정하기보다 관찰에 가까운 상태예요. 다음 만남에서 말과 행동 일치를 체크해보세요.'],
+  };
+}
+
 function scoreTone(color) {
   return {
     green: { className: 'tone-green', label: '안정' },
@@ -1043,7 +1056,7 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
   const [heroIdx, setHeroIdx] = useState(0);
 
   const mapped = candidates.map(candidate => {
-    const report = analyze(candidate);
+    const report = getDisplayReport(candidate, analyze(candidate));
     return { candidate, report };
   }).sort((a, b) => b.report.totalScore - a.report.totalScore);
 
@@ -1103,14 +1116,9 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
         const heroName = candidate.name || '무명의 후보';
         const isCho = heroName === '조용민';
 
-        const displayVerdict = isCho ? '더 만나며 관찰' : report.verdict;
-        const displayScore = isCho ? 72 : report.totalScore;
         const displayAge = isCho ? 38 : (report.age || '??');
         const displayJob = isCho ? 'IT CEO(미스틸게임즈)' : (candidate.job || '직업 미상');
         const displayLoc = isCho ? '과천, 평촌' : (candidate.location || '');
-
-        const heroLabel = isCho ? '조건과 관계 흐름을 조금 더 봐도 좋아요.' : report.label;
-        const heroComment = isCho ? '지금은 단정하기보다 관찰에 가까운 상태예요. 다음 만남에서 말과 행동 일치를 체크해보세요.' : (report.comments?.[0] || '지금은 단정하기보다 관찰에 가까운 상태예요.');
 
         return (
           <>
@@ -1156,8 +1164,8 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
                 <div className="heroNameBlock">
                   <h2 className="heroName">{heroName}</h2>
                   <div className="heroStatusBadgeRow">
-                    <span className={`heroStatusBadge badge-${isCho ? 'blue' : report.color}`}>{displayVerdict}</span>
-                    <span className="heroStatusScore">{displayScore}<small>점</small></span>
+                    <span className={`heroStatusBadge badge-${report.color}`}>{report.verdict}</span>
+                    <span className="heroStatusScore">{report.totalScore}<small>점</small></span>
                   </div>
                   <p className="heroMeta">{displayAge}세 · {displayJob}{displayLoc ? ` · ${displayLoc}` : ''}</p>
                 </div>
@@ -1171,8 +1179,8 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
                   </svg>
                 </div>
                 <div className="heroExplanationContent">
-                  <p className="heroExplanationHighlight">{heroLabel}</p>
-                  <p className="heroExplanationDetail">{heroComment}</p>
+                  <p className="heroExplanationHighlight">{report.label}</p>
+                  <p className="heroExplanationDetail">{report.comments?.[0] || '지금은 단정하기보다 관찰에 가까운 상태예요.'}</p>
                 </div>
               </div>
 
@@ -1589,8 +1597,8 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
   const [open, setOpen] = useState('profile');
   const [form, setForm] = useState(() => createForm(initialCandidate));
   const report = useMemo(() => analyze(form), [form]);
+  const displayReport = useMemo(() => getDisplayReport({ name: form.name }, report), [form.name, report]);
   const isEdit = Boolean(form.id);
-  const displayTotalScore = form.name === '조용민' ? 72 : report.totalScore;
   
   function update(key, value) {
     setForm((prev) => ({ ...prev, [key]: value, ...(key === 'birthDate' ? { age: calcAge(value) } : {}) }));
@@ -1619,9 +1627,9 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
     <div className="editPage">
       <div className="editHead">
         <div><p>Edit Candidate</p><h1>후보 정보 편집</h1><span>필요한 항목만 열어서 수정하세요.</span></div>
-        <strong>{displayTotalScore}</strong>
+        <strong>{displayReport.totalScore}</strong>
       </div>
-      
+
       <Card className="accordion">
         <button type="button" onClick={() => setOpen(open === 'quicknote' ? '' : 'quicknote')}>
           <div><b>빠른 기록 Quick Note</b><span>한 줄 메모, 좋았던 점, 다음에 확인할 점</span></div>
@@ -1853,9 +1861,9 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
 
           <div className="sectionDivider" style={{ margin: '24px 0' }} />
           <Card>
-            <Badge color={report.color}>{report.verdict}</Badge>
-            <h2 className="resultScore">{displayTotalScore}점</h2>
-            <p>{report.label}</p>
+            <Badge color={displayReport.color}>{displayReport.verdict}</Badge>
+            <h2 className="resultScore">{displayReport.totalScore}점</h2>
+            <p>{displayReport.label}</p>
           </Card>
           <div className="twoButtons">
             <button onClick={() => setStep(4)}>이전</button>
@@ -2324,7 +2332,7 @@ function DynamicListSection({ items = [], type, onChange }) {
 }
 function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField }) {
   const report = analyze(candidate);
-  const displayTotalScore = candidate.name === '조용민' ? 72 : report.totalScore;
+  const displayReport = getDisplayReport(candidate, report);
   const [copied, setCopied] = useState(false);
   const markdownText = candidateMarkdown(candidate, report);
   const [isAddingQuickMemo, setIsAddingQuickMemo] = useState(false);
@@ -2449,7 +2457,7 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
               {report.age || '나이 미상'}세 · {candidate.job || '직업 미상'} · {candidate.location || '거주지 미상'}
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '2px' }}>
-              <Badge color={report.color}>{report.verdict}</Badge>
+              <Badge color={displayReport.color}>{displayReport.verdict}</Badge>
               {(candidate.personalityTags || []).map(id => {
                 const tag = personalityTypeTags.find(t => t.id === id);
                 return tag ? <Badge key={id} color="blue">{tag.emoji} {tag.label}</Badge> : null;
@@ -2498,19 +2506,19 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
         </div>
         <main className="sheetBody">
           {/* 관계 관찰 요약 (기본 노출 - 펼쳐진 상태) */}
-          <Card className={`final ${scoreTone(report.color).className}`}>
+          <Card className={`final ${scoreTone(displayReport.color).className}`}>
             <div>
-              <Badge color={report.color}>{scoreTone(report.color).label}</Badge>
+              <Badge color={displayReport.color}>{scoreTone(displayReport.color).label}</Badge>
               <p>최종 총점</p>
-              <strong>{displayTotalScore}</strong>
+              <strong>{displayReport.totalScore}</strong>
             </div>
             <aside>
               <span>판정</span>
-              <b>{report.verdict}</b>
+              <b>{displayReport.verdict}</b>
             </aside>
             <section>
-              <b>{report.label}</b>
-              <p>{report.comments[0]}</p>
+              <b>{displayReport.label}</b>
+              <p>{displayReport.comments[0]}</p>
             </section>
             <div className="miniGrid">
               <MiniScore label="조건/스펙" value={report.conditionScore} max={40} />
