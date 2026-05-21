@@ -1324,11 +1324,10 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
 
   const mapped = candidates.map(c => ({ candidate: c, report: c }));
 
-  // 히어로 노출 기준: '정리 권장'(red)만 제외 — verdict가 아닌 총점 기반 순위로 노출
-  // 기존에 verdict 문자열 기반 필터 사용 시, 총점 61점(amber)인 후보가 제외되고
-  // 58점(blue)인 후보만 단독 노출되는 역전 버그가 있었음
   const recommendable = mapped.filter(({ report }) =>
-    report.verdict !== '정리 권장'
+    report.verdict === '계속 만나도 좋음' || 
+    report.verdict === '더 만나며 관찰' || 
+    report.verdict === '조건 확인 필요'
   );
   const topRanked = recommendable.slice(0, 3);
   const hasCandidates = candidates.length > 0;
@@ -3709,6 +3708,7 @@ export default function App() {
   const [activeSyncCode, setActiveSyncCode] = useState(() => localStorage.getItem(SYNC_CODE_KEY) || null);
   const lastSyncedJsonRef = useRef(null); // null = 아직 초기화 전 (첫 렌더 시 자동업로드 방지)
   const uploadTimerRef = useRef(null);
+  const isSyncingFromLocalRef = useRef(false);
 
   // 연동 코드 localStorage 유지
   useEffect(() => {
@@ -3717,8 +3717,6 @@ export default function App() {
   }, [activeSyncCode]);
 
   // 후보 데이터 변경 시 자동 업로드 (2초 디바운스)
-  // [버그 수정] lastSyncedJsonRef를 sanitized 데이터 기준으로 비교하고,
-  // isSyncingFromLocalRef 3초 블로킹을 제거하여 원격 변경 수신을 차단하지 않도록 함
   useEffect(() => {
     if (!activeSyncCode) return;
     const currentJson = JSON.stringify(candidates);
@@ -3726,6 +3724,7 @@ export default function App() {
     if (currentJson === lastSyncedJsonRef.current) return; // 원격 수신 데이터와 동일하면 재업로드 생략
     clearTimeout(uploadTimerRef.current);
     uploadTimerRef.current = setTimeout(async () => {
+      isSyncingFromLocalRef.current = true;
       try {
         const sanitized = await Promise.all(candidates.map(async (c) => {
           if (c.photo && c.photo.length > 30000) {
@@ -3734,27 +3733,23 @@ export default function App() {
           }
           return c;
         }));
-        const sanitizedJson = JSON.stringify(sanitized);
-        // 업로드 직전에 ref를 sanitized 기준으로 설정하여
-        // onSnapshot이 자기 데이터를 수신해도 중복 반영하지 않음
-        lastSyncedJsonRef.current = sanitizedJson;
         await setDoc(doc(db, 'sync_codes', activeSyncCode), { candidates: sanitized, updatedAt: Date.now() });
+        lastSyncedJsonRef.current = currentJson;
       } catch (e) { console.error('Auto-sync upload failed:', e); }
+      finally { setTimeout(() => { isSyncingFromLocalRef.current = false; }, 3000); }
     }, 2000);
     return () => clearTimeout(uploadTimerRef.current);
   }, [candidates, activeSyncCode]);
 
   // 실시간 수신 리스너
-  // [버그 수정] isSyncingFromLocalRef 체크 제거 — lastSyncedJsonRef 비교만으로
-  // 자기 데이터 중복 반영을 방지하고, 원격 변경은 즉시 수신하도록 수정
   useEffect(() => {
     if (!activeSyncCode) return;
     const unsub = onSnapshot(doc(db, 'sync_codes', activeSyncCode), (snap) => {
-      if (!snap.exists()) return;
+      if (!snap.exists() || isSyncingFromLocalRef.current) return;
       const data = snap.data();
       if (!data?.candidates || !Array.isArray(data.candidates)) return;
       const remoteJson = JSON.stringify(data.candidates);
-      if (remoteJson === lastSyncedJsonRef.current) return; // 자기 업로드 데이터 or 동일 데이터 무시
+      if (remoteJson === lastSyncedJsonRef.current) return; // 동일 데이터 무시
       lastSyncedJsonRef.current = remoteJson;
       setCandidates(data.candidates);
     }, (err) => console.error('Sync listener error:', err));

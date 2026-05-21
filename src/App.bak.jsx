@@ -410,7 +410,7 @@ function timelineScore(timeline = [], redFlagsList = []) {
     return sum + (event.signals || []).reduce((inner, code) => {
       const signal = signalByCode(code);
       if (!signal) return inner;
-      
+
       let sVal = signal.score;
       if (code === 'falseInfo' && hasFalseInfo) sVal = Math.max(sVal, -2);
       if (code === 'moneyBorrow' && hasMoneyBorrow) sVal = 0;
@@ -471,26 +471,26 @@ function analyze(candidate) {
   const greenScore = (candidate.green || []).reduce((sum, label) => sum + (greenFlags.find((item) => item.label === label)?.score || 0), 0);
   const yellowScore = (candidate.yellow || []).reduce((sum, label) => sum + (yellowFlags.find((item) => item.label === label)?.score || 0), 0);
   const redList = candidate.red || [];
-  
+
   // [확인] 점수 과잉 삭제 방지를 위한 상한선(Cap) 로직 정상 적용 상태
   let scoreCap = 100;
   let capReason = "";
   if (redList.includes("돈을 빌리려는 뉘앙스")) { scoreCap = Math.min(scoreCap, 20); capReason = "돈을 빌리려는 뉘앙스 등 치명적 위험이 있어 총점이 제한되었어요."; }
-  if (redList.includes("허위 확인")) { scoreCap = Math.min(scoreCap, 25); if(!capReason) capReason = "주요 정보 허위 기재가 확인되어 총점 상한이 걸려있어요."; }
-  if (redList.includes("내 판단을 예민함으로 몰아감")) { scoreCap = Math.min(scoreCap, 35); if(!capReason) capReason = "가스라이팅성 대화 패턴으로 인해 판단 총점이 대폭 제한되었어요."; }
-  if (redList.includes("직업/자산/연봉 허위 의심")) { scoreCap = Math.min(scoreCap, 55); if(!capReason) capReason = "조건 스펙 자체는 높으나 진실성 의심 항목으로 인해 총점 반영이 제한적이에요."; }
+  if (redList.includes("허위 확인")) { scoreCap = Math.min(scoreCap, 25); if (!capReason) capReason = "주요 정보 허위 기재가 확인되어 총점 상한이 걸려있어요."; }
+  if (redList.includes("내 판단을 예민함으로 몰아감")) { scoreCap = Math.min(scoreCap, 35); if (!capReason) capReason = "가스라이팅성 대화 패턴으로 인해 판단 총점이 대폭 제한되었어요."; }
+  if (redList.includes("직업/자산/연봉 허위 의심")) { scoreCap = Math.min(scoreCap, 55); if (!capReason) capReason = "조건 스펙 자체는 높으나 진실성 의심 항목으로 인해 총점 반영이 제한적이에요."; }
 
   const redScore = redList.reduce((sum, label) => {
     const flag = redFlags.find((item) => item.label === label);
     if (!flag || flag.hardRun) return sum;
     return sum + Math.max(flag.score, -8);
   }, 0);
-  
+
   const bonusPenalty = clamp(greenScore + yellowScore + redScore + importantVerified * 1.5 + moneyVerified * 1.5, -18, 10);
   const flowScore = timelineScore(candidate.timeline || [], redList);
   const preScore = Math.round(conditionScore + relationScore + trustScore + realityScore + bonusPenalty + flowScore);
   const totalScore = clamp(Math.min(preScore, scoreCap), 0, 100);
-  
+
   const hardRun = redList.some((label) => redFlags.find((item) => item.label === label)?.hardRun);
   const lowVerify = verifiedCount <= 1 && conditionScore >= 24;
   let verdict = '더 만나며 관찰';
@@ -577,12 +577,12 @@ function candidateMarkdown(candidate, report) {
 
   const timelines = (candidate.timeline || []).length
     ? candidate.timeline.map((event) => {
-        const type = optLabel(timelineTypeOptions, event.type);
-        const feeling = optLabel(feelingOptions, event.feeling);
-        const notes = bulletLines(event.notes).map((line) => `  - ${line}`).join('\n') || '  - 기록 없음';
-        const selected = (event.signals || []).map((code) => signalByCode(code)?.label).filter(Boolean).join(', ') || '없음';
-        return [`### ${event.date || '날짜 미상'} · ${type} · ${feeling}`, notes, `- 행동 신호: ${selected}`].join('\n');
-      }).join('\n\n')
+      const type = optLabel(timelineTypeOptions, event.type);
+      const feeling = optLabel(feelingOptions, event.feeling);
+      const notes = bulletLines(event.notes).map((line) => `  - ${line}`).join('\n') || '  - 기록 없음';
+      const selected = (event.signals || []).map((code) => signalByCode(code)?.label).filter(Boolean).join(', ') || '없음';
+      return [`### ${event.date || '날짜 미상'} · ${type} · ${feeling}`, notes, `- 행동 신호: ${selected}`].join('\n');
+    }).join('\n\n')
     : '기록 없음';
 
   return [
@@ -685,9 +685,9 @@ function VerifiedInput({ children, checked, onChange }) {
   return <div className="verifiedInput"><div>{children}</div><Toggle checked={checked} onChange={onChange} /></div>;
 }
 function Icon({ type }) {
-  if (type === 'note') return <svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="16" rx="4"/><path d="M8.5 9h7M8.5 13h7M8.5 17h4"/></svg>;
-  if (type === 'edit') return <svg viewBox="0 0 24 24"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/><path d="m13.5 7.5 3 3"/></svg>;
-  return <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>;
+  if (type === 'note') return <svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="16" rx="4" /><path d="M8.5 9h7M8.5 13h7M8.5 17h4" /></svg>;
+  if (type === 'edit') return <svg viewBox="0 0 24 24"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3Z" /><path d="m13.5 7.5 3 3" /></svg>;
+  return <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>;
 }
 function Header({ openGuide }) {
   return <header className="header"><div><p>Run Angle Lab</p><h1>런각 연구소</h1></div><button className="iconButton" onClick={openGuide}><Icon type="note" /></button></header>;
@@ -701,10 +701,10 @@ const CrownIcon = ({ rank }) => {
 
   return (
     <svg className="crownIcon" width="32" height="28" viewBox="0 0 24 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M3 19L4.5 8L9 12L12 3L15 12L19.5 8L21 19H3Z" fill={theme.fill} stroke={theme.stroke} strokeWidth="1.5" strokeLinejoin="round"/>
-      <circle cx="12" cy="3" r="1.5" fill={theme.fill} stroke={theme.stroke}/>
-      <circle cx="4.5" cy="8" r="1.5" fill={theme.fill} stroke={theme.stroke}/>
-      <circle cx="19.5" cy="8" r="1.5" fill={theme.fill} stroke={theme.stroke}/>
+      <path d="M3 19L4.5 8L9 12L12 3L15 12L19.5 8L21 19H3Z" fill={theme.fill} stroke={theme.stroke} strokeWidth="1.5" strokeLinejoin="round" />
+      <circle cx="12" cy="3" r="1.5" fill={theme.fill} stroke={theme.stroke} />
+      <circle cx="4.5" cy="8" r="1.5" fill={theme.fill} stroke={theme.stroke} />
+      <circle cx="19.5" cy="8" r="1.5" fill={theme.fill} stroke={theme.stroke} />
       <text x="12" y="16.5" fill={theme.text} fontSize="7" fontWeight="900" textAnchor="middle" fontFamily="sans-serif">{rank}</text>
     </svg>
   );
@@ -736,7 +736,7 @@ function Home({ candidates, openCandidate, goAdd, openGuide }) {
   }).sort((a, b) => b.report.totalScore - a.report.totalScore);
 
   // 추천 가능 기준: 계속 만나도 좋음 / 더 만나며 관찰
-  const recommendable = mapped.filter(({ report }) => 
+  const recommendable = mapped.filter(({ report }) =>
     report.verdict === '계속 만나도 좋음' || report.verdict === '더 만나며 관찰'
   );
   const topRanked = recommendable.slice(0, 3);
@@ -746,7 +746,7 @@ function Home({ candidates, openCandidate, goAdd, openGuide }) {
 
   return <>
     <Header openGuide={openGuide} />
-    
+
     <div className="carouselWrapper">
       {!hasCandidates ? (
         <div className="rankCard empty">
@@ -759,10 +759,10 @@ function Home({ candidates, openCandidate, goAdd, openGuide }) {
         <div className="rankCard empty recommend-none" style={{ padding: '20px 16px 18px' }}>
           <div style={{ fontSize: '24px', marginBottom: '6px', opacity: 0.6 }}>🔍</div>
           <h3 style={{ fontSize: '16px', fontWeight: 700 }}>지금은 추천 후보가 없어요</h3>
-          <p style={{ marginBottom: '10px', fontSize: '13px', lineHeight: '1.5', wordBreak: 'keep-all', color: 'var(--text-2)' }}>현재 후보들은 모두 보류/정리 권장 상태예요.<br/>감정보다 관찰을 우선해보세요.</p>
+          <p style={{ marginBottom: '10px', fontSize: '13px', lineHeight: '1.5', wordBreak: 'keep-all', color: 'var(--text-2)' }}>현재 후보들은 모두 보류/정리 권장 상태예요.<br />감정보다 관찰을 우선해보세요.</p>
           <button className="heroCTA secondary" onClick={() => {
             const el = document.querySelector('.list');
-            if(el) el.scrollIntoView({ behavior: 'smooth' });
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
           }}>후보 목록에서 다시 보기</button>
         </div>
       ) : (
@@ -771,9 +771,9 @@ function Home({ candidates, openCandidate, goAdd, openGuide }) {
             const { candidate, report } = item;
             const tone = scoreTone(report.color);
             return (
-              <button 
-                key={candidate.id} 
-                className={`rankCard ${tone.className}`} 
+              <button
+                key={candidate.id}
+                className={`rankCard ${tone.className}`}
                 onClick={() => openCandidate(candidate)}
               >
                 <div className="rankVisual">
@@ -781,7 +781,7 @@ function Home({ candidates, openCandidate, goAdd, openGuide }) {
                   {idx === 0 && <div className="crownBox"><CrownIcon rank={1} /></div>}
                   <Avatar candidate={candidate} size="lg" />
                 </div>
-                
+
                 <div className="rankInfo">
                   <h3>{candidate.name || '무명의 후보'}</h3>
                   <div className="rankVerdictLine">
@@ -793,7 +793,7 @@ function Home({ candidates, openCandidate, goAdd, openGuide }) {
                     {report.age || '??'}세 · {candidate.job || '직업 미상'} · {candidate.location || '거주지'}
                   </p>
                 </div>
-                
+
                 <div className="rankSummaryLine">
                   <p className={`summary-title scoreText-${report.color}`}>{report.label}</p>
                   {report.comments?.[0] && (
@@ -860,10 +860,10 @@ function CharacterPicker({ form, update, handlePhoto }) {
   );
 }
 function ProfileFields({ form, update }) {
-  return <div className="formStack"><Field label="이름/별명" value={form.name} onChange={(v) => update('name', v)} placeholder="예: 차분한 연하남"/><div className="grid2"><Field label="생년월일" type="date" value={form.birthDate} onChange={(v) => update('birthDate', v)}/><Field label="나이" value={form.age} onChange={(v) => update('age', v)} placeholder="자동 계산"/></div><div className="grid2"><Field label="직업" value={form.job} onChange={(v) => update('job', v)} placeholder="예: 기획자"/><Field label="거주지" value={form.location} onChange={(v) => update('location', v)} placeholder="예: 서울 성수"/></div><div className="grid2"><Field label="MBTI" value={form.mbti} onChange={(v) => update('mbti', v)} placeholder="예: INTJ"/><Field label="만난 경로" value={form.route} onChange={(v) => update('route', v)} placeholder="예: 소개팅"/></div><Field label="첫인상 메모" textarea value={form.memo} onChange={(v) => update('memo', v)} placeholder="예: 말이 과하지 않고 현재를 잘 사는 느낌"/></div>;
+  return <div className="formStack"><Field label="이름/별명" value={form.name} onChange={(v) => update('name', v)} placeholder="예: 차분한 연하남" /><div className="grid2"><Field label="생년월일" type="date" value={form.birthDate} onChange={(v) => update('birthDate', v)} /><Field label="나이" value={form.age} onChange={(v) => update('age', v)} placeholder="자동 계산" /></div><div className="grid2"><Field label="직업" value={form.job} onChange={(v) => update('job', v)} placeholder="예: 기획자" /><Field label="거주지" value={form.location} onChange={(v) => update('location', v)} placeholder="예: 서울 성수" /></div><div className="grid2"><Field label="MBTI" value={form.mbti} onChange={(v) => update('mbti', v)} placeholder="예: INTJ" /><Field label="만난 경로" value={form.route} onChange={(v) => update('route', v)} placeholder="예: 소개팅" /></div><Field label="첫인상 메모" textarea value={form.memo} onChange={(v) => update('memo', v)} placeholder="예: 말이 과하지 않고 현재를 잘 사는 느낌" /></div>;
 }
 function CoreConditions({ form, update, updateVerified }) {
-  return <div className="formStack"><VerifiedInput checked={verified(form, 'height')} onChange={(v) => updateVerified('height', v)}><Field label="키(cm)" type="number" value={form.height} onChange={(v) => update('height', v)} placeholder="예: 181"/></VerifiedInput><div className="grid2"><SelectField label="체형" value={form.bodyType} onChange={(v) => update('bodyType', v)}>{bodyOptions.map((opt) => <option key={opt}>{opt}</option>)}</SelectField><SelectField label="체형 취향" value={form.bodyFit} onChange={(v) => update('bodyFit', Number(v))}>{bodyFitOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}</SelectField></div><VerifiedInput checked={verified(form, 'asset')} onChange={(v) => updateVerified('asset', v)}><SelectField label="자산" value={form.asset} onChange={(v) => update('asset', v)}>{assetOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}</SelectField></VerifiedInput><VerifiedInput checked={verified(form, 'income')} onChange={(v) => updateVerified('income', v)}><SelectField label="연봉" value={form.income} onChange={(v) => update('income', v)}>{incomeOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}</SelectField></VerifiedInput><VerifiedInput checked={verified(form, 'education')} onChange={(v) => updateVerified('education', v)}><Field label="학력" value={form.education} onChange={(v) => update('education', v)} placeholder="예: 대졸 / 석사"/></VerifiedInput><div className="grid2"><SelectField label="직업 안정성" value={form.jobStability} onChange={(v) => update('jobStability', Number(v))}>{[1,2,3,4,5].map((n) => <option key={n} value={n}>{n}점</option>)}</SelectField><SelectField label="거리 적합도" value={form.distanceFit} onChange={(v) => update('distanceFit', Number(v))}>{[1,2,3,4,5].map((n) => <option key={n} value={n}>{n}점</option>)}</SelectField></div></div>;
+  return <div className="formStack"><VerifiedInput checked={verified(form, 'height')} onChange={(v) => updateVerified('height', v)}><Field label="키(cm)" type="number" value={form.height} onChange={(v) => update('height', v)} placeholder="예: 181" /></VerifiedInput><div className="grid2"><SelectField label="체형" value={form.bodyType} onChange={(v) => update('bodyType', v)}>{bodyOptions.map((opt) => <option key={opt}>{opt}</option>)}</SelectField><SelectField label="체형 취향" value={form.bodyFit} onChange={(v) => update('bodyFit', Number(v))}>{bodyFitOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}</SelectField></div><VerifiedInput checked={verified(form, 'asset')} onChange={(v) => updateVerified('asset', v)}><SelectField label="자산" value={form.asset} onChange={(v) => update('asset', v)}>{assetOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}</SelectField></VerifiedInput><VerifiedInput checked={verified(form, 'income')} onChange={(v) => updateVerified('income', v)}><SelectField label="연봉" value={form.income} onChange={(v) => update('income', v)}>{incomeOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}</SelectField></VerifiedInput><VerifiedInput checked={verified(form, 'education')} onChange={(v) => updateVerified('education', v)}><Field label="학력" value={form.education} onChange={(v) => update('education', v)} placeholder="예: 대졸 / 석사" /></VerifiedInput><div className="grid2"><SelectField label="직업 안정성" value={form.jobStability} onChange={(v) => update('jobStability', Number(v))}>{[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n}점</option>)}</SelectField><SelectField label="거리 적합도" value={form.distanceFit} onChange={(v) => update('distanceFit', Number(v))}>{[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n}점</option>)}</SelectField></div></div>;
 }
 function LifeInfo({ form, update, updateVerified }) {
   return <div className="formStack"><div className="grid2"><VerifiedInput checked={verified(form, 'marriageHistory')} onChange={(v) => updateVerified('marriageHistory', v)}><SelectField label="결혼 이력" value={form.marriageHistory} onChange={(v) => update('marriageHistory', v)}>{marriageOptions.map((opt) => <option key={opt}>{opt}</option>)}</SelectField></VerifiedInput><VerifiedInput checked={verified(form, 'children')} onChange={(v) => updateVerified('children', v)}><SelectField label="자녀" value={form.children} onChange={(v) => update('children', v)}>{childrenOptions.map((opt) => <option key={opt}>{opt}</option>)}</SelectField></VerifiedInput></div><div className="grid2"><VerifiedInput checked={verified(form, 'housing')} onChange={(v) => updateVerified('housing', v)}><SelectField label="주거" value={form.housing} onChange={(v) => update('housing', v)}>{housingOptions.map((opt) => <option key={opt}>{opt}</option>)}</SelectField></VerifiedInput><VerifiedInput checked={verified(form, 'car')} onChange={(v) => updateVerified('car', v)}><SelectField label="차량" value={form.car} onChange={(v) => update('car', v)}>{carOptions.map((opt) => <option key={opt}>{opt}</option>)}</SelectField></VerifiedInput></div><div className="grid2"><SelectField label="흡연" value={form.smoking} onChange={(v) => update('smoking', v)}>{smokingOptions.map((opt) => <option key={opt}>{opt}</option>)}</SelectField><SelectField label="음주" value={form.drinking} onChange={(v) => update('drinking', v)}>{drinkingOptions.map((opt) => <option key={opt}>{opt}</option>)}</SelectField></div><div className="grid2"><SelectField label="종교" value={form.religion} onChange={(v) => update('religion', v)}>{religionOptions.map((opt) => <option key={opt}>{opt}</option>)}</SelectField><SelectField label="연애 목적" value={form.relationshipGoal} onChange={(v) => update('relationshipGoal', v)}>{goalOptions.map((opt) => <option key={opt}>{opt}</option>)}</SelectField></div></div>;
@@ -871,7 +871,7 @@ function LifeInfo({ form, update, updateVerified }) {
 function RelationSliders({ form, updateRelation, compact = false }) {
   const [more, setMore] = useState(false);
   const visible = compact ? coreRelationItems : relationItems;
-  
+
   const renderItem = (item) => {
     const val = form.relation[item.key];
     const isStatus = statusTypeKeys.includes(item.key);
@@ -968,9 +968,9 @@ function TagPickerGroup({ title, tags, selected, onToggle, maxSelect = 3 }) {
               key={tag.id}
               type="button"
               className={`badge ${isSelected ? `tone-${tone}` : 'tone-gray'}`}
-              style={{ 
-                padding: '8px 12px', 
-                fontSize: '12px', 
+              style={{
+                padding: '8px 12px',
+                fontSize: '12px',
                 borderRadius: '12px',
                 opacity: !isSelected && selected.length >= maxSelect ? 0.5 : 1,
                 cursor: 'pointer',
@@ -1025,22 +1025,22 @@ function ObservationSection({ notes, onChange, memo = '', onMemoChange }) {
           </button>
         ))}
       </div>
-      <Field 
-        label="다음에 관찰할 내용 기록" 
-        textarea 
-        value={notes} 
-        onChange={onChange} 
+      <Field
+        label="다음에 관찰할 내용 기록"
+        textarea
+        value={notes}
+        onChange={onChange}
         placeholder="예: 바쁜 시기에도 대화 밀도가 유지되는지, 말과 행동이 일치하는지 등 관찰할 포인트를 기록하세요."
       />
       {onMemoChange && (
         <>
           <div className="sectionDivider" style={{ margin: '20px 0 16px 0' }} />
-          <Field 
-            label="관찰 메모" 
-            textarea 
+          <Field
+            label="관찰 메모"
+            textarea
             rows={6}
-            value={memo} 
-            onChange={onMemoChange} 
+            value={memo}
+            onChange={onMemoChange}
             placeholder="관계 흐름, 공개 정보, 인터뷰 요약, 개인적 인상, 추가 관찰 포인트 등을 수동으로 적어두세요."
           />
         </>
@@ -1074,7 +1074,7 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
   const [form, setForm] = useState(() => createForm(initialCandidate));
   const report = useMemo(() => analyze(form), [form]);
   const isEdit = Boolean(form.id);
-  
+
   function update(key, value) {
     setForm((prev) => ({ ...prev, [key]: value, ...(key === 'birthDate' ? { age: calcAge(value) } : {}) }));
   }
@@ -1084,14 +1084,14 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
   function toggleList(key, label) { setForm((prev) => ({ ...prev, [key]: prev[key].includes(label) ? prev[key].filter((item) => item !== label) : [...prev[key], label] })); }
   function photo(file) { if (!file) return; const reader = new FileReader(); reader.onload = () => update('photo', String(reader.result || '')); reader.readAsDataURL(file); }
   function save() { onSave({ ...form, id: form.id || Date.now(), name: form.name.trim() || '무명의 후보', age: form.age || calcAge(form.birthDate) }); }
-  
+
   if (isEdit) return (
     <div className="editPage">
       <div className="editHead">
         <div><p>Edit Candidate</p><h1>후보 정보 편집</h1><span>필요한 항목만 열어서 수정하세요.</span></div>
         <strong>{report.totalScore}</strong>
       </div>
-      
+
       <Card className="accordion">
         <button type="button" onClick={() => setOpen(open === 'profile' ? '' : 'profile')}>
           <div><b>프로필 & 유형</b><span>캐릭터, 이름, 인간 유형 태그</span></div>
@@ -1099,9 +1099,9 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
         </button>
         {open === 'profile' && (
           <div className="accordionBody">
-            <CharacterPicker form={form} update={update} handlePhoto={photo}/>
+            <CharacterPicker form={form} update={update} handlePhoto={photo} />
             <div style={{ marginTop: '20px' }}>
-              <TagPickerGroup 
+              <TagPickerGroup
                 title="인간 유형 태그 (성향)"
                 tags={personalityTypeTags}
                 selected={form.personalityTags || []}
@@ -1109,7 +1109,7 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
                 maxSelect={3}
               />
             </div>
-            <ProfileFields form={form} update={update}/>
+            <ProfileFields form={form} update={update} />
           </div>
         )}
       </Card>
@@ -1122,10 +1122,10 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
         {open === 'condition' && (
           <div className="accordionBody flatBody">
             <div className="sectionLabel">핵심 조건</div>
-            <CoreConditions form={form} update={update} updateVerified={updateVerified}/>
+            <CoreConditions form={form} update={update} updateVerified={updateVerified} />
             <div className="sectionDivider" />
             <div className="sectionLabel">생활 정보</div>
-            <LifeInfo form={form} update={update} updateVerified={updateVerified}/>
+            <LifeInfo form={form} update={update} updateVerified={updateVerified} />
           </div>
         )}
       </Card>
@@ -1138,7 +1138,7 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
         {open === 'emotional' && (
           <div className="accordionBody">
             <div style={{ marginBottom: '20px' }}>
-              <TagPickerGroup 
+              <TagPickerGroup
                 title="나에게 유발하는 관계 에너지"
                 tags={energyTagOptions}
                 selected={form.energyTags || []}
@@ -1159,7 +1159,7 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
         </button>
         {open === 'relation' && (
           <div className="accordionBody">
-            <RelationSliders form={form} updateRelation={updateRelation}/>
+            <RelationSliders form={form} updateRelation={updateRelation} />
           </div>
         )}
       </Card>
@@ -1171,7 +1171,7 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
         </button>
         {open === 'observation' && (
           <div className="accordionBody">
-            <ObservationSection 
+            <ObservationSection
               notes={form.observationNotes || ''}
               onChange={(val) => update('observationNotes', val)}
               memo={form.observationMemo || ''}
@@ -1188,13 +1188,13 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
         </button>
         {open === 'flags' && (
           <div className="accordionBody">
-            <FlagGroup title="그린플래그" color="green" items={greenFlags} selected={form.green} toggle={(label) => toggleList('green', label)}/>
-            <FlagGroup title="옐로우플래그" color="amber" items={yellowFlags} selected={form.yellow} toggle={(label) => toggleList('yellow', label)}/>
-            <FlagGroup title="레드플래그" color="red" items={redFlags} selected={form.red} toggle={(label) => toggleList('red', label)}/>
+            <FlagGroup title="그린플래그" color="green" items={greenFlags} selected={form.green} toggle={(label) => toggleList('green', label)} />
+            <FlagGroup title="옐로우플래그" color="amber" items={yellowFlags} selected={form.yellow} toggle={(label) => toggleList('yellow', label)} />
+            <FlagGroup title="레드플래그" color="red" items={redFlags} selected={form.red} toggle={(label) => toggleList('red', label)} />
           </div>
         )}
       </Card>
-      
+
       <div className="fixedBottomActions">
         <button onClick={onCancel}>취소</button>
         <button className="primary" onClick={save}>수정 저장</button>
@@ -1209,34 +1209,34 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
         <strong>{report.totalScore}</strong>
       </div>
       <div className="steps">
-        {[1,2,3,4,5].map((n) => (
-          <button key={n} className={step >= n ? 'on' : ''} onClick={() => setStep(n)}/>
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button key={n} className={step >= n ? 'on' : ''} onClick={() => setStep(n)} />
         ))}
       </div>
-      
+
       {step === 1 && (
         <>
-          <StepTitle step="1" title="프로필 & 유형" desc="캐릭터와 기본적 성향을 기록해요."/>
-          <CharacterPicker form={form} update={update} handlePhoto={photo}/>
+          <StepTitle step="1" title="프로필 & 유형" desc="캐릭터와 기본적 성향을 기록해요." />
+          <CharacterPicker form={form} update={update} handlePhoto={photo} />
           <div className="flatStack" style={{ marginTop: '20px' }}>
-            <TagPickerGroup 
+            <TagPickerGroup
               title="인간 유형 태그"
               tags={personalityTypeTags}
               selected={form.personalityTags || []}
               onToggle={(tags) => update('personalityTags', tags)}
               maxSelect={3}
             />
-            <ProfileFields form={form} update={update}/>
+            <ProfileFields form={form} update={update} />
           </div>
           <button className="primary full" onClick={() => setStep(2)}>조건 입력하기</button>
         </>
       )}
-      
+
       {step === 2 && (
         <>
-          <StepTitle step="2" title="핵심 조건" desc="판단에 근간이 되는 정보를 입력해요."/>
+          <StepTitle step="2" title="핵심 조건" desc="판단에 근간이 되는 정보를 입력해요." />
           <div className="flatStack">
-            <CoreConditions form={form} update={update} updateVerified={updateVerified}/>
+            <CoreConditions form={form} update={update} updateVerified={updateVerified} />
           </div>
           <Card className="notice">생활 정보는 저장 후 편집에서 추가해도 돼요.</Card>
           <div className="twoButtons">
@@ -1245,12 +1245,12 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
           </div>
         </>
       )}
-      
+
       {step === 3 && (
         <>
-          <StepTitle step="3" title="정서적 결 & 에너지" desc="나와의 티키타카와 유발 에너지를 파악해요."/>
+          <StepTitle step="3" title="정서적 결 & 에너지" desc="나와의 티키타카와 유발 에너지를 파악해요." />
           <div className="flatStack">
-            <TagPickerGroup 
+            <TagPickerGroup
               title="유발 에너지"
               tags={energyTagOptions}
               selected={form.energyTags || []}
@@ -1269,9 +1269,9 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
 
       {step === 4 && (
         <>
-          <StepTitle step="4" title="대화/태도" desc="핵심 지표들의 현재 상태를 기록해요."/>
+          <StepTitle step="4" title="대화/태도" desc="핵심 지표들의 현재 상태를 기록해요." />
           <div className="flatStack">
-            <RelationSliders form={form} updateRelation={updateRelation} compact/>
+            <RelationSliders form={form} updateRelation={updateRelation} compact />
           </div>
           <div className="twoButtons">
             <button onClick={() => setStep(3)}>이전</button>
@@ -1279,16 +1279,16 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
           </div>
         </>
       )}
-      
+
       {step === 5 && (
         <>
-          <StepTitle step="5" title="플래그 + 결과" desc="발견된 신호와 향후 관찰 계획을 체크해요."/>
-          <FlagGroup title="그린플래그" color="green" items={greenFlags} selected={form.green} toggle={(label) => toggleList('green', label)}/>
-          <FlagGroup title="옐로우플래그" color="amber" items={yellowFlags} selected={form.yellow} toggle={(label) => toggleList('yellow', label)}/>
-          <FlagGroup title="레드플래그" color="red" items={redFlags} selected={form.red} toggle={(label) => toggleList('red', label)}/>
-          
+          <StepTitle step="5" title="플래그 + 결과" desc="발견된 신호와 향후 관찰 계획을 체크해요." />
+          <FlagGroup title="그린플래그" color="green" items={greenFlags} selected={form.green} toggle={(label) => toggleList('green', label)} />
+          <FlagGroup title="옐로우플래그" color="amber" items={yellowFlags} selected={form.yellow} toggle={(label) => toggleList('yellow', label)} />
+          <FlagGroup title="레드플래그" color="red" items={redFlags} selected={form.red} toggle={(label) => toggleList('red', label)} />
+
           <div className="sectionDivider" style={{ margin: '24px 0' }} />
-          <ObservationSection 
+          <ObservationSection
             notes={form.observationNotes || ''}
             onChange={(val) => update('observationNotes', val)}
             memo={form.observationMemo || ''}
@@ -1319,7 +1319,7 @@ function TimelineSection({ candidate, report, saveTimeline }) {
 
   function update(key, value) { setDraft((prev) => ({ ...prev, [key]: value })); }
   function toggle(code) { setDraft((prev) => ({ ...prev, signals: prev.signals.includes(code) ? prev.signals.filter((item) => item !== code) : [...prev.signals, code] })); }
-  
+
   function startEdit(event) {
     setDraft({ ...event });
     setEditingId(event.id);
@@ -1362,11 +1362,11 @@ function TimelineSection({ candidate, report, saveTimeline }) {
           {!adding && <button onClick={() => setAdding(true)}>+ 기록</button>}
         </div>
       </div>
-      
+
       {adding && (
         <div className="timelineForm">
           <div className="grid2">
-            <Field label="만난 날짜" type="date" value={draft.date} onChange={(v) => update('date', v)}/>
+            <Field label="만난 날짜" type="date" value={draft.date} onChange={(v) => update('date', v)} />
             <SelectField label="기록 유형" value={draft.type} onChange={(v) => update('type', v)}>
               {timelineTypeOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
             </SelectField>
@@ -1374,7 +1374,7 @@ function TimelineSection({ candidate, report, saveTimeline }) {
           <SelectField label="오늘의 느낌" value={draft.feeling} onChange={(v) => update('feeling', v)}>
             {feelingOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
           </SelectField>
-          <Field label="주요 내용" textarea value={draft.notes} onChange={(v) => update('notes', v)} placeholder={'약속 시간을 잘 지킴\\n자산 이야기를 반복함\\n대화 후 피로감이 남음'}/>
+          <Field label="주요 내용" textarea value={draft.notes} onChange={(v) => update('notes', v)} placeholder={'약속 시간을 잘 지킴\\n자산 이야기를 반복함\\n대화 후 피로감이 남음'} />
           <p className="hint">줄바꿈은 블릿으로 정리돼요. 키워드는 참고 후보로만 보여줘요.</p>
           <div className="signalWrap">
             {signalOptions.map((signal) => (
@@ -1415,11 +1415,11 @@ function TimelineSection({ candidate, report, saveTimeline }) {
               </div>
             </div>
             <div className="eventBadges">
-              {(event.signals || []).slice(0,2).map((code) => {
+              {(event.signals || []).slice(0, 2).map((code) => {
                 const s = signalByCode(code);
                 return s ? <Badge key={code} color={s.tone}>{s.label}</Badge> : null;
               })}
-              {(event.suggestedSignals || []).slice(0,1).map((code) => {
+              {(event.suggestedSignals || []).slice(0, 1).map((code) => {
                 const s = signalByCode(code);
                 return s ? <Badge key={code} color="gray">감지: {s.label}</Badge> : null;
               })}
@@ -1521,7 +1521,7 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline }) {
                 <span style={{ fontSize: '12px', color: 'var(--text-3)' }}>지정된 에너지 태그가 없습니다.</span>
               )}
             </div>
-            
+
             <div className="infoGrid">
               {emotionalBondItems.map(item => {
                 const val = candidate.emotionalBond?.[item.key] ?? 5;
@@ -1601,7 +1601,7 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline }) {
             <h3>첫인상 메모</h3>
             <p style={{ fontSize: '13.5px', lineHeight: 1.6, color: 'var(--text-body)' }}>{candidate.memo || '기록된 첫인상이 없습니다.'}</p>
           </Card>
-          
+
           <button
             className="danger"
             onClick={() => {
@@ -1626,13 +1626,13 @@ function GuideModal({ close, onExport, onImport }) {
           <div><p>Settings & Guide</p><h2>설정 및 판단 기준</h2></div>
           <button onClick={close}>×</button>
         </div>
-        
+
         <Card>
           <h3>데이터 관리</h3>
           <div className="twoButtons" style={{ marginTop: '12px' }}>
             <button onClick={onExport}>전체 데이터 백업</button>
             <label className="uploadButton">
-              <input type="file" accept=".json" onChange={onImport} style={{ display: 'none' }}/>
+              <input type="file" accept=".json" onChange={onImport} style={{ display: 'none' }} />
               데이터 불러오기
             </label>
           </div>
@@ -1738,7 +1738,7 @@ function ScoreRule({ title, score, desc }) {
   return <div className="scoreRule"><div><b>{title}</b><Badge color="blue">{score}</Badge></div><p>{desc}</p></div>;
 }
 function FloatingAdd({ onClick }) {
-  return <button className="floating" onClick={onClick}><Icon type="add"/></button>;
+  return <button className="floating" onClick={onClick}><Icon type="add" /></button>;
 }
 export default function App() {
   const [tab, setTab] = useState('home');
@@ -1752,7 +1752,7 @@ export default function App() {
   const [editing, setEditing] = useState(null);
   const [guideOpen, setGuideOpen] = useState(false);
 
-  useEffect(() => { try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(candidates)); } catch {} }, [candidates]);
+  useEffect(() => { try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(candidates)); } catch { } }, [candidates]);
 
   function save(candidate) {
     const previous = candidates.find((item) => item.id === candidate.id);
@@ -1783,7 +1783,7 @@ export default function App() {
       try {
         const blob = new Blob([data], { type: 'application/json' });
         const file = new File([blob], filename, { type: 'application/json' });
-        
+
         if (navigator.canShare({ files: [file] })) {
           await navigator.share({
             files: [file],
@@ -1835,5 +1835,5 @@ export default function App() {
     event.target.value = '';
   }
 
-  return <div className="app"><div className="phone"><main>{tab === 'home' && <Home candidates={candidates} openCandidate={setSelected} goAdd={() => { setEditing(null); setTab('add'); }} openGuide={() => setGuideOpen(true)}/>} {tab === 'add' && <AddCandidate initialCandidate={editing} onSave={save} onCancel={() => { setEditing(null); setTab('home'); }}/>}</main>{tab === 'home' && <FloatingAdd onClick={() => { setEditing(null); setTab('add'); }}/>} {selected && <DetailModal candidate={selected} close={() => setSelected(null)} edit={startEdit} remove={remove} saveTimeline={saveTimeline}/>} {guideOpen && <GuideModal close={() => setGuideOpen(false)} onExport={exportData} onImport={importData}/>}</div></div>;
+  return <div className="app"><div className="phone"><main>{tab === 'home' && <Home candidates={candidates} openCandidate={setSelected} goAdd={() => { setEditing(null); setTab('add'); }} openGuide={() => setGuideOpen(true)} />} {tab === 'add' && <AddCandidate initialCandidate={editing} onSave={save} onCancel={() => { setEditing(null); setTab('home'); }} />}</main>{tab === 'home' && <FloatingAdd onClick={() => { setEditing(null); setTab('add'); }} />} {selected && <DetailModal candidate={selected} close={() => setSelected(null)} edit={startEdit} remove={remove} saveTimeline={saveTimeline} />} {guideOpen && <GuideModal close={() => setGuideOpen(false)} onExport={exportData} onImport={importData} />}</div></div>;
 }
