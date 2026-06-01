@@ -148,12 +148,20 @@ const signalOptions = [
   { code: 'presentAction', label: '현재 행동이 분명함', score: 3, tone: 'green' },
   { code: 'resolvedConflict', label: '갈등 시 조율함', score: 3, tone: 'green' },
   { code: 'verifiedInfo', label: '확인된 정보 추가', score: 2, tone: 'green' },
+  { code: 'tikitaka', label: '티키타카 잘됨', score: 2, tone: 'green' },
+  { code: 'goodHumor', label: '유머 코드가 맞음', score: 2, tone: 'green' },
+  { code: 'respectBoundary', label: '선과 경계를 존중함', score: 3, tone: 'green' },
+  { code: 'acceptDifference', label: '다름을 흥미롭게 수용함', score: 2, tone: 'green' },
   { code: 'mismatch', label: '말과 행동 불일치', score: -3, tone: 'amber' },
   { code: 'tempoChange', label: '연락 템포 급변', score: -2, tone: 'amber' },
+  { code: 'selfCentered', label: '자기중심적 대화', score: -2, tone: 'amber' },
   { code: 'avoidance', label: '회피/잠수', score: -4, tone: 'orange' },
+  { code: 'controlFreak', label: '은근한 통제 시도', score: -4, tone: 'orange' },
   { code: 'gaslighting', label: '내 판단을 예민함으로 몰아감', score: -6, tone: 'red' },
   { code: 'falseInfo', label: '돈/조건 허위 의심', score: -8, tone: 'red' },
   { code: 'moneyBorrow', label: '돈 빌림 뉘앙스', score: -10, tone: 'red' },
+  { code: 'emotionalTrash', label: '감정 쓰레기통 취급', score: -8, tone: 'red' },
+  { code: 'blameOthers', label: '남 탓/상황 탓 반복', score: -6, tone: 'red' },
 ];
 
 // ─── 인간 유형 태그 ───────────────────────────────────
@@ -1004,6 +1012,15 @@ function getScoreStatusLabel(score) {
   if (s <= 6) return { label: '관찰중', color: 'amber' };
   if (s <= 8) return { label: '안정적', color: 'blue' };
   return { label: '매우 좋음', color: 'green' };
+}
+
+function getReverseScoreStatusLabel(score) {
+  const s = Number(score || 0);
+  if (s === 0) return { label: '미검증', color: 'gray' };
+  if (s <= 3) return { label: '매우 안정', color: 'green' };
+  if (s <= 6) return { label: '보통', color: 'blue' };
+  if (s <= 8) return { label: '주의', color: 'amber' };
+  return { label: '위험', color: 'red' };
 }
 
 function Chevron({ isOpen }) {
@@ -3243,7 +3260,7 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
                     <div className="infoGrid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                       {emotionalBondItems.map(item => {
                         const val = candidate.emotionalBond?.[item.key] ?? 5;
-                        const stat = getScoreStatusLabel(val);
+                        const stat = item.key === 'emotionFatigue' ? getReverseScoreStatusLabel(val) : getScoreStatusLabel(val);
                         return (
                           <div key={item.key} className="info" style={{ padding: '10px', borderRadius: '10px', border: '1px solid var(--divider)', display: 'flex', flexDirection: 'column', justifyContent: 'center', background: 'var(--surface)', boxSizing: 'border-box' }}>
                             <small style={{ fontSize: '10px', color: 'var(--text-3)', marginBottom: '3px', display: 'block' }}>{item.label}</small>
