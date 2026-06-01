@@ -241,12 +241,15 @@ const observationPointPool = [
 const greenFlags = [
   { label: '대화 후 편안함이 남음', score: 3 },
   { label: '자연스러운 티키타카', score: 2 },
+  { label: '유머 코드가 잘 통함', score: 2 },
   { label: '자기 세계의 실체가 있음', score: 2 },
   { label: '약속을 구체적으로 잡고 지킴', score: 3 },
   { label: '내 말을 기억하고 반영함', score: 2 },
   { label: '불편한 이야기도 차분히 조율함', score: 4 },
   { label: '현재에 충실한 행동을 보임', score: 4 },
   { label: '내 경계선을 존중함', score: 3 },
+  { label: '서로의 다름을 흥미롭게 받아들임', score: 3 },
+  { label: '단점이 명확하지만 수용 가능한 수준임', score: 2 },
 ];
 const yellowFlags = [
   { label: '워커홀릭 가능성', score: -2 },
@@ -255,6 +258,10 @@ const yellowFlags = [
   { label: '말은 좋은데 확인 가능한 행동이 적음', score: -3 },
   { label: '직업/자산 정보 확인 필요', score: -2 },
   { label: '초반 호감 표현이 과함', score: -2 },
+  { label: '은근히 나를 통제하려는 느낌이 듦', score: -3 },
+  { label: '자기 이야기만 주로 함', score: -2 },
+  { label: '사소한 거짓말이나 변명이 잦음', score: -4 },
+  { label: '결정을 자꾸 미룸', score: -2 },
 ];
 const redFlags = [
   { label: '설명 없는 잠수 반복', score: -6 },
@@ -268,6 +275,9 @@ const redFlags = [
   { label: '돈·투자·사업 이야기로 관계를 흐림', score: -20, hardRun: true },
   { label: '내 판단을 예민함으로 몰아감', score: -12 },
   { label: '돈을 빌리려는 뉘앙스', score: -30, hardRun: true },
+  { label: '감정의 쓰레기통으로 취급함', score: -8 },
+  { label: '관계의 책임을 나에게 떠넘김', score: -10 },
+  { label: '약자에게 함부로 대함', score: -12, hardRun: true },
 ];
 
 const relationItems = [
@@ -653,7 +663,7 @@ function analyze(candidate) {
   } else if (lowVerify || (conditionScore >= 28 && trustScore <= 5)) {
     verdict = '조건 확인 필요';
     color = 'orange';
-  } else if (totalScore >= 75 && trustScore >= 8) {
+  } else if (totalScore >= 80 || (totalScore >= 75 && trustScore >= 8)) {
     verdict = '계속 만나도 좋음';
     color = 'green';
   } else if (relationScore < 16 || Number(candidate.relation?.comfort || 10) <= 3) {
@@ -1742,7 +1752,9 @@ function EmotionalBondSliders({ form, updateEmotionalBond }) {
                 value={val}
                 onChange={(e) => updateEmotionalBond(item.key, Number(e.target.value))}
                 style={{
-                  background: `linear-gradient(to right, var(--green) 0%, var(--green) ${val * 10}%, var(--divider) ${val * 10}%, var(--divider) 100%)`
+                  background: item.key === 'emotionFatigue'
+                    ? `linear-gradient(to right, var(--red) 0%, var(--red) ${val * 10}%, var(--divider) ${val * 10}%, var(--divider) 100%)`
+                    : `linear-gradient(to right, var(--green) 0%, var(--green) ${val * 10}%, var(--divider) ${val * 10}%, var(--divider) 100%)`
                 }}
               />
             </div>
