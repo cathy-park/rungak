@@ -1543,7 +1543,7 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo, togg
 
         return (
           <div key={candidate.id} className="candidateCardWrap">
-            <button className={`candidateCard2 verdict-${cColor} card-${isDanger ? 'danger' : 'normal'}`} onClick={() => openCandidate(candidate)}>
+            <button className={`candidateCard2 verdict-${cColor} card-${isDanger ? 'danger' : 'normal'} ${candidate.friendStamp ? 'card-friend' : ''}`} onClick={() => openCandidate(candidate)}>
               <Avatar candidate={candidate} size="sm" />
               <div className="candidateCard2Body">
                 <div className="candidateCard2NameRow">

@@ -2354,16 +2354,18 @@ p { margin: 0; }
   transition: box-shadow 0.22s ease, border-color 0.22s, transform 0.22s;
 }
 
-/* 런각 도장을 제외한 콘텐츠 자식 요소들만 맑고 깨끗하게, 하지만 확실히 흐려지도록(35% 투명도) 조율하여 미체결 카드와 완벽 대비 */
-.candidateCard2.verdict-red > *:not(.rungakStamp),
-.candidateCard2.card-danger > *:not(.rungakStamp) {
+/* 런각 도장 또는 친구 도장을 제외한 콘텐츠 자식 요소들만 맑고 깨끗하게, 하지만 확실히 흐려지도록(35% 투명도) 조율하여 미체결 카드와 완벽 대비 */
+.candidateCard2.verdict-red > *:not(.rungakStamp):not(.friendStamp),
+.candidateCard2.card-danger > *:not(.rungakStamp):not(.friendStamp),
+.candidateCard2.card-friend > *:not(.rungakStamp):not(.friendStamp) {
   opacity: 0.35; 
   transition: opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* 호버 시에는 콘텐츠 투명도도 기분 좋게 맑고 선명히 충전 */
-.candidateCard2.verdict-red:hover > *:not(.rungakStamp),
-.candidateCard2.card-danger:hover > *:not(.rungakStamp) {
+.candidateCard2.verdict-red:hover > *:not(.rungakStamp):not(.friendStamp),
+.candidateCard2.card-danger:hover > *:not(.rungakStamp):not(.friendStamp),
+.candidateCard2.card-friend:hover > *:not(.rungakStamp):not(.friendStamp) {
   opacity: 0.95;
 }
 
