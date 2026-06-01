@@ -2096,18 +2096,20 @@ p { margin: 0; }
   display: inline-flex;
   align-items: center;
   border-radius: 7px;
-  padding: 3px 7px;
+  padding: 2px 6px;
   font-size: 10px; /* 2px 축소 */
   font-weight: 700;
   letter-spacing: 0.01em;
   width: auto;
   height: auto;
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid;
 }
-.heroStatusBadge.badge-blue { background: #EFF6FF; color: #2F80ED; border: 1px solid #BBD8FF; }
-.heroStatusBadge.badge-green { background: #EAFDF3; color: #16A34A; }
-.heroStatusBadge.badge-amber { background: #FFF9E6; color: #F59F00; }
-.heroStatusBadge.badge-orange { background: #FFF1E6; color: #F97316; }
-.heroStatusBadge.badge-red { background: #FFEBEF; color: #E11D48; }
+.heroStatusBadge.badge-blue { color: #3182F6; border-color: #BFDBFE; }
+.heroStatusBadge.badge-green { color: #16A34A; border-color: #BBF7D0; }
+.heroStatusBadge.badge-amber { color: #F59F00; border-color: #FDE68A; }
+.heroStatusBadge.badge-orange { color: #F97316; border-color: #FED7AA; }
+.heroStatusBadge.badge-red { color: #E11D48; border-color: #FCA5A5; }
 
 .heroStatusDot {
   font-size: 14px;
