@@ -1617,14 +1617,6 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo, togg
             </button>
             <button
               className="candidateCard2EditBtn toss-quick-memo-btn"
-              style={{ right: '50px' }}
-              onClick={(e) => { e.stopPropagation(); toggleFriendStamp(candidate); }}
-              title="친구 도장 찍기/해제"
-            >
-              <span className="toss-quick-memo-emoji" role="img" aria-label="stamp" style={{ filter: candidate.friendStamp ? 'none' : 'grayscale(100%) opacity(50%)' }}>🤝</span>
-            </button>
-            <button
-              className="candidateCard2EditBtn toss-quick-memo-btn"
               onClick={(e) => { e.stopPropagation(); openQuickMemo(candidate); }}
               title="빠른 메모"
             >
@@ -2923,6 +2915,19 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
               <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-3)', whiteSpace: 'nowrap', flexShrink: 0 }}>
                 {report.age || '나이 미상'}세
               </span>
+              <button 
+                onClick={(e) => { e.stopPropagation(); updateField(candidate.id, 'friendStamp', !candidate.friendStamp); }}
+                style={{ 
+                  background: 'none', border: 'none', padding: '0', cursor: 'pointer', 
+                  fontSize: '16px', display: 'flex', alignItems: 'center', marginLeft: '2px',
+                  filter: candidate.friendStamp ? 'none' : 'grayscale(100%) opacity(35%)',
+                  transform: candidate.friendStamp ? 'scale(1.15) rotate(-5deg)' : 'scale(1)',
+                  transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)'
+                }}
+                title="친구 상태 토글"
+              >
+                🤝
+              </button>
             </div>
             {/* 줄 2: 직업 · 지역 — 버튼 아래까지 전폭 */}
             <p style={{ margin: 0, fontSize: '13px', fontWeight: 500, color: 'var(--text-3)', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
