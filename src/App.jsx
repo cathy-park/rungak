@@ -1286,7 +1286,7 @@ const renderRankCrown = (idx) => {
     </div>
   );
 };
-function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
+function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo, toggleFriendStamp }) {
   const [heroIdx, setHeroIdx] = useState(0);
   const carouselTrackRef = React.useRef(null);
 
@@ -1582,6 +1582,46 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo }) {
                   </svg>
                 </div>
               )}
+              {candidate.friendStamp && (
+                <div className="friendStamp" aria-hidden="true" style={{ filter: 'url(#rungak-grunge)' }}>
+                  <svg width="120" height="120" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    {/* 바깥 거친 이중 테두리 원 */}
+                    <circle cx="50" cy="50" r="44" stroke="#16A34A" strokeWidth="3" strokeDasharray="320" style={{ opacity: 0.9 }} />
+                    <circle cx="50" cy="50" r="39" stroke="#16A34A" strokeWidth="1.2" strokeDasharray="4 4" style={{ opacity: 0.8 }} />
+                    
+                    {/* 두 명의 친구 캐릭터 */}
+                    {/* 왼쪽 사람 */}
+                    <circle cx="40" cy="38" r="7" stroke="#16A34A" strokeWidth="2" fill="none" />
+                    <circle cx="37" cy="36" r="1.5" fill="#16A34A" />
+                    <circle cx="43" cy="36" r="1.5" fill="#16A34A" />
+                    <path d="M37 40 Q40 43 43 40" stroke="#16A34A" strokeWidth="1.5" strokeLinecap="round" />
+                    
+                    {/* 오른쪽 사람 */}
+                    <circle cx="60" cy="38" r="7" stroke="#16A34A" strokeWidth="2" fill="none" />
+                    <circle cx="57" cy="36" r="1.5" fill="#16A34A" />
+                    <circle cx="63" cy="36" r="1.5" fill="#16A34A" />
+                    <path d="M57 40 Q60 43 63 40" stroke="#16A34A" strokeWidth="1.5" strokeLinecap="round" />
+                    
+                    {/* 어깨동무 라인 */}
+                    <path d="M47 42 Q50 38 53 42" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" />
+                    
+                    {/* 친구! 굵은 텍스트 */}
+                    <text x="50" y="75" fill="#16A34A" fontSize="15" fontWeight="900" textAnchor="middle" fontFamily="'Noto Sans KR', sans-serif" letterSpacing="0.08em">친구!</text>
+                    
+                    {/* 반짝이 데코 */}
+                    <path d="M26 38l1.5 2.5L30 39l-2.5-1.5L26 38zM74 38l1.5-2.5L72 34l-1 2.5L74 38z" fill="#16A34A" />
+                    <path d="M22 62h3v3h-3zM76 60h2v2h-2z" fill="#16A34A" />
+                  </svg>
+                </div>
+              )}
+            </button>
+            <button
+              className="candidateCard2EditBtn toss-quick-memo-btn"
+              style={{ right: '50px' }}
+              onClick={(e) => { e.stopPropagation(); toggleFriendStamp(candidate); }}
+              title="친구 도장 찍기/해제"
+            >
+              <span className="toss-quick-memo-emoji" role="img" aria-label="stamp" style={{ filter: candidate.friendStamp ? 'none' : 'grayscale(100%) opacity(50%)' }}>🤝</span>
             </button>
             <button
               className="candidateCard2EditBtn toss-quick-memo-btn"
@@ -4023,5 +4063,5 @@ export default function App() {
     setToast({ message: '실시간 동기화가 해제되었습니다.', type: 'info' });
   }
 
-  return <div className="app"><div className="phone"><main>{tab === 'home' && <Home candidates={viewModel.rankedCandidates} openCandidate={setSelected} goAdd={() => { setEditing(null); setTab('add'); }} openGuide={() => setGuideOpen(true)} openQuickMemo={setQuickMemoCandidate}/>} {tab === 'add' && <AddCandidate initialCandidate={editing} onSave={save} onCancel={() => { setEditing(null); setTab('home'); }}/>}</main>{tab === 'home' && <FloatingAdd onClick={() => { setEditing(null); setTab('add'); }}/>} {selected && <DetailModal candidate={selected} close={() => setSelected(null)} edit={startEdit} remove={remove} saveTimeline={saveTimeline} updateField={updateCandidateField}/>} {quickMemoCandidate && <QuickMemoModal candidate={quickMemoCandidate} close={() => setQuickMemoCandidate(null)} onSave={addQuickMemo} />} {guideOpen && <GuideModal close={() => setGuideOpen(false)} onExport={exportData} onImport={importData} onSyncUpload={generateAndUploadData} onSyncDownload={downloadDataByCode} activeSyncCode={activeSyncCode} onDisconnectSync={disconnectSync}/>} {appConfirm && <ConfirmModal {...appConfirm} />} {toast && <Toast {...toast} onDone={() => setToast(null)} />}</div></div>;
+  return <div className="app"><div className="phone"><main>{tab === 'home' && <Home candidates={viewModel.rankedCandidates} openCandidate={setSelected} goAdd={() => { setEditing(null); setTab('add'); }} openGuide={() => setGuideOpen(true)} openQuickMemo={setQuickMemoCandidate} toggleFriendStamp={(candidate) => updateCandidateField(candidate.id, 'friendStamp', !candidate.friendStamp)}/>} {tab === 'add' && <AddCandidate initialCandidate={editing} onSave={save} onCancel={() => { setEditing(null); setTab('home'); }}/>}</main>{tab === 'home' && <FloatingAdd onClick={() => { setEditing(null); setTab('add'); }}/>} {selected && <DetailModal candidate={selected} close={() => setSelected(null)} edit={startEdit} remove={remove} saveTimeline={saveTimeline} updateField={updateCandidateField}/>} {quickMemoCandidate && <QuickMemoModal candidate={quickMemoCandidate} close={() => setQuickMemoCandidate(null)} onSave={addQuickMemo} />} {guideOpen && <GuideModal close={() => setGuideOpen(false)} onExport={exportData} onImport={importData} onSyncUpload={generateAndUploadData} onSyncDownload={downloadDataByCode} activeSyncCode={activeSyncCode} onDisconnectSync={disconnectSync}/>} {appConfirm && <ConfirmModal {...appConfirm} />} {toast && <Toast {...toast} onDone={() => setToast(null)} />}</div></div>;
 }

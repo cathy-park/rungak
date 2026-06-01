@@ -2546,6 +2546,36 @@ p { margin: 0; }
   opacity: 0.88;
 }
 
+/* ─── FRIEND STAMP ────────────────────────────── */
+.friendStamp {
+  position: absolute;
+  right: 110px;
+  top: 50%;
+  transform: translateY(-50%) rotate(5deg);
+  width: 80px;
+  height: 80px;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.78;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+/* rungakStamp와 같이 있을 때 위치 살짝 틀기 */
+.rungakStamp ~ .friendStamp {
+  right: 160px;
+  transform: translateY(-50%) rotate(12deg);
+}
+.friendStamp svg {
+  width: 100%;
+  height: 100%;
+}
+.candidateCardWrap:hover .friendStamp {
+  transform: translateY(-50%) rotate(8deg) scale(1.04);
+  opacity: 0.88;
+}
+.candidateCardWrap:hover .rungakStamp ~ .friendStamp {
+  transform: translateY(-50%) rotate(15deg) scale(1.04);
+}
+
 /* ─── FLOATING + BUTTON ──────────────────────────────── */
 .floating {
   position: fixed;
