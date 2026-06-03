@@ -148,20 +148,12 @@ const signalOptions = [
   { code: 'presentAction', label: '현재 행동이 분명함', score: 3, tone: 'green' },
   { code: 'resolvedConflict', label: '갈등 시 조율함', score: 3, tone: 'green' },
   { code: 'verifiedInfo', label: '확인된 정보 추가', score: 2, tone: 'green' },
-  { code: 'tikitaka', label: '티키타카 잘됨', score: 2, tone: 'green' },
-  { code: 'goodHumor', label: '유머 코드가 맞음', score: 2, tone: 'green' },
-  { code: 'respectBoundary', label: '선과 경계를 존중함', score: 3, tone: 'green' },
-  { code: 'acceptDifference', label: '다름을 흥미롭게 수용함', score: 2, tone: 'green' },
   { code: 'mismatch', label: '말과 행동 불일치', score: -3, tone: 'amber' },
   { code: 'tempoChange', label: '연락 템포 급변', score: -2, tone: 'amber' },
-  { code: 'selfCentered', label: '자기중심적 대화', score: -2, tone: 'amber' },
   { code: 'avoidance', label: '회피/잠수', score: -4, tone: 'orange' },
-  { code: 'controlFreak', label: '은근한 통제 시도', score: -4, tone: 'orange' },
   { code: 'gaslighting', label: '내 판단을 예민함으로 몰아감', score: -6, tone: 'red' },
   { code: 'falseInfo', label: '돈/조건 허위 의심', score: -8, tone: 'red' },
   { code: 'moneyBorrow', label: '돈 빌림 뉘앙스', score: -10, tone: 'red' },
-  { code: 'emotionalTrash', label: '감정 쓰레기통 취급', score: -8, tone: 'red' },
-  { code: 'blameOthers', label: '남 탓/상황 탓 반복', score: -6, tone: 'red' },
 ];
 
 // ─── 인간 유형 태그 ───────────────────────────────────
@@ -249,15 +241,12 @@ const observationPointPool = [
 const greenFlags = [
   { label: '대화 후 편안함이 남음', score: 3 },
   { label: '자연스러운 티키타카', score: 2 },
-  { label: '유머 코드가 잘 통함', score: 2 },
   { label: '자기 세계의 실체가 있음', score: 2 },
   { label: '약속을 구체적으로 잡고 지킴', score: 3 },
   { label: '내 말을 기억하고 반영함', score: 2 },
   { label: '불편한 이야기도 차분히 조율함', score: 4 },
   { label: '현재에 충실한 행동을 보임', score: 4 },
   { label: '내 경계선을 존중함', score: 3 },
-  { label: '서로의 다름을 흥미롭게 받아들임', score: 3 },
-  { label: '단점이 명확하지만 수용 가능한 수준임', score: 2 },
 ];
 const yellowFlags = [
   { label: '워커홀릭 가능성', score: -2 },
@@ -266,10 +255,6 @@ const yellowFlags = [
   { label: '말은 좋은데 확인 가능한 행동이 적음', score: -3 },
   { label: '직업/자산 정보 확인 필요', score: -2 },
   { label: '초반 호감 표현이 과함', score: -2 },
-  { label: '은근히 나를 통제하려는 느낌이 듦', score: -3 },
-  { label: '자기 이야기만 주로 함', score: -2 },
-  { label: '사소한 거짓말이나 변명이 잦음', score: -4 },
-  { label: '결정을 자꾸 미룸', score: -2 },
 ];
 const redFlags = [
   { label: '설명 없는 잠수 반복', score: -6 },
@@ -283,9 +268,6 @@ const redFlags = [
   { label: '돈·투자·사업 이야기로 관계를 흐림', score: -20, hardRun: true },
   { label: '내 판단을 예민함으로 몰아감', score: -12 },
   { label: '돈을 빌리려는 뉘앙스', score: -30, hardRun: true },
-  { label: '감정의 쓰레기통으로 취급함', score: -8 },
-  { label: '관계의 책임을 나에게 떠넘김', score: -10 },
-  { label: '약자에게 함부로 대함', score: -12, hardRun: true },
 ];
 
 const relationItems = [
@@ -319,7 +301,7 @@ const coreRelationItems = relationItems.filter((item) => coreRelationKeys.includ
 const moreRelationItems = relationItems.filter((item) => !coreRelationKeys.includes(item.key));
 
 
-const verifiedKeys = ['birthDate', 'job', 'location', 'height', 'asset', 'income', 'education', 'housing', 'car'];
+const verifiedKeys = ['birthDate', 'job', 'location', 'height', 'asset', 'income', 'education', 'marriageHistory', 'children', 'housing', 'car'];
 const defaultRelation = Object.fromEntries(relationItems.map((item) => [item.key, 5]));
 const defaultEmotionalBond = Object.fromEntries(emotionalBondItems.map(i => [i.key, 5]));
 const emptyCandidate = {
@@ -340,7 +322,8 @@ const emptyCandidate = {
   asset: 'unknown',
   income: 'unknown',
   education: '',
-
+  marriageHistory: '미확인',
+  children: '미확인',
   housing: '미확인',
   car: '미확인',
   smoking: '미확인',
@@ -629,10 +612,9 @@ function analyze(candidate) {
   const relationScore = clamp(Math.round(relationRaw * 3), 0, 30);
   const verifiedCount = verifiedKeys.filter((key) => verified(candidate, key)).length;
   const moneyVerified = (verified(candidate, 'asset') ? 1 : 0) + (verified(candidate, 'income') ? 1 : 0);
-  const jobVerified = verified(candidate, 'job') ? 1 : 0;
   const importantVerified = ['height', 'asset', 'income', 'job'].filter((key) => verified(candidate, key)).length;
-  // trustScore: 순수 정보 검증 지표 — 직업 확인은 안정성을 크게 의미하므로 별도 가산
-  const trustScore = clamp(Math.round(verifiedCount * 0.9 + importantVerified * 1.2 + moneyVerified * 1.1 + jobVerified * 2.5), 0, 15);
+  // trustScore: 순수 정보 검증 지표 (action 제거 — relationScore/realityScore와 중복)
+  const trustScore = clamp(Math.round(verifiedCount * 0.9 + importantVerified * 1.2 + moneyVerified * 1.1), 0, 15);
   // realityScore: 행동 일치도만 반영 (jobStability/distanceFit 제거 — conditionScore와 중복)
   const realityScore = clamp(Math.round((Number(candidate.relation?.present || 5) + Number(candidate.relation?.action || 5)) * 0.75), 0, 10);
   const greenScore = (candidate.green || []).reduce((sum, label) => sum + (greenFlags.find((item) => item.label === label)?.score || 0), 0);
@@ -671,7 +653,7 @@ function analyze(candidate) {
   } else if (lowVerify || (conditionScore >= 28 && trustScore <= 5)) {
     verdict = '조건 확인 필요';
     color = 'orange';
-  } else if (totalScore >= 80 || (totalScore >= 75 && trustScore >= 8)) {
+  } else if (totalScore >= 75 && trustScore >= 8) {
     verdict = '계속 만나도 좋음';
     color = 'green';
   } else if (relationScore < 16 || Number(candidate.relation?.comfort || 10) <= 3) {
@@ -979,7 +961,8 @@ function candidateMarkdown(candidate, report) {
     `- 키: ${candidate.height ? `${candidate.height}cm` : '미확인'}`,
     `- 자산: ${optionLabel(assetOptions, candidate.asset)}`,
     `- 연봉: ${optionLabel(incomeOptions, candidate.income)}`,
-
+    `- 결혼 이력: ${candidate.marriageHistory || '미확인'}`,
+    `- 자녀 유무: ${candidate.children || '미확인'}`,
     `- 주거 형태: ${candidate.housing || '미확인'}`,
     `- 흡연/음주: ${candidate.smoking || '미확인'} / ${candidate.drinking || '미확인'}`,
     `- 점수 합계: 조건 ${report.conditionScore}/40 | 대화/태도 ${report.relationScore}/30 | 정보확인 ${report.trustScore}/15 | 지속가능성 ${report.realityScore}/10`,
@@ -1011,15 +994,6 @@ function getScoreStatusLabel(score) {
   if (s <= 6) return { label: '관찰중', color: 'amber' };
   if (s <= 8) return { label: '안정적', color: 'blue' };
   return { label: '매우 좋음', color: 'green' };
-}
-
-function getReverseScoreStatusLabel(score) {
-  const s = Number(score || 0);
-  if (s === 0) return { label: '미검증', color: 'gray' };
-  if (s <= 3) return { label: '매우 안정', color: 'green' };
-  if (s <= 6) return { label: '보통', color: 'blue' };
-  if (s <= 8) return { label: '주의', color: 'amber' };
-  return { label: '위험', color: 'red' };
 }
 
 function Chevron({ isOpen }) {
@@ -1578,7 +1552,7 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo, togg
                 </div>
 
                 <div className="candidateCard2MetaBlock">
-                  <p className="candidateCard2Meta">{displayAge}세 · {displayJob}{verified(candidate, 'job') ? ' ✅' : ''}{displayLoc ? ` · ${displayLoc}` : ''}</p>
+                  <p className="candidateCard2Meta">{displayAge}세 · {displayJob}{displayLoc ? ` · ${displayLoc}` : ''}</p>
                 </div>
               </div>
               
@@ -1641,7 +1615,13 @@ function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo, togg
                 </div>
               )}
             </button>
-
+            <button
+              className="candidateCard2EditBtn toss-quick-memo-btn"
+              onClick={(e) => { e.stopPropagation(); openQuickMemo(candidate); }}
+              title="빠른 메모"
+            >
+              <span className="toss-quick-memo-emoji" role="img" aria-label="memo">📝</span>
+            </button>
           </div>
         );
       })}
@@ -1687,7 +1667,7 @@ function CoreConditions({ form, update, updateVerified }) {
   return <div className="formStack"><VerifiedInput checked={verified(form, 'height')} onChange={(v) => updateVerified('height', v)}><Field label="키(cm)" type="number" value={form.height} onChange={(v) => update('height', v)} placeholder="예: 181"/></VerifiedInput><div className="grid2"><SelectField label="체형" value={form.bodyType} onChange={(v) => update('bodyType', v)}>{bodyOptions.map((opt) => <option key={opt}>{opt}</option>)}</SelectField><SelectField label="체형 취향" value={form.bodyFit} onChange={(v) => update('bodyFit', Number(v))}>{bodyFitOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}</SelectField></div><VerifiedInput checked={verified(form, 'asset')} onChange={(v) => updateVerified('asset', v)}><SelectField label="자산" value={form.asset} onChange={(v) => update('asset', v)}>{assetOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}</SelectField></VerifiedInput><VerifiedInput checked={verified(form, 'income')} onChange={(v) => updateVerified('income', v)}><SelectField label="연봉" value={form.income} onChange={(v) => update('income', v)}>{incomeOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}</SelectField></VerifiedInput><VerifiedInput checked={verified(form, 'education')} onChange={(v) => updateVerified('education', v)}><Field label="학력" value={form.education} onChange={(v) => update('education', v)} placeholder="예: 대졸 / 석사"/></VerifiedInput><div className="grid2"><SelectField label="직업 안정성" value={form.jobStability} onChange={(v) => update('jobStability', Number(v))}>{[1,2,3,4,5].map((n) => <option key={n} value={n}>{n}점</option>)}</SelectField><SelectField label="거리 적합도" value={form.distanceFit} onChange={(v) => update('distanceFit', Number(v))}>{[1,2,3,4,5].map((n) => <option key={n} value={n}>{n}점</option>)}</SelectField></div></div>;
 }
 function LifeInfo({ form, update, updateVerified }) {
-  return <div className="formStack"><div className="grid2"><VerifiedInput checked={verified(form, 'housing')} onChange={(v) => updateVerified('housing', v)}><SelectField label="주거" value={form.housing} onChange={(v) => update('housing', v)}>{housingOptions.map((opt) => <option key={opt}>{opt}</option>)}</SelectField></VerifiedInput><VerifiedInput checked={verified(form, 'car')} onChange={(v) => updateVerified('car', v)}><SelectField label="차량" value={form.car} onChange={(v) => update('car', v)}>{carOptions.map((opt) => <option key={opt}>{opt}</option>)}</SelectField></VerifiedInput></div><div className="grid2"><SelectField label="흡연" value={form.smoking} onChange={(v) => update('smoking', v)}>{smokingOptions.map((opt) => <option key={opt}>{opt}</option>)}</SelectField><SelectField label="음주" value={form.drinking} onChange={(v) => update('drinking', v)}>{drinkingOptions.map((opt) => <option key={opt}>{opt}</option>)}</SelectField></div><div className="grid2"><SelectField label="종교" value={form.religion} onChange={(v) => update('religion', v)}>{religionOptions.map((opt) => <option key={opt}>{opt}</option>)}</SelectField><SelectField label="연애 목적" value={form.relationshipGoal} onChange={(v) => update('relationshipGoal', v)}>{goalOptions.map((opt) => <option key={opt}>{opt}</option>)}</SelectField></div></div>;
+  return <div className="formStack"><div className="grid2"><VerifiedInput checked={verified(form, 'marriageHistory')} onChange={(v) => updateVerified('marriageHistory', v)}><SelectField label="결혼 이력" value={form.marriageHistory} onChange={(v) => update('marriageHistory', v)}>{marriageOptions.map((opt) => <option key={opt}>{opt}</option>)}</SelectField></VerifiedInput><VerifiedInput checked={verified(form, 'children')} onChange={(v) => updateVerified('children', v)}><SelectField label="자녀" value={form.children} onChange={(v) => update('children', v)}>{childrenOptions.map((opt) => <option key={opt}>{opt}</option>)}</SelectField></VerifiedInput></div><div className="grid2"><VerifiedInput checked={verified(form, 'housing')} onChange={(v) => updateVerified('housing', v)}><SelectField label="주거" value={form.housing} onChange={(v) => update('housing', v)}>{housingOptions.map((opt) => <option key={opt}>{opt}</option>)}</SelectField></VerifiedInput><VerifiedInput checked={verified(form, 'car')} onChange={(v) => updateVerified('car', v)}><SelectField label="차량" value={form.car} onChange={(v) => update('car', v)}>{carOptions.map((opt) => <option key={opt}>{opt}</option>)}</SelectField></VerifiedInput></div><div className="grid2"><SelectField label="흡연" value={form.smoking} onChange={(v) => update('smoking', v)}>{smokingOptions.map((opt) => <option key={opt}>{opt}</option>)}</SelectField><SelectField label="음주" value={form.drinking} onChange={(v) => update('drinking', v)}>{drinkingOptions.map((opt) => <option key={opt}>{opt}</option>)}</SelectField></div><div className="grid2"><SelectField label="종교" value={form.religion} onChange={(v) => update('religion', v)}>{religionOptions.map((opt) => <option key={opt}>{opt}</option>)}</SelectField><SelectField label="연애 목적" value={form.relationshipGoal} onChange={(v) => update('relationshipGoal', v)}>{goalOptions.map((opt) => <option key={opt}>{opt}</option>)}</SelectField></div></div>;
 }
 function RelationSliders({ form, updateRelation, compact = false }) {
   const [more, setMore] = useState(false);
@@ -1762,9 +1742,7 @@ function EmotionalBondSliders({ form, updateEmotionalBond }) {
                 value={val}
                 onChange={(e) => updateEmotionalBond(item.key, Number(e.target.value))}
                 style={{
-                  background: item.key === 'emotionFatigue'
-                    ? `linear-gradient(to right, var(--red) 0%, var(--red) ${val * 10}%, var(--divider) ${val * 10}%, var(--divider) 100%)`
-                    : `linear-gradient(to right, var(--green) 0%, var(--green) ${val * 10}%, var(--divider) ${val * 10}%, var(--divider) 100%)`
+                  background: `linear-gradient(to right, var(--green) 0%, var(--green) ${val * 10}%, var(--divider) ${val * 10}%, var(--divider) 100%)`
                 }}
               />
             </div>
@@ -3253,7 +3231,7 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
                     <div className="infoGrid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                       {emotionalBondItems.map(item => {
                         const val = candidate.emotionalBond?.[item.key] ?? 5;
-                        const stat = item.key === 'emotionFatigue' ? getReverseScoreStatusLabel(val) : getScoreStatusLabel(val);
+                        const stat = getScoreStatusLabel(val);
                         return (
                           <div key={item.key} className="info" style={{ padding: '10px', borderRadius: '10px', border: '1px solid var(--divider)', display: 'flex', flexDirection: 'column', justifyContent: 'center', background: 'var(--surface)', boxSizing: 'border-box' }}>
                             <small style={{ fontSize: '10px', color: 'var(--text-3)', marginBottom: '3px', display: 'block' }}>{item.label}</small>
@@ -3373,7 +3351,12 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
                       <SelectField label="연봉" value={sectionForm.income} onChange={(v) => setSectionForm(p => ({...p, income: v}))}>
                         {incomeOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                       </SelectField>
-
+                      <SelectField label="결혼이력" value={sectionForm.marriageHistory} onChange={(v) => setSectionForm(p => ({...p, marriageHistory: v}))}>
+                        {marriageOptions.map(o => <option key={o} value={o}>{o}</option>)}
+                      </SelectField>
+                      <SelectField label="자녀유무" value={sectionForm.children} onChange={(v) => setSectionForm(p => ({...p, children: v}))}>
+                        {childrenOptions.map(o => <option key={o} value={o}>{o}</option>)}
+                      </SelectField>
                       <Field label="주거형태" value={sectionForm.housing} onChange={(v) => setSectionForm(p => ({...p, housing: v}))} />
                       <SelectField label="흡연" value={sectionForm.smoking} onChange={(v) => setSectionForm(p => ({...p, smoking: v}))}>
                         {smokingOptions.map(o => <option key={o} value={o}>{o}</option>)}
@@ -3397,7 +3380,8 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
                         <Info label="키" value={candidate.height ? `${candidate.height}cm` : '미확인'} checked={verified(candidate, 'height')} />
                         <Info label="자산" value={optionLabel(assetOptions, candidate.asset)} checked={verified(candidate, 'asset')} />
                         <Info label="연봉" value={optionLabel(incomeOptions, candidate.income)} checked={verified(candidate, 'income')} />
-
+                        <Info label="결혼" value={candidate.marriageHistory} checked={verified(candidate, 'marriageHistory')} />
+                        <Info label="자녀" value={candidate.children} checked={verified(candidate, 'children')} />
                         <Info label="주거" value={candidate.housing} checked={verified(candidate, 'housing')} />
                         <Info label="흡연/음주" value={`${candidate.smoking} · ${candidate.drinking}`} />
                       </div>
@@ -3583,7 +3567,7 @@ function GuideModal({ close, onExport, onImport, onSyncUpload, onSyncDownload, a
           <h3>총점 구조 (100점)</h3>
           <ScoreRule title="조건/스펙" score="40점" desc="키, 체형, 자산, 연봉, 직업 안정성, 나이, 거리" />
           <ScoreRule title="대화/태도" score="30점" desc="논리적 대화, 현재 충실도, 감정 안정성, 배려와 존중" />
-          <ScoreRule title="정보 확인도" score="15점" desc="확인된 정보 수, 핵심 조건 실물 검증 완료도 (직업 확인 시 추가 가산)" />
+          <ScoreRule title="정보 확인도" score="15점" desc="확인된 정보 수, 핵심 조건 실물 검증 완료도" />
           <ScoreRule title="지속 가능성" score="10점" desc="현실적인 거리, 생활 패턴, 실제 실행력" />
           <ScoreRule title="플래그 보정" score="-18~+10" desc="그린/옐로우/레드 플래그 및 정보 확인 가산 반영" />
           <ScoreRule title="만남 흐름" score="-6~+6" desc="타임라인에서 직접 고른 신호만 점수 반영" />
