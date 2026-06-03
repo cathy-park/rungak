@@ -656,7 +656,7 @@ function analyze(candidate) {
     { key: 'body', label: '체형/외적 취향', raw: Number(candidate.bodyFit || 3), max: 5 },
     { key: 'asset', label: '자산', raw: optionScore(assetOptions, candidate.asset), max: 9 },
     { key: 'income', label: '연봉', raw: optionScore(incomeOptions, candidate.income), max: 7 },
-    { key: 'job', label: '직업 안정성', raw: Number(candidate.jobStability || 3), max: 5 },
+    { key: 'job', label: '직업 안정성', raw: (candidate.job && (candidate.jobStability === 3 || !candidate.jobStability)) ? recommendJobStability(candidate.job) : Number(candidate.jobStability || 3), max: 5 },
     { key: 'age', label: '나이 차이', raw: ageScore(age), max: 3 },
     { key: 'distance', label: '거리', raw: Number(candidate.distanceFit || 3) * 0.6, max: 3 },
   ];
@@ -1732,8 +1732,27 @@ function CharacterPicker({ form, update, handlePhoto }) {
     </div>
   );
 }
-function ProfileFields({ form, update }) {
-  return <div className="formStack"><Field label="이름/별명" value={form.name} onChange={(v) => update('name', v)} placeholder="예: 차분한 연하남"/><div className="grid2"><Field label="생년월일" type="date" value={form.birthDate} onChange={(v) => update('birthDate', v)}/><Field label="나이" value={form.age} onChange={(v) => update('age', v)} placeholder="자동 계산"/></div><div className="grid2"><Field label="직업" value={form.job} onChange={(v) => { update('job', v); update('jobStability', recommendJobStability(v)); }} placeholder="예: 기획자"/><Field label="거주지" value={form.location} onChange={(v) => update('location', v)} placeholder="예: 서울 성수"/></div><div className="grid2"><Field label="MBTI" value={form.mbti} onChange={(v) => update('mbti', v)} placeholder="예: INTJ"/><Field label="만난 경로" value={form.route} onChange={(v) => update('route', v)} placeholder="예: 소개팅"/></div><Field label="첫인상 메모" textarea value={form.memo} onChange={(v) => update('memo', v)} placeholder="예: 말이 과하지 않고 현재를 잘 사는 느낌"/></div>;
+function ProfileFields({ form, update, updateVerified }) {
+  return (
+    <div className="formStack">
+      <Field label="이름/별명" value={form.name} onChange={(v) => update('name', v)} placeholder="예: 차분한 연하남"/>
+      <div className="grid2">
+        <Field label="생년월일" type="date" value={form.birthDate} onChange={(v) => update('birthDate', v)}/>
+        <Field label="나이" value={form.age} onChange={(v) => update('age', v)} placeholder="자동 계산"/>
+      </div>
+      <div className="grid2">
+        <VerifiedInput checked={verified(form, 'job')} onChange={(v) => updateVerified('job', v)}>
+          <Field label="직업" value={form.job} onChange={(v) => update({ job: v, jobStability: recommendJobStability(v) })} placeholder="예: 기획자"/>
+        </VerifiedInput>
+        <Field label="거주지" value={form.location} onChange={(v) => update('location', v)} placeholder="예: 서울 성수"/>
+      </div>
+      <div className="grid2">
+        <Field label="MBTI" value={form.mbti} onChange={(v) => update('mbti', v)} placeholder="예: INTJ"/>
+        <Field label="만난 경로" value={form.route} onChange={(v) => update('route', v)} placeholder="예: 소개팅"/>
+      </div>
+      <Field label="첫인상 메모" textarea value={form.memo} onChange={(v) => update('memo', v)} placeholder="예: 말이 과하지 않고 현재를 잘 사는 느낌"/>
+    </div>
+  );
 }
 function CoreConditions({ form, update, updateVerified }) {
   return <div className="formStack"><VerifiedInput checked={verified(form, 'height')} onChange={(v) => updateVerified('height', v)}><Field label="키(cm)" type="number" value={form.height} onChange={(v) => update('height', v)} placeholder="예: 181"/></VerifiedInput><div className="grid2"><SelectField label="체형" value={form.bodyType} onChange={(v) => update('bodyType', v)}>{bodyOptions.map((opt) => <option key={opt}>{opt}</option>)}</SelectField><SelectField label="체형 취향" value={form.bodyFit} onChange={(v) => update('bodyFit', Number(v))}>{bodyFitOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}</SelectField></div><VerifiedInput checked={verified(form, 'asset')} onChange={(v) => updateVerified('asset', v)}><SelectField label="자산" value={form.asset} onChange={(v) => update('asset', v)}>{assetOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}</SelectField></VerifiedInput><VerifiedInput checked={verified(form, 'income')} onChange={(v) => updateVerified('income', v)}><SelectField label="연봉" value={form.income} onChange={(v) => update('income', v)}>{incomeOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}</SelectField></VerifiedInput><VerifiedInput checked={verified(form, 'education')} onChange={(v) => updateVerified('education', v)}><Field label="학력" value={form.education} onChange={(v) => update('education', v)} placeholder="예: 대졸 / 석사"/></VerifiedInput><div className="grid2"><SelectField label="직업 안정성" value={form.jobStability} onChange={(v) => update('jobStability', Number(v))}>{[1,2,3,4,5].map((n) => <option key={n} value={n}>{n}점</option>)}</SelectField><SelectField label="거리 적합도" value={form.distanceFit} onChange={(v) => update('distanceFit', Number(v))}>{[1,2,3,4,5].map((n) => <option key={n} value={n}>{n}점</option>)}</SelectField></div></div>;
@@ -2008,7 +2027,16 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
   const isEdit = Boolean(form.id);
   
   function update(key, value) {
-    setForm((prev) => ({ ...prev, [key]: value, ...(key === 'birthDate' ? { age: calcAge(value) } : {}) }));
+    setForm((prev) => {
+      if (typeof key === 'object' && key !== null) {
+        let next = { ...prev, ...key };
+        if (key.birthDate) {
+          next.age = calcAge(key.birthDate);
+        }
+        return next;
+      }
+      return { ...prev, [key]: value, ...(key === 'birthDate' ? { age: calcAge(value) } : {}) };
+    });
   }
   function updateVerified(key, value) { setForm((prev) => ({ ...prev, verified: { ...prev.verified, [key]: value } })); }
   function updateRelation(key, value) { setForm((prev) => ({ ...prev, relation: { ...prev.relation, [key]: Number(value) } })); }
@@ -2069,7 +2097,7 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
                 maxSelect={3}
               />
             </div>
-            <ProfileFields form={form} update={update}/>
+            <ProfileFields form={form} update={update} updateVerified={updateVerified}/>
           </div>
         )}
       </Card>
@@ -2184,7 +2212,7 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
               onToggle={(tags) => update('personalityTags', tags)}
               maxSelect={3}
             />
-            <ProfileFields form={form} update={update}/>
+            <ProfileFields form={form} update={update} updateVerified={updateVerified}/>
           </div>
           <button className="primary full" onClick={() => setStep(2)}>조건 입력하기</button>
         </>
@@ -2819,7 +2847,8 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
     if (sectionId === 'profile') setSectionForm({
       name: candidate.name || '', age: candidate.age || '', birthDate: candidate.birthDate || '',
       mbti: candidate.mbti || '', job: candidate.job || '', location: candidate.location || '', memo: candidate.memo || '',
-      jobStability: candidate.jobStability || 3
+      jobStability: candidate.jobStability || 3,
+      verified: candidate.verified || {}
     });
     if (sectionId === 'condition') setSectionForm({
       height: candidate.height || '', asset: candidate.asset || '', income: candidate.income || '',
@@ -3372,7 +3401,34 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
                       <Field label="나이" type="number" value={sectionForm.age} onChange={(v) => setSectionForm(p => ({...p, age: v}))} />
                       <Field label="생년월일" value={sectionForm.birthDate} onChange={(v) => setSectionForm(p => ({...p, birthDate: v}))} />
                       <Field label="MBTI" value={sectionForm.mbti} onChange={(v) => setSectionForm(p => ({...p, mbti: v}))} />
-                      <Field label="직업" value={sectionForm.job} onChange={(v) => setSectionForm(p => ({...p, job: v, jobStability: recommendJobStability(v)}))} />
+                      <div style={{ display: 'flex', alignItems: 'flex-end', gap: '12px' }}>
+                        <div style={{ flex: 1 }}>
+                          <Field label="직업" value={sectionForm.job} onChange={(v) => setSectionForm(p => ({...p, job: v, jobStability: recommendJobStability(v)}))} />
+                        </div>
+                        <button
+                          type="button"
+                          className={`verify ${sectionForm.verified?.job ? 'on' : ''}`}
+                          style={{
+                            borderRadius: '980px',
+                            background: sectionForm.verified?.job ? 'var(--green-light)' : 'var(--surface)',
+                            color: sectionForm.verified?.job ? 'var(--green)' : 'var(--text-2)',
+                            border: '1px solid var(--divider)',
+                            padding: '7px 12px',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            whiteSpace: 'nowrap',
+                            cursor: 'pointer',
+                            alignSelf: 'flex-end',
+                            marginBottom: '4px'
+                          }}
+                          onClick={() => setSectionForm(p => ({
+                            ...p,
+                            verified: { ...p.verified, job: !p.verified?.job }
+                          }))}
+                        >
+                          {sectionForm.verified?.job ? '인증됨' : '미인증'}
+                        </button>
+                      </div>
                       <Field label="거주지" value={sectionForm.location} onChange={(v) => setSectionForm(p => ({...p, location: v}))} />
                       <Field label="첫인상 메모" textarea value={sectionForm.memo} onChange={(v) => setSectionForm(p => ({...p, memo: v}))} rows={3} />
                       <div className="twoButtons" style={{ marginTop: '10px' }}>
@@ -3401,7 +3457,7 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
                         </div>
                         <div style={{ padding: '10px', border: '1px solid var(--divider)', borderRadius: '10px', background: 'var(--bg)' }}>
                           <small style={{ fontSize: '10px', color: 'var(--text-3)', display: 'block' }}>직업</small>
-                          <b style={{ fontSize: '13px', color: 'var(--text-1)' }}>{candidate.job || '미확인'}</b>
+                          <b style={{ fontSize: '13px', color: 'var(--text-1)' }}>{candidate.job || '미확인'}{verified(candidate, 'job') ? ' ✅' : ''}</b>
                         </div>
                         <div style={{ padding: '10px', border: '1px solid var(--divider)', borderRadius: '10px', background: 'var(--bg)' }}>
                           <small style={{ fontSize: '10px', color: 'var(--text-3)', display: 'block' }}>거주지</small>
