@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, AlertTriangle } from 'lucide-react';
 import { Avatar, Card, Icon } from '../ui/CommonUI';
 import { calcAge } from '../../utils/scoring/analyzeCandidate';
 

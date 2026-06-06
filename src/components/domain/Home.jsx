@@ -1,8 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { getDaysAgo, rankCandidates } from '../../utils/helpers';
-import { analyze } from '../../utils/scoring/analyzeCandidate';
+import { analyze, calcAge, verified } from '../../utils/scoring/analyzeCandidate';
 import { VERDICT_EMOJI } from '../../utils/scoring/verdictRules';
-import { Card, Avatar, Badge, Icon, FloatingAdd } from '../ui/CommonUI';
+import { Card, Avatar, Badge, Icon, Header, FloatingAdd } from '../ui/CommonUI';
+import { Check } from 'lucide-react';
+
 export function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo, toggleFriendStamp, openCompare }) {
   const [heroIdx, setHeroIdx] = useState(0);
   const carouselTrackRef = React.useRef(null);
@@ -343,7 +345,7 @@ export function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMem
               <div className="candidateCard2Right">
                 {compareMode ? (
                   <div style={{ width: '24px', height: '24px', borderRadius: '50%', border: isSelectedForCompare ? 'none' : '2px solid var(--border)', background: isSelectedForCompare ? 'var(--blue)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {isSelectedForCompare && <Icon type="lucide-check" color="#fff" size={14} />}
+                    {isSelectedForCompare && <Check color="#fff" size={14} strokeWidth={3} />}
                   </div>
                 ) : (
                   <span className={`candidateCard2Score scoreText-${cColor}`}>{cScore}<small>점</small></span>
