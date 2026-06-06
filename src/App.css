@@ -559,32 +559,7 @@ p { margin: 0; }
   margin-left: 1px;
 }
 
-/* ─── FLOATING ACTION ────────────────────────────────── */
-.floating {
-  position: fixed;
-  left: 50%;
-  bottom: 28px;
-  transform: translateX(140px);
-  width: 54px;
-  height: 54px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: var(--blue);
-  color: #fff;
-  box-shadow: 0 4px 16px rgba(49, 130, 246, 0.35);
-  z-index: 10;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.floating:hover {
-  box-shadow: 0 6px 20px rgba(49, 130, 246, 0.45);
-}
-
-.floating:active {
-  opacity: 1;
-  transform: translateX(140px) scale(0.92);
-}
+/* ─── FLOATING ACTION (Removed duplicates) ────────────────────────── */
 
 /* ─── FORM PAGES ─────────────────────────────────────── */
 .addPage, .editPage {
@@ -1697,16 +1672,7 @@ p { margin: 0; }
   .stats { grid-template-columns: 1fr; }
   .grid2 { grid-template-columns: 1fr; }
 
-  .floating {
-    right: 20px;
-    left: auto;
-    transform: none;
-  }
-
-  .floating:active {
-    opacity: 1;
-    transform: scale(0.92);
-  }
+/* .floating query removed */
 }
 
 /* Precision Tuning for Galaxy Z Flip 6 (360px width logic) */
