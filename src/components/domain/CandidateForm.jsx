@@ -1,9 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { 
   bodyOptions, bodyFitOptions, assetOptions, incomeOptions, marriageOptions, childrenOptions,
   housingOptions, carOptions, smokingOptions, drinkingOptions, religionOptions, goalOptions,
-  personalityTypeTags, energyTagOptions, coreRelationItems, moreRelationItems, emotionalBondItems, observationPointPool,
-  characters, AVATAR_BASE, greenFlags, yellowFlags, redFlags
+  personalityTypeTags, energyTagOptions, coreRelationItems, moreRelationItems, relationItems, emotionalBondItems, observationPointPool,
+  characters, AVATAR_BASE, greenFlags, yellowFlags, redFlags, statusTypeKeys, getStatusLabel
 } from '../../utils/scoring/scoreOptions';
 import { compressBase64Image, todayValue, createForm, getDisplayReport } from '../../utils/helpers';
 import { verified, recommendJobStability, analyze, calcAge } from '../../utils/scoring/analyzeCandidate';
