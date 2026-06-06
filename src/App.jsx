@@ -3225,7 +3225,7 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
                         {(showAllSignals ? sortedSignals : sortedSignals.slice(0, 3)).map((sig) => (
                           <div key={sig.code} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: `var(--${sig.tone}-light)`, color: `var(--${sig.tone})`, padding: '4px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: 600 }}>
                             {sig.tone === 'green' ? '🟢' : sig.tone === 'amber' || sig.tone === 'orange' ? '🟡' : '🔴'} {sig.label}
-                            <span style={{ fontSize: '10px', opacity: 0.8, background: 'rgba(0,0,0,0.08)', padding: '2px 5px', borderRadius: '4px', marginLeft: '2px' }}>{sig.count}회</span>
+                            <span style={{ fontSize: '10px', background: `var(--${sig.tone})`, color: '#fff', padding: '2px 5px', borderRadius: '4px', marginLeft: '2px' }}>{sig.count}회</span>
                           </div>
                         ))}
                       </div>
