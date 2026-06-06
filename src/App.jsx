@@ -701,21 +701,39 @@ function analyze(candidate) {
   
   const hardRun = redList.some((label) => redFlags.find((item) => item.label === label)?.hardRun);
   const lowVerify = verifiedCount <= 1 && conditionScore >= 6;
-  let verdict = '더 만나며 관찰';
   let color = 'blue';
+  let verdict = '더 만나며 관찰';
 
-  if (hardRun || totalScore < 10) {
-    verdict = '정리 권장';
-    color = 'red';
-  } else if (lowVerify || (conditionScore >= 7 && trustScore <= 2)) {
-    verdict = '조건 확인 필요';
-    color = 'orange';
-  } else if (totalScore >= 70 || (totalScore >= 60 && trustScore >= 4)) {
-    verdict = '계속 만나도 좋음';
+  // 1. 점수 기반 기본 판정
+  if (totalScore >= 80) {
     color = 'green';
-  } else if (relationScore < 5 || Number(candidate.relation?.comfort || 10) <= 3) {
-    verdict = '감정 투입 보류';
+    verdict = '계속 만나도 좋음';
+  } else if (totalScore >= 60) {
+    color = 'blue';
+    verdict = '더 만나며 관찰';
+  } else if (totalScore >= 40) {
     color = 'amber';
+    verdict = '조건 확인 필요';
+  } else if (totalScore >= 25) {
+    color = 'orange';
+    verdict = '감정 투입 보류';
+  } else {
+    color = 'red';
+    verdict = '정리 권장';
+  }
+
+  // 2. 심각도에 따른 예외 처리 (강등 로직)
+  if (hardRun) {
+    color = 'red';
+    verdict = '정리 권장';
+  } else if (totalScore >= 60 && (lowVerify || (conditionScore >= 7 && trustScore <= 2))) {
+    // 점수가 높아도 검증이 안 되었으면 '조건 확인 필요'로 강등
+    color = 'amber';
+    verdict = '조건 확인 필요';
+  } else if (totalScore >= 40 && (relationScore < 5 || Number(candidate.relation?.comfort || 10) <= 3)) {
+    // 점수가 높아도 대화/정서가 안 좋으면 '감정 투입 보류'로 강등
+    color = 'orange';
+    verdict = '감정 투입 보류';
   }
 
   const copy = getStatusCopy(color);
