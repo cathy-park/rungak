@@ -1,0 +1,425 @@
+export const assetOptions = [
+  { value: 'unknown', label: '미확인', score: 3 },
+  { value: 'under1', label: '1억 미만', score: 1 },
+  { value: '1to5', label: '1억~5억', score: 3 },
+  { value: '5to10', label: '5억~10억', score: 5 },
+  { value: '10to20', label: '10억~20억', score: 6 },
+  { value: '20to50', label: '20억~50억', score: 8 },
+  { value: 'over50', label: '50억 이상', score: 9 },
+  { value: 'over100', label: '100억 이상', score: 9 },
+];
+
+export const incomeOptions = [
+  { value: 'unknown', label: '미확인', score: 2 },
+  { value: 'under3', label: '3000만 미만', score: 1 },
+  { value: '3to5', label: '3000만~5000만', score: 2 },
+  { value: '5to7', label: '5000만~7000만', score: 3 },
+  { value: '7to10', label: '7000만~1억', score: 4 },
+  { value: '1to2', label: '1억~2억', score: 6 },
+  { value: 'over2', label: '2억 이상', score: 7 },
+];
+
+export const bodyOptions = ['마름', '보통', '슬림탄탄', '근육형', '통통', '기타/미확인'];
+export const bodyFitOptions = [
+  { value: 1, label: '취향 아님' },
+  { value: 3, label: '보통' },
+  { value: 5, label: '취향에 가까움' },
+];
+export const marriageOptions = ['미확인', '미혼', '이혼', '사별', '기타'];
+export const childrenOptions = ['미확인', '없음', '있음', '비공개'];
+export const housingOptions = ['미확인', '자가', '전세', '월세', '부모님과 거주', '기타'];
+export const carOptions = ['미확인', '있음', '없음', '필요 시 이용', '비공개'];
+export const smokingOptions = ['미확인', '비흡연', '흡연', '가끔', '금연 중'];
+export const drinkingOptions = ['미확인', '안 함', '가끔', '보통', '자주'];
+export const religionOptions = ['미확인', '무교', '기독교', '천주교', '불교', '기타', '비공개'];
+export const goalOptions = ['미확인', '진지한 연애', '결혼 전제', '가벼운 만남', '천천히 알아가기', '비공개'];
+
+export const timelineTypeOptions = [
+  { value: 'meet', label: '만남' },
+  { value: 'date', label: '데이트' },
+  { value: 'call', label: '통화' },
+  { value: 'message', label: '카톡/메시지' },
+  { value: 'conflict', label: '갈등' },
+  { value: 'verified', label: '정보 확인' },
+  { value: 'etc', label: '기타' },
+];
+export const feelingOptions = [
+  { value: 'good', label: '좋았음' },
+  { value: 'normal', label: '보통' },
+  { value: 'neutral', label: '애매함' },
+  { value: 'tired', label: '피곤했음' },
+  { value: 'frustrated', label: '답답함' },
+  { value: 'weird', label: '이상했음' },
+  { value: 'sure', label: '확신이 생김' },
+];
+
+export const checkStatusOptions = [
+  { value: 'unchecked', label: '미확인', color: 'gray' },
+  { value: 'pass', label: 'Pass', color: 'green' },
+  { value: 'fail', label: 'Fail', color: 'red' },
+  { value: 'hold', label: '보류', color: 'amber' },
+  { value: 'watch', label: '추가 관찰', color: 'blue' },
+];
+
+export const signalOptions = [
+  // 🟢 긍정 신호
+  { code: 'keptPromise', label: '약속을 지킴', score: 2, tone: 'green' },
+  { code: 'remembered', label: '내 말을 기억함', score: 2, tone: 'green' },
+  { code: 'considerate', label: '배려있음', score: 2, tone: 'green' },
+  { code: 'manners', label: '매너있음', score: 2, tone: 'green' },
+  { code: 'responsible', label: '책임감있음', score: 3, tone: 'green' },
+  { code: 'stableContact', label: '연락 빈도가 안정적임', score: 2, tone: 'green' },
+  { code: 'calmEmotion', label: '감정 기복 없이 차분함', score: 2, tone: 'green' },
+  { code: 'honest', label: '솔직하고 투명함', score: 3, tone: 'green' },
+  { code: 'presentAction', label: '현재 행동이 분명함', score: 3, tone: 'green' },
+  { code: 'resolvedConflict', label: '갈등 시 조율함', score: 3, tone: 'green' },
+  { code: 'verifiedInfo', label: '확인된 정보 추가', score: 2, tone: 'green' },
+  { code: 'tikitaka', label: '티키타카 잘됨', score: 2, tone: 'green' },
+  { code: 'goodHumor', label: '유머 코드가 맞음', score: 2, tone: 'green' },
+  { code: 'respectBoundary', label: '선과 경계를 존중함', score: 3, tone: 'green' },
+  { code: 'acceptDifference', label: '다름을 흥미롭게 수용함', score: 2, tone: 'green' },
+  { code: 'praise', label: '칭찬과 격려를 자주 함', score: 2, tone: 'green' },
+  { code: 'listen', label: '경청하는 태도/리액션 좋음', score: 2, tone: 'green' },
+  { code: 'passion', label: '일이나 삶에 대한 열정이 보임', score: 2, tone: 'green' },
+  { code: 'economy', label: '안정적인 경제관념', score: 3, tone: 'green' },
+  { code: 'prepare', label: '약속/데이트 코스를 주도적으로 준비함', score: 2, tone: 'green' },
+  { code: 'friendly', label: '가족이나 주변인에게 다정함', score: 2, tone: 'green' },
+  { code: 'crisis', label: '위기 상황에서 대처가 침착함', score: 3, tone: 'green' },
+  { code: 'respectPace', label: '작은 스킨십이나 속도를 존중함', score: 3, tone: 'green' },
+  { code: 'admitMistake', label: '자신의 실수나 부족함을 인정함', score: 3, tone: 'green' },
+  
+  // 🔴 부정 신호
+  { code: 'mismatch', label: '말과 행동 불일치', score: -3, tone: 'amber' },
+  { code: 'tempoChange', label: '연락 템포 급변', score: -2, tone: 'amber' },
+  { code: 'selfCentered', label: '자기중심적 대화', score: -2, tone: 'amber' },
+  { code: 'rude', label: '무례함/매너 없음', score: -3, tone: 'orange' },
+  { code: 'calculating', label: '계산적인 태도', score: -3, tone: 'orange' },
+  { code: 'breakPromise', label: '약속 파기/지각 잦음', score: -3, tone: 'orange' },
+  { code: 'badDrinking', label: '술/이성 문제 의심', score: -5, tone: 'red' },
+  { code: 'belittling', label: '은근히 깎아내리는 화법', score: -4, tone: 'orange' },
+  { code: 'avoidance', label: '회피/잠수', score: -4, tone: 'orange' },
+  { code: 'controlFreak', label: '은근한 통제 시도', score: -4, tone: 'orange' },
+  { code: 'gaslighting', label: '내 판단을 예민함으로 몰아감', score: -6, tone: 'red' },
+  { code: 'falseInfo', label: '돈/조건 허위 의심', score: -8, tone: 'red' },
+  { code: 'moneyBorrow', label: '돈 빌림 뉘앙스', score: -10, tone: 'red' },
+  { code: 'emotionalTrash', label: '감정 쓰레기통 취급', score: -8, tone: 'red' },
+  { code: 'blameOthers', label: '남 탓/상황 탓 반복', score: -6, tone: 'red' },
+  { code: 'phoneOften', label: '대화 중 딴짓/폰 자주 봄', score: -2, tone: 'amber' },
+  { code: 'judgeOthers', label: '타인을 함부로 평가하고 비난함', score: -4, tone: 'orange' },
+  { code: 'showOff', label: '허세가 심하고 과시욕이 강함', score: -3, tone: 'amber' },
+  { code: 'cheap', label: '데이트 비용에 유독 인색함', score: -3, tone: 'orange' },
+  { code: 'anger', label: '분노 조절이 안 됨/욱하는 성질', score: -8, tone: 'red' },
+  { code: 'obsessive', label: '지나친 집착이나 의존성', score: -5, tone: 'red' },
+  { code: 'violent', label: '폭력적인 언행이나 제스처', score: -10, tone: 'red' },
+  { code: 'onlySkinship', label: '은근히 스킨십만 유도함', score: -4, tone: 'orange' },
+  { code: 'fakeApology', label: '사과할 때 진정성이 없음/핑계 댐', score: -4, tone: 'orange' },
+];
+
+export const personalityTypeTags = [
+  // ── 긍정형 ────────────────────────────────────────────
+  { id: 'achiever-creator',      label: '성취형 창작자',   emoji: '🎯', category: 'positive', tone: 'blue',   description: '목표와 성취를 중심으로 자기 세계를 만들어가는 성향' },
+  { id: 'growth-type',           label: '성장형 인간',     emoji: '🌱', category: 'positive', tone: 'green',  description: '끊임없이 배우고 변화하는 것을 삶의 방향으로 삼는 성향' },
+  { id: 'stable-reliable',       label: '안정형 신뢰형',   emoji: '🏛️', category: 'positive', tone: 'green',  description: '일관된 행동과 말로 신뢰를 쌓아가는 성향' },
+  { id: 'responsible-leader',    label: '책임형 리더',     emoji: '🧭', category: 'positive', tone: 'blue',   description: '주도적으로 상황을 이끌며 책임을 회피하지 않는 성향' },
+  { id: 'communicator',          label: '소통형 조율자',   emoji: '💬', category: 'positive', tone: 'blue',   description: '감정과 의견을 차분하게 나누며 관계를 조율하는 성향' },
+  { id: 'caring-partner',        label: '배려형 동반자',   emoji: '🤝', category: 'positive', tone: 'green',  description: '상대의 필요를 먼저 살피고 함께하는 것을 중요시하는 성향' },
+  { id: 'problem-solver',        label: '문제해결형',      emoji: '🧩', category: 'positive', tone: 'blue',   description: '어려운 상황에서 현실적인 해결책을 찾아내는 성향' },
+  { id: 'self-reflective',       label: '자기성찰형',      emoji: '🔍', category: 'positive', tone: 'green',  description: '자신의 행동과 감정을 돌아보며 관계를 개선하려는 성향' },
+  { id: 'emotionally-stable',    label: '정서 안정형',     emoji: '🌊', category: 'positive', tone: 'green',  description: '감정의 흔들림 없이 일관된 에너지를 유지하는 성향' },
+  { id: 'learning-explorer',     label: '학습형 탐구자',   emoji: '📚', category: 'positive', tone: 'blue',   description: '새로운 것에 관심이 많고 지식과 경험을 공유하는 성향' },
+  // ── 중립형 ────────────────────────────────────────────
+  { id: 'self-world',            label: '자기세계형',      emoji: '🌌', category: 'neutral',  tone: 'slate',  description: '뚜렷한 자기만의 세계와 기준을 가진 성향' },
+  { id: 'emotion-avoid',         label: '감정회피형',      emoji: '🧊', category: 'neutral',  tone: 'slate',  description: '감정적 대화보다 논리적 거리를 선호하는 성향' },
+  { id: 'structure-design',      label: '구조설계형',      emoji: '🛠️', category: 'neutral',  tone: 'slate',  description: '계획과 틀을 먼저 세우고 움직이는 성향' },
+  { id: 'free-spirit',           label: '자유영혼형',      emoji: '🪶', category: 'neutral',  tone: 'slate',  description: '틀에 얽매이지 않고 자유로운 방식으로 살아가는 성향' },
+  { id: 'sensitive-analyst',     label: '분석형 관찰자',   emoji: '🧠', category: 'neutral',  tone: 'slate',  description: '관찰하고 분석하며 패턴을 읽어내는 성향' },
+  { id: 'cautious-defensive',    label: '신중 방어형',     emoji: '🛡️', category: 'neutral',  tone: 'slate',  description: '쉽게 마음을 열지 않고 신중하게 관계를 쌓아가는 성향' },
+  { id: 'slow-trust',            label: '느린 신뢰형',     emoji: '🕰️', category: 'neutral',  tone: 'slate',  description: '시간과 경험이 쌓여야 신뢰가 형성되는 성향' },
+  { id: 'image-manager',         label: '이미지 관리형',   emoji: '🎭', category: 'neutral',  tone: 'slate',  description: '자신이 어떻게 보이는지를 중요하게 여기는 성향' },
+  { id: 'independent-type',      label: '독립형 개인주의', emoji: '🧍', category: 'neutral',  tone: 'slate',  description: '혼자만의 시간과 공간을 강하게 필요로 하는 성향' },
+  { id: 'privacy-keeper',        label: '사생활 중시형',   emoji: '🔒', category: 'neutral',  tone: 'slate',  description: '개인 영역을 명확히 구분하고 침범을 불편해하는 성향' },
+  // ── 주의형 ────────────────────────────────────────────
+  { id: 'workaholic',            label: '워커홀릭형',      emoji: '⚡', category: 'caution',  tone: 'amber',  description: '일에 몰입도가 높아 관계에 쏟을 에너지가 부족할 수 있는 성향' },
+  { id: 'obsession-first',       label: '몰입 우선형',     emoji: '🔭', category: 'caution',  tone: 'amber',  description: '현재 집중 대상 외의 것은 후순위로 미루는 성향' },
+  { id: 'mood-swing',            label: '감정기복형',      emoji: '🎢', category: 'caution',  tone: 'amber',  description: '감정의 진폭이 크고 주변에 영향을 미칠 수 있는 성향' },
+  { id: 'talk-first',            label: '말우선형',        emoji: '🗣️', category: 'caution',  tone: 'amber',  description: '말이 앞서고 행동이 뒤따르지 않을 수 있는 성향' },
+  { id: 'avoidance-delay',       label: '회피성 미루기형', emoji: '🌫️', category: 'caution',  tone: 'amber',  description: '불편한 상황이나 결정을 회피하거나 뒤로 미루는 성향' },
+  { id: 'condition-focused',     label: '조건중심형',      emoji: '📊', category: 'caution',  tone: 'amber',  description: '관계에서 이점과 조건을 먼저 계산하는 성향' },
+  { id: 'relation-low-priority', label: '관계후순위형',    emoji: '📵', category: 'caution',  tone: 'orange', description: '관계보다 개인 목표나 일을 우선순위에 두는 성향' },
+  { id: 'approval-seeker',       label: '인정욕구형',      emoji: '🪞', category: 'caution',  tone: 'orange', description: '타인의 인정과 반응에 민감하게 영향받는 성향' },
+  // ── 위험형 ────────────────────────────────────────────
+  { id: 'responsibility-avoid',  label: '책임회피형',      emoji: '🚩', category: 'danger',   tone: 'red',    description: '문제가 생겼을 때 원인을 외부로 돌리거나 책임을 회피하는 패턴' },
+  { id: 'word-changer',          label: '말바꾸기형',      emoji: '🌀', category: 'danger',   tone: 'red',    description: '상황에 따라 이전 말을 번복하거나 기억을 왜곡하는 패턴' },
+  { id: 'overstatement',         label: '과장표현형',      emoji: '📣', category: 'danger',   tone: 'red',    description: '자신의 능력·상황·감정을 과장해 전달하는 패턴' },
+  { id: 'conflict-amplifier',    label: '갈등증폭형',      emoji: '🧨', category: 'danger',   tone: 'red',    description: '작은 갈등을 확대하거나 주변 관계에 문제를 일으키는 패턴' },
+  { id: 'empathy-blocker',       label: '공감차단형',      emoji: '🪟', category: 'danger',   tone: 'red',    description: '상대의 감정을 인정하지 않고 자기 관점만 밀어붙이는 패턴' },
+  { id: 'info-opaque',           label: '정보불투명형',    emoji: '🕶️', category: 'danger',   tone: 'red',    description: '핵심 정보를 숨기거나 선택적으로만 공개하는 패턴' },
+  { id: 'boundary-violator',     label: '경계침범형',      emoji: '🪤', category: 'danger',   tone: 'red',    description: '상대의 거절이나 경계 설정을 무시하는 패턴' },
+  { id: 'emotional-drain',       label: '감정소모형',      emoji: '🔥', category: 'danger',   tone: 'red',    description: '관계에서 지속적으로 감정적 에너지를 고갈시키는 패턴' },
+];
+
+export const energyTagOptions = [
+  { id: 'stability', label: '안정감 상승', tone: 'green', emoji: '🟢' },
+  { id: 'self-esteem', label: '자존감 상승', tone: 'green', emoji: '✨' },
+  { id: 'growth', label: '성장 욕구 자극', tone: 'green', emoji: '🌱' },
+  { id: 'creative', label: '창작욕 자극', tone: 'green', emoji: '🎨' },
+  { id: 'tension', label: '긴장 유발', tone: 'amber', emoji: '⚡' },
+  { id: 'drain', label: '감정 소모', tone: 'orange', emoji: '🔋' },
+  { id: 'competition', label: '경쟁 심리 유발', tone: 'orange', emoji: '🏆' },
+  { id: 'confusion', label: '혼란/불안 유발', tone: 'red', emoji: '🌀' },
+];
+
+export const emotionalBondItems = [
+  { key: 'convoFlow', label: '대화 몰입감', desc: '설명 없이 대화가 자연스럽게 이어지는가' },
+  { key: 'emotionalStability', label: '정서 안정감', desc: '함께할 때 안정되고 편안한 느낌인가' },
+  { key: 'emotionFatigue', label: '감정 피로도', desc: '대화 후 소모보다 충전 느낌이 드는가 (낮을수록 좋음)' },
+  { key: 'valueAlignment', label: '가치관 방향성', desc: '삶의 방향과 가치관이 비슷하게 느껴지는가' },
+  { key: 'worldviewFit', label: '세계관/취향 결', desc: '서로의 세계를 흥미롭게 바라보는가' },
+  { key: 'curiosityShare', label: '창작/호기심 공유', desc: '공통의 관심사와 호기심을 나누는가' },
+  { key: 'energyChange', label: '함께할 때 에너지', desc: '만남 후 에너지가 충전되는 느낌인가' },
+];
+
+export const observationPointPool = [
+  '바쁜 상황에서도 약속 조율을 책임감 있게 하는가',
+  '감정보다 행동이 일치하는가',
+  '과부하 시 회피형으로 변하는가',
+  '실제 만남에서도 대화 밀도가 유지되는가',
+  '나의 이야기를 기억하고 반영하는가',
+  '불편한 주제를 차분하게 다루는가',
+  '자기 감정을 솔직하게 표현하는가',
+  '관계 속도를 상호적으로 조율하는가',
+  '일과 관계의 균형을 어떻게 잡는가',
+  '갈등 상황에서 어떤 방식으로 반응하는가',
+];
+
+export const greenFlags = [
+  { label: '대화 후 편안함이 남음', score: 3 },
+  { label: '자연스러운 티키타카', score: 2 },
+  { label: '유머 코드가 잘 통함', score: 2 },
+  { label: '자기 세계의 실체가 있음', score: 2 },
+  { label: '약속을 구체적으로 잡고 지킴', score: 3 },
+  { label: '내 말을 기억하고 반영함', score: 2 },
+  { label: '불편한 이야기도 차분히 조율함', score: 4 },
+  { label: '현재에 충실한 행동을 보임', score: 4 },
+  { label: '내 경계선을 존중함', score: 3 },
+  { label: '서로의 다름을 흥미롭게 받아들임', score: 3 },
+  { label: '단점이 명확하지만 수용 가능한 수준임', score: 2 },
+];
+export const yellowFlags = [
+  { label: '워커홀릭 가능성', score: -2 },
+  { label: '프로젝트 몰입 시 관계 후순위 가능성', score: -2 },
+  { label: '연락 템포가 아직 불안정함', score: -2 },
+  { label: '말은 좋은데 확인 가능한 행동이 적음', score: -3 },
+  { label: '직업/자산 정보 확인 필요', score: -2 },
+  { label: '초반 호감 표현이 과함', score: -2 },
+  { label: '은근히 나를 통제하려는 느낌이 듦', score: -3 },
+  { label: '자기 이야기만 주로 함', score: -2 },
+  { label: '사소한 거짓말이나 변명이 잦음', score: -4 },
+  { label: '결정을 자꾸 미룸', score: -2 },
+];
+export const redFlags = [
+  { label: '설명 없는 잠수 반복', score: -6 },
+  { label: '감정 책임 회피', score: -6 },
+  { label: '일관되지 않은 태도', score: -5 },
+  { label: '전여친을 전부 이상한 사람으로 말함', score: -5 },
+  { label: '말과 행동이 반복적으로 다름', score: -8 },
+  { label: '직업/자산/연봉 허위 의심', score: -10 },
+  { label: '검증 요구에 불쾌감이나 공격성 보임', score: -10 },
+  { label: '허위 확인', score: -20, hardRun: true },
+  { label: '돈·투자·사업 이야기로 관계를 흐림', score: -20, hardRun: true },
+  { label: '내 판단을 예민함으로 몰아감', score: -12 },
+  { label: '돈을 빌리려는 뉘앙스', score: -30, hardRun: true },
+  { label: '감정의 쓰레기통으로 취급함', score: -8 },
+  { label: '관계의 책임을 나에게 떠넘김', score: -10 },
+  { label: '약자에게 함부로 대함', score: -12, hardRun: true },
+];
+
+export const relationItems = [
+  { key: 'logic', label: '논리적 대화', desc: '말이 잘 통하고 소모전이 적은가', weight: 1.45 },
+  { key: 'present', label: '현재 충실도', desc: '미래 말보다 지금 행동이 있는가', weight: 1.35 },
+  { key: 'action', label: '실행력', desc: '말한 것을 실제로 실행하는가', weight: 1.35 },
+  { key: 'emotion', label: '감정 안정성', desc: '감정 기복이 적고 안정적인가', weight: 1.25 },
+  { key: 'care', label: '배려와 존중', desc: '존중받는 사람처럼 느껴지는가', weight: 1.2 },
+  { key: 'tempo', label: '연락 템포 안정성', desc: '연락 리듬이 안정적인가', weight: 1 },
+  { key: 'comfort', label: '대화 후 편안함', desc: '대화 후 피로보다 편안함이 남는가', weight: 1.25 },
+  { key: 'noAvoidance', label: '회피하지 않는 태도', desc: '불편한 주제도 피하지 않는가', weight: 1.2 },
+  { key: 'selfAwareness', label: '자기객관화', desc: '스스로를 객관적으로 보는가', weight: 1 },
+  { key: 'goalMatch', label: '관계 목적 일치도', desc: '연애/결혼/만남의 방향이 비슷한가', weight: 1.2 },
+];
+
+export const statusTypeKeys = ['action', 'emotion', 'tempo', 'noAvoidance'];
+export const statusLabels = [
+  { min: 0, max: 0, label: '미검증', color: 'gray' },
+  { min: 1, max: 3, label: '관찰중', color: 'amber' },
+  { min: 4, max: 5, label: '초기 안정 흐름', color: 'blue' },
+  { min: 6, max: 7, label: '반복 패턴 확인됨', color: 'blue' },
+  { min: 8, max: 9, label: '행동 일치 확인됨', color: 'green' },
+  { min: 10, max: 10, label: '매우 안정적', color: 'green' },
+];
+
+export function getStatusLabel(value) {
+  return statusLabels.find(s => value >= s.min && value <= s.max) || statusLabels[0];
+}
+
+export const coreRelationKeys = ['logic', 'present', 'action', 'emotion', 'care'];
+export const coreRelationItems = relationItems.filter((item) => coreRelationKeys.includes(item.key));
+export const moreRelationItems = relationItems.filter((item) => !coreRelationKeys.includes(item.key));
+
+export const verifiedKeys = ['birthDate', 'job', 'location', 'height', 'asset', 'income', 'education', 'housing', 'car'];
+export const defaultRelation = Object.fromEntries(relationItems.map((item) => [item.key, 5]));
+export const defaultEmotionalBond = Object.fromEntries(emotionalBondItems.map(i => [i.key, 5]));
+
+export const emptyCandidate = {
+  id: null,
+  name: '',
+  birthDate: '',
+  age: '',
+  job: '',
+  location: '',
+  mbti: '',
+  route: '',
+  memo: '',
+  character: 'mystery',
+  photo: '',
+  height: '',
+  bodyType: '보통',
+  bodyFit: 3,
+  asset: 'unknown',
+  income: 'unknown',
+  education: '',
+  housing: '미확인',
+  car: '미확인',
+  smoking: '미확인',
+  drinking: '미확인',
+  religion: '미확인',
+  relationshipGoal: '미확인',
+  jobStability: 3,
+  distanceFit: 3,
+  verified: {},
+  relation: defaultRelation,
+  emotionalBond: defaultEmotionalBond,
+  energyTags: [],
+  personalityTags: [],
+  observationNotes: '',
+  observationMemo: '',
+  green: [],
+  yellow: [],
+  red: [],
+  timeline: [],
+  quickNoteSummary: '',
+  quickNoteGood: '',
+  quickNoteConcern: '',
+  quickNoteNextCheck: '',
+  fixedObservationMemo: '',
+  dateTimeline: [],
+};
+
+export const sampleCandidates = [
+  {
+    ...emptyCandidate,
+    id: 1,
+    name: '차분한 연하남',
+    birthDate: '1992-08-21',
+    age: '33',
+    job: '서비스 기획자',
+    location: '성수',
+    mbti: 'INTP',
+    route: '지인 모임',
+    memo: '말과 행동이 일치하며 관계 흐름이 안정적입니다.',
+    character: 'calm',
+    height: '181',
+    bodyFit: 5,
+    asset: '1to5',
+    income: '7to10',
+    jobStability: 4,
+    distanceFit: 5,
+    verified: { birthDate: true, job: true, income: true, location: true },
+    relation: { ...defaultRelation, logic: 8, present: 8, action: 7, emotion: 7, care: 8, comfort: 8 },
+    green: ['약속을 구체적으로 잡고 지킴', '현재에 충실한 행동을 보임'],
+    energyTags: ['stability', 'growth'],
+    personalityTags: ['self-world', 'growth-type'],
+    emotionalBond: { ...defaultEmotionalBond, convoFlow: 9, emotionalStability: 8, emotionFatigue: 2, valueAlignment: 8, worldviewFit: 8, curiosityShare: 7, energyChange: 8 },
+    observationNotes: '실제 만남에서도 대화 밀도가 유지되는지 확인 필요',
+  },
+  {
+    ...emptyCandidate,
+    id: 2,
+    name: '무난한 직장인',
+    birthDate: '1990-02-15',
+    age: '36',
+    job: '대기업 영업',
+    location: '분당',
+    mbti: 'ENFJ',
+    route: '결정사',
+    memo: '나쁘지 않으나 좀 더 만나보며 데이터를 쌓아야 합니다.',
+    character: 'smile',
+    height: '178',
+    bodyFit: 3,
+    asset: '5to10',
+    income: '7to10',
+    jobStability: 4,
+    distanceFit: 3,
+    verified: { birthDate: true, location: true },
+    relation: { ...defaultRelation },
+  },
+  {
+    ...emptyCandidate,
+    id: 3,
+    name: '화려한 사업가',
+    birthDate: '1987-10-01',
+    age: '39',
+    job: '개인 사업',
+    location: '청담',
+    memo: '조건은 좋아 보이나 인증된 정보가 전혀 없습니다.',
+    character: 'bold',
+    height: '182',
+    bodyFit: 3,
+    asset: '20to50',
+    income: 'over2',
+    jobStability: 3,
+    distanceFit: 4,
+    verified: {},
+    relation: { ...defaultRelation, logic: 7 },
+    yellow: ['직업/자산 정보 확인 필요'],
+  },
+  {
+    ...emptyCandidate,
+    id: 4,
+    name: '회피성 미궁남',
+    birthDate: '1988-06-20',
+    age: '38',
+    job: '연구원',
+    location: '대전',
+    memo: '말은 통하는 듯하나 만남 후 이상하게 피로감이 듭니다.',
+    character: 'talk',
+    height: '175',
+    bodyFit: 3,
+    asset: '5to10',
+    income: '5to7',
+    jobStability: 5,
+    distanceFit: 2,
+    verified: { birthDate: true, location: true },
+    relation: { ...defaultRelation, present: 3, comfort: 2 },
+    yellow: ['연락 템포가 아직 불안정함'],
+  },
+  {
+    ...emptyCandidate,
+    id: 5,
+    name: '위험한 경고남',
+    birthDate: '1985-12-01',
+    age: '41',
+    job: '무직?',
+    location: '미상',
+    memo: '대화의 진실성이 의심되며 심각한 레드 플래그가 보입니다.',
+    character: 'sad',
+    height: '170',
+    bodyFit: 2,
+    asset: 'under1',
+    income: 'under3',
+    jobStability: 1,
+    distanceFit: 5,
+    verified: {},
+    relation: { ...defaultRelation, logic: 2, emotion: 2 },
+    red: ['돈을 빌리려는 뉘앙스'],
+  },
+];
