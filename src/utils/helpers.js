@@ -1,6 +1,9 @@
 import { STATUS_COPY, VERDICT_EMOJI, getStatusTheme, getStatusCopy, generateHeroCopy } from './scoring/verdictRules';
 import { analyze } from './scoring/analyzeCandidate';
-import { sampleCandidates } from './scoring/scoreOptions';
+import { sampleCandidates, characters, AVATAR_BASE, relationItems, statusTypeKeys, getStatusLabel, emotionalBondItems, energyTagOptions, personalityTypeTags, timelineTypeOptions, feelingOptions, emptyCandidate, defaultRelation, defaultEmotionalBond, assetOptions, incomeOptions } from './scoring/scoreOptions';
+import { signalByCode } from './scoring/timelineScore';
+import { optionLabel } from './scoring/analyzeCandidate';
+
 export function getDaysAgo(dateStr) {
   if (!dateStr) return '';
   try {

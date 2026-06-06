@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { bulletLines } from '../../utils/helpers';
+import { bulletLines, scoreLevel } from '../../utils/helpers';
 import { STATUS_THEMES, VERDICT_EMOJI } from '../../utils/scoring/verdictRules';
+import { characters, AVATAR_BASE } from '../../utils/scoring/scoreOptions';
 export function Chevron({ isOpen }) {
   return (
     <svg 

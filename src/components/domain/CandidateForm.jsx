@@ -2,9 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import { 
   bodyOptions, bodyFitOptions, assetOptions, incomeOptions, marriageOptions, childrenOptions,
   housingOptions, carOptions, smokingOptions, drinkingOptions, religionOptions, goalOptions,
-  personalityTypeTags, energyTagOptions, coreRelationItems, moreRelationItems, emotionalBondItems, observationPointPool
+  personalityTypeTags, energyTagOptions, coreRelationItems, moreRelationItems, emotionalBondItems, observationPointPool,
+  characters, AVATAR_BASE, greenFlags, yellowFlags, redFlags
 } from '../../utils/scoring/scoreOptions';
-import { compressBase64Image, todayValue } from '../../utils/helpers';
+import { compressBase64Image, todayValue, createForm, getDisplayReport } from '../../utils/helpers';
+import { verified, recommendJobStability, analyze, calcAge } from '../../utils/scoring/analyzeCandidate';
 import { Chevron, DetailAccordion, Avatar, Badge, Card, Field, SelectField, BulletTextarea, Toggle, VerifiedInput, Icon } from '../ui/CommonUI';
 export function StepTitle({ step, title, desc }) {
   return <div className="stepTitle"><Badge color="blue">STEP {step}</Badge><h2>{title}</h2><p>{desc}</p></div>;

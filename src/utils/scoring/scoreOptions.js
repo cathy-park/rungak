@@ -1,3 +1,19 @@
+export const AVATAR_BASE = '/characters';
+export const characters = [
+  { id: 'calm', label: '차분한 지적형', desc: '조용함 · 깊이 · 데이터' },
+  { id: 'fit', label: '피지컬 루틴형', desc: '운동 · 자기관리 · 실행력' },
+  { id: 'talk', label: '수다쟁이 분석형', desc: '이야기 · 분석 · 인사이트' },
+  { id: 'sweet', label: '다정한 생활형', desc: '공감 · 꾸준함 · 생활감' },
+  { id: 'future', label: '미래 토커형', desc: '큰 그림 · 예측 · 말이 큼' },
+  { id: 'mystery', label: '미스터리형', desc: '정보 부족 · 관찰 필요' },
+  { id: 'elite', label: '깔끔한 엘리트형', desc: '정돈 · 매너 · 사회성' },
+  { id: 'creative', label: '감성 크리에이터형', desc: '취향 · 표현력 · 감각' },
+  { id: 'stable', label: '안정형 직장인', desc: '성실 · 루틴 · 현실감' },
+  { id: 'leader', label: '리더형 사업가', desc: '추진력 · 자신감 · 결정력' },
+  { id: 'tech', label: '기술 덕후형', desc: '논리 · 몰입 · 도구친화' },
+  { id: 'free', label: '자유로운 취향형', desc: '여행 · 독립성 · 여유' },
+];
+
 export const assetOptions = [
   { value: 'unknown', label: '미확인', score: 3 },
   { value: 'under1', label: '1억 미만', score: 1 },
