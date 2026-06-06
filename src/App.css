@@ -1393,6 +1393,34 @@ p { margin: 0; }
   color: var(--text-3);
 }
 
+.signalSections {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 4px 0 12px;
+}
+
+.signalGroup {
+  padding: 14px;
+  border-radius: 12px;
+}
+
+.signalGroup.positiveGroup {
+  background: var(--green-light);
+  border: 1px solid var(--green-border);
+}
+
+.signalGroup.negativeGroup {
+  background: var(--red-light);
+  border: 1px solid var(--red-border);
+}
+
+.signalGroupTitle {
+  font-size: 13px;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
 .signalWrap, .suggest {
   display: flex;
   flex-wrap: wrap;

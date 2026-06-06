@@ -70,8 +70,10 @@ const timelineTypeOptions = [
 ];
 const feelingOptions = [
   { value: 'good', label: '좋았음' },
+  { value: 'normal', label: '보통' },
   { value: 'neutral', label: '애매함' },
   { value: 'tired', label: '피곤했음' },
+  { value: 'frustrated', label: '답답함' },
   { value: 'weird', label: '이상했음' },
   { value: 'sure', label: '확신이 생김' },
 ];
@@ -143,8 +145,15 @@ function migrateTextToItems(text, type = 'fixed') {
 }
 
 const signalOptions = [
+  // 🟢 긍정 신호
   { code: 'keptPromise', label: '약속을 지킴', score: 2, tone: 'green' },
   { code: 'remembered', label: '내 말을 기억함', score: 2, tone: 'green' },
+  { code: 'considerate', label: '배려있음', score: 2, tone: 'green' },
+  { code: 'manners', label: '매너있음', score: 2, tone: 'green' },
+  { code: 'responsible', label: '책임감있음', score: 3, tone: 'green' },
+  { code: 'stableContact', label: '연락 빈도가 안정적임', score: 2, tone: 'green' },
+  { code: 'calmEmotion', label: '감정 기복 없이 차분함', score: 2, tone: 'green' },
+  { code: 'honest', label: '솔직하고 투명함', score: 3, tone: 'green' },
   { code: 'presentAction', label: '현재 행동이 분명함', score: 3, tone: 'green' },
   { code: 'resolvedConflict', label: '갈등 시 조율함', score: 3, tone: 'green' },
   { code: 'verifiedInfo', label: '확인된 정보 추가', score: 2, tone: 'green' },
@@ -152,9 +161,16 @@ const signalOptions = [
   { code: 'goodHumor', label: '유머 코드가 맞음', score: 2, tone: 'green' },
   { code: 'respectBoundary', label: '선과 경계를 존중함', score: 3, tone: 'green' },
   { code: 'acceptDifference', label: '다름을 흥미롭게 수용함', score: 2, tone: 'green' },
+  
+  // 🔴 부정 신호
   { code: 'mismatch', label: '말과 행동 불일치', score: -3, tone: 'amber' },
   { code: 'tempoChange', label: '연락 템포 급변', score: -2, tone: 'amber' },
   { code: 'selfCentered', label: '자기중심적 대화', score: -2, tone: 'amber' },
+  { code: 'rude', label: '무례함/매너 없음', score: -3, tone: 'orange' },
+  { code: 'calculating', label: '계산적인 태도', score: -3, tone: 'orange' },
+  { code: 'breakPromise', label: '약속 파기/지각 잦음', score: -3, tone: 'orange' },
+  { code: 'badDrinking', label: '술/이성 문제 의심', score: -5, tone: 'red' },
+  { code: 'belittling', label: '은근히 깎아내리는 화법', score: -4, tone: 'orange' },
   { code: 'avoidance', label: '회피/잠수', score: -4, tone: 'orange' },
   { code: 'controlFreak', label: '은근한 통제 시도', score: -4, tone: 'orange' },
   { code: 'gaslighting', label: '내 판단을 예민함으로 몰아감', score: -6, tone: 'red' },
@@ -2359,12 +2375,28 @@ function TimelineSection({ candidate, report, saveTimeline }) {
           </SelectField>
           <Field label="주요 내용" textarea value={draft.notes} onChange={(v) => update('notes', v)} placeholder={'약속 시간을 잘 지킴\\n자산 이야기를 반복함\\n대화 후 피로감이 남음'}/>
           <p className="hint">줄바꿈은 블릿으로 정리돼요. 키워드는 참고 후보로만 보여줘요.</p>
-          <div className="signalWrap">
-            {signalOptions.map((signal) => (
-              <button key={signal.code} type="button" className={draft.signals.includes(signal.code) ? `tone-${signal.tone}` : ''} onClick={() => toggle(signal.code)}>
-                {signal.score > 0 ? '+' : ''}{signal.score} {signal.label}
-              </button>
-            ))}
+          <div className="signalSections">
+            <div className="signalGroup positiveGroup">
+              <div className="signalGroupTitle tone-green">🟢 긍정 신호 (+)</div>
+              <div className="signalWrap">
+                {signalOptions.filter(s => s.score > 0).map((signal) => (
+                  <button key={signal.code} type="button" className={draft.signals.includes(signal.code) ? `tone-${signal.tone}` : ''} onClick={() => toggle(signal.code)}>
+                    +{signal.score} {signal.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            <div className="signalGroup negativeGroup">
+              <div className="signalGroupTitle tone-red">🔴 부정 신호 (-)</div>
+              <div className="signalWrap">
+                {signalOptions.filter(s => s.score < 0).map((signal) => (
+                  <button key={signal.code} type="button" className={draft.signals.includes(signal.code) ? `tone-${signal.tone}` : ''} onClick={() => toggle(signal.code)}>
+                    {signal.score} {signal.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
           {suggestedSignals(draft.notes).length > 0 && (
             <div className="suggest">
