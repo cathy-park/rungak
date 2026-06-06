@@ -73,7 +73,7 @@ export function CompareModal({ candidates, close }) {
   };
 
   return (
-    <div className="modal-overlay" style={{ background: 'var(--bg-1)', zIndex: 9999 }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'var(--bg-1)', zIndex: 9999 }}>
       <header className="header" style={{ position: 'sticky', top: 0, zIndex: 10, background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(8px)', borderBottom: '1px solid var(--border)' }}>
         <button className="iconBtn" onClick={close}><ChevronLeft /></button>
         <h1 className="headerTitle" style={{ fontSize: '16px' }}>후보 비교 분석</h1>
@@ -89,91 +89,100 @@ export function CompareModal({ candidates, close }) {
         </div>
 
         {/* 핵심 지표 비교 */}
-        <Card title="핵심 지표 대조">
-          <div style={{ marginTop: '16px' }}>
-            {renderBarRow('기초 조건', A.conditionScore, B.conditionScore, 30)}
-            {renderBarRow('관계성', A.relationScore, B.relationScore, 20)}
-            {renderBarRow('신뢰/검증', A.trustScore, B.trustScore, 20)}
-            {renderFlowBarRow(A.flowScore, B.flowScore)}
-          </div>
-        </Card>
+        <div style={{ marginTop: '24px' }}>
+          <h2 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-1)', marginBottom: '12px', paddingLeft: '4px' }}>핵심 지표 대조</h2>
+          <Card>
+            <div style={{ marginTop: '16px' }}>
+              {renderBarRow('기초 조건', A.conditionScore, B.conditionScore, 30)}
+              {renderBarRow('관계성', A.relationScore, B.relationScore, 20)}
+              {renderBarRow('신뢰/검증', A.trustScore, B.trustScore, 20)}
+              {renderFlowBarRow(A.flowScore, B.flowScore)}
+            </div>
+          </Card>
+        </div>
 
         {/* 최근 타임라인 추세 */}
-        <Card title="최근 타임라인 추세" style={{ marginTop: '24px' }}>
-          <div style={{ display: 'flex', gap: '16px', marginTop: '16px' }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ background: 'var(--bg-2)', padding: '16px', borderRadius: '16px', fontSize: '13px', color: 'var(--text-2)', height: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {A.flowAnalysis ? (
-                  <>
-                    <div style={{ fontWeight: 800, fontSize: '15px', color: A.flowAnalysis.trend === '상승' ? 'var(--blue)' : A.flowAnalysis.trend === '하락' ? 'var(--red)' : 'var(--text-1)' }}>
-                      {A.flowAnalysis.trend} 추세
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>긍정 행동</span>
-                      <span style={{ fontWeight: 700, color: 'var(--blue)' }}>{A.flowAnalysis.positiveCount}건</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>부정 행동</span>
-                      <span style={{ fontWeight: 700, color: 'var(--red)' }}>{A.flowAnalysis.negativeCount}건</span>
-                    </div>
-                  </>
-                ) : <div style={{ textAlign: 'center', marginTop: '12px' }}>기록 부족</div>}
+        <div style={{ marginTop: '32px' }}>
+          <h2 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-1)', marginBottom: '12px', paddingLeft: '4px' }}>최근 타임라인 추세</h2>
+          <Card>
+            <div style={{ display: 'flex', gap: '16px', marginTop: '4px' }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ background: 'var(--bg-2)', padding: '16px', borderRadius: '16px', fontSize: '13px', color: 'var(--text-2)', height: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {A.flowAnalysis ? (
+                    <>
+                      <div style={{ fontWeight: 800, fontSize: '15px', color: A.flowAnalysis.trend === '상승' ? 'var(--blue)' : A.flowAnalysis.trend === '하락' ? 'var(--red)' : 'var(--text-1)' }}>
+                        {A.flowAnalysis.trend} 추세
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>긍정 행동</span>
+                        <span style={{ fontWeight: 700, color: 'var(--blue)' }}>{A.flowAnalysis.recentPos}건</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>부정 행동</span>
+                        <span style={{ fontWeight: 700, color: 'var(--red)' }}>{A.flowAnalysis.recentNeg}건</span>
+                      </div>
+                    </>
+                  ) : <div style={{ textAlign: 'center', marginTop: '12px' }}>기록 부족</div>}
+                </div>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ background: 'var(--bg-2)', padding: '16px', borderRadius: '16px', fontSize: '13px', color: 'var(--text-2)', height: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {B.flowAnalysis ? (
+                    <>
+                      <div style={{ fontWeight: 800, fontSize: '15px', color: B.flowAnalysis.trend === '상승' ? 'var(--green)' : B.flowAnalysis.trend === '하락' ? 'var(--red)' : 'var(--text-1)' }}>
+                        {B.flowAnalysis.trend} 추세
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>긍정 행동</span>
+                        <span style={{ fontWeight: 700, color: 'var(--green)' }}>{B.flowAnalysis.recentPos}건</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>부정 행동</span>
+                        <span style={{ fontWeight: 700, color: 'var(--red)' }}>{B.flowAnalysis.recentNeg}건</span>
+                      </div>
+                    </>
+                  ) : <div style={{ textAlign: 'center', marginTop: '12px' }}>기록 부족</div>}
+                </div>
               </div>
             </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ background: 'var(--bg-2)', padding: '16px', borderRadius: '16px', fontSize: '13px', color: 'var(--text-2)', height: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {B.flowAnalysis ? (
-                  <>
-                    <div style={{ fontWeight: 800, fontSize: '15px', color: B.flowAnalysis.trend === '상승' ? 'var(--green)' : B.flowAnalysis.trend === '하락' ? 'var(--red)' : 'var(--text-1)' }}>
-                      {B.flowAnalysis.trend} 추세
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>긍정 행동</span>
-                      <span style={{ fontWeight: 700, color: 'var(--green)' }}>{B.flowAnalysis.positiveCount}건</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>부정 행동</span>
-                      <span style={{ fontWeight: 700, color: 'var(--red)' }}>{B.flowAnalysis.negativeCount}건</span>
-                    </div>
-                  </>
-                ) : <div style={{ textAlign: 'center', marginTop: '12px' }}>기록 부족</div>}
-              </div>
-            </div>
-          </div>
-        </Card>
+          </Card>
+        </div>
 
         {/* 치명적 플래그 비교 */}
-        <Card title="치명적 플래그 (Red Flags)" style={{ marginTop: '24px' }}>
-          <div style={{ display: 'flex', gap: '16px', marginTop: '16px' }}>
-            <div style={{ flex: 1 }}>
-              {A.red && A.red.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {A.red.map(r => (
-                    <div key={r} style={{ background: '#FFF1F2', color: '#E11D48', padding: '8px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, display: 'flex', gap: '6px', alignItems: 'flex-start', lineHeight: 1.4 }}>
-                      <span style={{ marginTop: '2px' }}>🚨</span> {r}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div style={{ background: 'var(--bg-2)', padding: '12px', borderRadius: '8px', fontSize: '13px', color: 'var(--text-3)', textAlign: 'center' }}>없음</div>
-              )}
+        <div style={{ marginTop: '32px' }}>
+          <h2 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-1)', marginBottom: '12px', paddingLeft: '4px' }}>치명적 플래그 (Red Flags)</h2>
+          <Card>
+            <div style={{ display: 'flex', gap: '16px', marginTop: '4px' }}>
+              <div style={{ flex: 1 }}>
+                {A.red && A.red.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {A.red.map(r => (
+                      <div key={r} style={{ background: '#FFF1F2', color: '#E11D48', padding: '8px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, display: 'flex', gap: '6px', alignItems: 'flex-start', lineHeight: 1.4 }}>
+                        <span style={{ marginTop: '2px' }}>🚨</span> {r}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ background: 'var(--bg-2)', padding: '12px', borderRadius: '8px', fontSize: '13px', color: 'var(--text-3)', textAlign: 'center' }}>없음</div>
+                )}
+              </div>
+              <div style={{ width: '1px', background: 'var(--border)' }} />
+              <div style={{ flex: 1 }}>
+                {B.red && B.red.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {B.red.map(r => (
+                      <div key={r} style={{ background: '#FFF1F2', color: '#E11D48', padding: '8px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, display: 'flex', gap: '6px', alignItems: 'flex-start', lineHeight: 1.4 }}>
+                        <span style={{ marginTop: '2px' }}>🚨</span> {r}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ background: 'var(--bg-2)', padding: '12px', borderRadius: '8px', fontSize: '13px', color: 'var(--text-3)', textAlign: 'center' }}>없음</div>
+                )}
+              </div>
             </div>
-            <div style={{ width: '1px', background: 'var(--border)' }} />
-            <div style={{ flex: 1 }}>
-              {B.red && B.red.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {B.red.map(r => (
-                    <div key={r} style={{ background: '#FFF1F2', color: '#E11D48', padding: '8px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, display: 'flex', gap: '6px', alignItems: 'flex-start', lineHeight: 1.4 }}>
-                      <span style={{ marginTop: '2px' }}>🚨</span> {r}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div style={{ background: 'var(--bg-2)', padding: '12px', borderRadius: '8px', fontSize: '13px', color: 'var(--text-3)', textAlign: 'center' }}>없음</div>
-              )}
-            </div>
-          </div>
-        </Card>
+          </Card>
+        </div>
 
         {/* 시스템 조언 */}
         <div style={{ marginTop: '32px', background: 'var(--blue-light)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(37, 99, 235, 0.1)' }}>
