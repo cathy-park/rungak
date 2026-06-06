@@ -795,11 +795,11 @@ function generateHeroCopy(report) {
   // 2. 세부 지표 기반의 강조 포인트 분기 (이름 검사 절대 금지!)
   if (color === 'orange' && report.verifiedCount <= 1) {
     title = "조건보다 실제 행동 태도와 투명성을 먼저 확인해보세요.";
-  } else if (color === 'blue' && report.relationScore >= 24) {
+  } else if (color === 'blue' && report.relationScore >= 8) {
     title = "조건과 관계 정서 흐름을 조금 더 긍정적으로 봐도 좋은 흐름입니다.";
   } else if (color === 'red' && score < 25) {
     title = "객관적인 경고 신호들이 다수 감지되어 확실한 거리두기를 강력 권장해요.";
-  } else if (color === 'amber' && report.relationScore < 12) {
+  } else if (color === 'amber' && report.relationScore < 4) {
     title = "정서적 comfort 결여로 감정을 깊게 쓰기 전 완급조절 필요";
   }
 
@@ -807,18 +807,18 @@ function generateHeroCopy(report) {
   const segments = [];
 
   // [마디 1: 관계의 감정/정서적 안정도 평가]
-  if (report.relationScore >= 22) {
+  if (report.relationScore >= 7) {
     segments.push("두 사람의 대화 밀도와 소통의 일치감은 비교적 원만하고 긍정적인 수준을 보여줍니다.");
-  } else if (report.relationScore >= 12) {
+  } else if (report.relationScore >= 4) {
     segments.push("일상적인 소통 흐름은 평온하나, 갈등이나 깊은 가치관을 조율할 때 다소 편차가 느껴집니다.");
   } else {
     segments.push("대화 템포의 기복이 잦고 서로의 정서적 편안함과 지지 기반이 우려되는 상황입니다.");
   }
 
   // [마디 2: 정보 신뢰 및 현실 스펙 가치 정합도 평가]
-  if (report.conditionScore >= 26 && report.trustScore >= 8) {
+  if (report.conditionScore >= 6 && report.trustScore >= 3) {
     segments.push("주요한 현실 스펙 정보들이 투명하게 교차 검증되어 신뢰도의 깊이가 단단합니다.");
-  } else if (report.conditionScore >= 26 && report.trustScore <= 5) {
+  } else if (report.conditionScore >= 6 && report.trustScore <= 2) {
     segments.push("겉으로 드러난 가치 조건은 좋아 보이지만 교차 확인된 검증도가 낮아 섣부른 감정 투자는 신중해야 합니다.");
   } else {
     segments.push("장기적인 관점에서의 현실 가치관 조율과 거주지 등 구체적 정합성에 대해 좀 더 밀도 높은 대화가 필요합니다.");
@@ -828,7 +828,7 @@ function generateHeroCopy(report) {
   const capFiltered = (report.comments || []).find(c => c.includes("제한되었") || c.includes("제한이 걸려"));
   if (capFiltered) {
     segments.push(capFiltered);
-  } else if (report.verifiedCount <= 1 && report.conditionScore >= 24) {
+  } else if (report.verifiedCount <= 1 && report.conditionScore >= 6) {
     segments.push("주요 정보들의 실질적 검증 수치가 다소 투명하지 못해 겉보기에 현혹되지 않도록 교차 확인이 필수적입니다.");
   } else {
     segments.push("관계 안정성을 해치는 뚜렷한 심리적 유해 신호나 결정적 이상 패턴은 아직 감지되지 않았습니다.");
