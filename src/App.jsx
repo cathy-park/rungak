@@ -3096,7 +3096,7 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
             top: showCompactHeader ? '64px' : '0px',
             zIndex: 35,
             display: 'grid',
-            gridTemplateColumns: 'repeat(5, 1fr)',
+            gridTemplateColumns: 'repeat(4, 1fr)',
             margin: '0 -16px',
             background: 'rgba(255,255,255,0.98)',
             backdropFilter: 'blur(20px)',
