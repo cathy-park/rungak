@@ -35,13 +35,13 @@ export function CompareModal({ candidates, close }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '14px', fontWeight: 800, color: valA >= valB ? 'var(--text-1)' : 'var(--text-3)' }}>{valA}</span>
-            <div style={{ width: '100%', height: '10px', background: 'var(--bg-3)', borderRadius: '5px', overflow: 'hidden', display: 'flex', justifyContent: 'flex-end' }}>
+            <div style={{ width: '100%', height: '10px', background: 'var(--divider)', borderRadius: '5px', overflow: 'hidden', display: 'flex', justifyContent: 'flex-end' }}>
               <div style={{ height: '100%', width: `${pctA}%`, background: colorA, borderRadius: '5px', transition: 'width 0.5s ease-out' }} />
             </div>
           </div>
-          <div style={{ width: '1px', height: '16px', background: 'var(--border)' }} />
+          <div style={{ width: '1px', height: '16px', background: 'var(--divider)' }} />
           <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: '8px' }}>
-            <div style={{ width: '100%', height: '10px', background: 'var(--bg-3)', borderRadius: '5px', overflow: 'hidden' }}>
+            <div style={{ width: '100%', height: '10px', background: 'var(--divider)', borderRadius: '5px', overflow: 'hidden' }}>
               <div style={{ height: '100%', width: `${pctB}%`, background: colorB, borderRadius: '5px', transition: 'width 0.5s ease-out' }} />
             </div>
             <span style={{ fontSize: '14px', fontWeight: 800, color: valB >= valA ? 'var(--text-1)' : 'var(--text-3)' }}>{valB}</span>
@@ -59,11 +59,11 @@ export function CompareModal({ candidates, close }) {
     return (
       <div style={{ marginBottom: '20px' }}>
         <div style={{ textAlign: 'center', fontSize: '12px', fontWeight: 700, color: 'var(--text-2)', marginBottom: '8px', letterSpacing: '-0.02em' }}>타임라인 흐름 (Flow)</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-2)', padding: '12px', borderRadius: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--surface)', padding: '12px', borderRadius: '12px' }}>
           <div style={{ flex: 1, textAlign: 'center', fontSize: '16px', fontWeight: 800, color: colorA }}>
             {valA > 0 ? `+${valA}` : valA}
           </div>
-          <div style={{ width: '1px', height: '24px', background: 'var(--border)' }} />
+          <div style={{ width: '1px', height: '24px', background: 'var(--divider)' }} />
           <div style={{ flex: 1, textAlign: 'center', fontSize: '16px', fontWeight: 800, color: colorB }}>
             {valB > 0 ? `+${valB}` : valB}
           </div>
@@ -73,8 +73,8 @@ export function CompareModal({ candidates, close }) {
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'var(--bg-1)', zIndex: 9999 }}>
-      <header className="header" style={{ position: 'sticky', top: 0, zIndex: 10, background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(8px)', borderBottom: '1px solid var(--border)' }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'var(--bg)', zIndex: 9999 }}>
+      <header className="header" style={{ position: 'sticky', top: 0, zIndex: 10, background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(8px)', borderBottom: '1px solid var(--divider)' }}>
         <button className="iconBtn" onClick={close}><ChevronLeft /></button>
         <h1 className="headerTitle" style={{ fontSize: '16px' }}>후보 비교 분석</h1>
         <div style={{ width: 40 }} />
@@ -84,7 +84,7 @@ export function CompareModal({ candidates, close }) {
         {/* 프로필 비교 */}
         <div style={{ display: 'flex', gap: '16px', marginBottom: '40px' }}>
           {renderCandidateHero(A)}
-          <div style={{ width: '1px', background: 'var(--border)' }} />
+          <div style={{ width: '1px', background: 'var(--divider)' }} />
           {renderCandidateHero(B)}
         </div>
 
@@ -107,7 +107,7 @@ export function CompareModal({ candidates, close }) {
           <Card>
             <div style={{ display: 'flex', gap: '16px', marginTop: '4px' }}>
               <div style={{ flex: 1 }}>
-                <div style={{ background: 'var(--bg-2)', padding: '16px', borderRadius: '16px', fontSize: '13px', color: 'var(--text-2)', height: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ background: 'var(--surface)', padding: '16px', borderRadius: '16px', fontSize: '13px', color: 'var(--text-2)', height: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {A.flowAnalysis ? (
                     <>
                       <div style={{ fontWeight: 800, fontSize: '15px', color: A.flowAnalysis.trend === '상승' ? 'var(--blue)' : A.flowAnalysis.trend === '하락' ? 'var(--red)' : 'var(--text-1)' }}>
@@ -126,7 +126,7 @@ export function CompareModal({ candidates, close }) {
                 </div>
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ background: 'var(--bg-2)', padding: '16px', borderRadius: '16px', fontSize: '13px', color: 'var(--text-2)', height: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ background: 'var(--surface)', padding: '16px', borderRadius: '16px', fontSize: '13px', color: 'var(--text-2)', height: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {B.flowAnalysis ? (
                     <>
                       <div style={{ fontWeight: 800, fontSize: '15px', color: B.flowAnalysis.trend === '상승' ? 'var(--green)' : B.flowAnalysis.trend === '하락' ? 'var(--red)' : 'var(--text-1)' }}>
@@ -163,10 +163,10 @@ export function CompareModal({ candidates, close }) {
                     ))}
                   </div>
                 ) : (
-                  <div style={{ background: 'var(--bg-2)', padding: '12px', borderRadius: '8px', fontSize: '13px', color: 'var(--text-3)', textAlign: 'center' }}>없음</div>
+                  <div style={{ background: 'var(--surface)', padding: '12px', borderRadius: '8px', fontSize: '13px', color: 'var(--text-3)', textAlign: 'center' }}>없음</div>
                 )}
               </div>
-              <div style={{ width: '1px', background: 'var(--border)' }} />
+              <div style={{ width: '1px', background: 'var(--divider)' }} />
               <div style={{ flex: 1 }}>
                 {B.red && B.red.length > 0 ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -177,7 +177,7 @@ export function CompareModal({ candidates, close }) {
                     ))}
                   </div>
                 ) : (
-                  <div style={{ background: 'var(--bg-2)', padding: '12px', borderRadius: '8px', fontSize: '13px', color: 'var(--text-3)', textAlign: 'center' }}>없음</div>
+                  <div style={{ background: 'var(--surface)', padding: '12px', borderRadius: '8px', fontSize: '13px', color: 'var(--text-3)', textAlign: 'center' }}>없음</div>
                 )}
               </div>
             </div>
