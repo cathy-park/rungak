@@ -2853,7 +2853,8 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
   const compactMoreRef  = useRef(null);  // compact 헤더 ⋯ 버튼
   const [editingNoteId, setEditingNoteId] = useState(null);
   const [editingNoteForm, setEditingNoteForm] = useState({ summary: '', good: '', concern: '', nextCheck: '' });
-  const [activeTab, setActiveTab] = useState('summary'); // 'summary' | 'observe' | 'chat' | 'spec' | 'record'
+  const [activeTab, setActiveTab] = useState('summary');
+  const [showAllSignals, setShowAllSignals] = useState(false);
   const [editingSection, setEditingSection] = useState(null);
   const [sectionForm, setSectionForm] = useState(null);
   const [confirm, setConfirm] = useState(null);
@@ -2862,6 +2863,24 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
   const sheetRef = React.useRef(null);
   const [showCompactHeader, setShowCompactHeader] = useState(false);
   const activeMoreRef = showCompactHeader ? compactMoreRef : expandedMoreRef;
+
+  const currentTimeline = candidate.dateTimeline || candidate.timeline || [];
+  const signalCounts = {};
+  currentTimeline.forEach(event => {
+    if (event.signals && Array.isArray(event.signals)) {
+      event.signals.forEach(code => {
+        signalCounts[code] = (signalCounts[code] || 0) + 1;
+      });
+    }
+  });
+
+  const sortedSignals = Object.entries(signalCounts)
+    .filter(([code, count]) => count >= 1)
+    .sort((a, b) => b[1] - a[1])
+    .map(([code, count]) => {
+      const option = signalOptions.find(opt => opt.code === code);
+      return { code, count, label: option?.label || code, tone: option?.tone || 'gray' };
+    });
 
   const handleScroll = (e) => {
     const scrollTop = e.currentTarget.scrollTop;
@@ -3185,6 +3204,33 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
                       ))}
                     </div>
                   </div>
+
+                  {/* ── 반복된 주요 흐름 (키워드 랭킹) ── */}
+                  {sortedSignals.length > 0 && (
+                    <div style={{ marginTop: '10px', background: '#ffffff', borderRadius: '12px', padding: '11px 13px', border: '1px solid var(--divider)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                        <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.05em' }}>
+                          반복 관찰된 주요 흐름
+                        </div>
+                        {sortedSignals.length > 3 && (
+                          <button 
+                            onClick={() => setShowAllSignals(!showAllSignals)}
+                            style={{ background: 'none', border: 'none', fontSize: '10px', fontWeight: 600, color: 'var(--blue)', cursor: 'pointer', padding: 0 }}
+                          >
+                            {showAllSignals ? '접기' : `+ ${sortedSignals.length - 3}개 더보기`}
+                          </button>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                        {(showAllSignals ? sortedSignals : sortedSignals.slice(0, 3)).map((sig) => (
+                          <div key={sig.code} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: `var(--${sig.tone}-light)`, color: `var(--${sig.tone})`, padding: '4px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: 600 }}>
+                            {sig.tone === 'green' ? '🟢' : sig.tone === 'amber' || sig.tone === 'orange' ? '🟡' : '🔴'} {sig.label}
+                            <span style={{ fontSize: '10px', opacity: 0.8, background: 'rgba(0,0,0,0.08)', padding: '2px 5px', borderRadius: '4px', marginLeft: '2px' }}>{sig.count}회</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   <div className="miniGrid" style={{ marginTop: '10px' }}>
                     <MiniScore label="조건/스펙" value={report.conditionScore} max={10} />
