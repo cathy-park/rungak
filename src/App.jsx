@@ -554,7 +554,7 @@ function timelineScore(timeline = [], redFlagsList = []) {
     if (code === 'gaslighting' && hasGaslighting) return sum;
     return sum - Math.min(4, (count - 1) * 2);
   }, 0);
-  return clamp(base + repeatPenalty, -50, 50);
+  return clamp(base + repeatPenalty, -70, 70);
 }
 function suggestedSignals(notes = '') {
   const text = String(notes).toLowerCase();
@@ -660,10 +660,10 @@ function analyze(candidate) {
     { key: 'age', label: '나이 차이', raw: ageScore(age), max: 3 },
     { key: 'distance', label: '거리', raw: Number(candidate.distanceFit || 3) * 0.6, max: 3 },
   ];
-  const conditionScore = clamp(Math.round(rows.reduce((sum, item) => sum + clamp(item.raw, 0, item.max), 0)), 0, 40);
+  const conditionScore = clamp(Math.round(rows.reduce((sum, item) => sum + clamp(item.raw, 0, item.max), 0) / 4), 0, 10);
   const totalWeight = relationItems.reduce((sum, item) => sum + item.weight, 0);
   const relationRaw = relationItems.reduce((sum, item) => sum + Number(candidate.relation?.[item.key] ?? 5) * item.weight, 0) / Math.max(totalWeight, 1);
-  const relationScore = clamp(Math.round(relationRaw * 3), 0, 30);
+  const relationScore = clamp(Math.round(relationRaw * 1), 0, 10);
   const verifiedCount = verifiedKeys.filter((key) => verified(candidate, key)).length;
   const moneyVerified = (verified(candidate, 'asset') ? 1 : 0) + (verified(candidate, 'income') ? 1 : 0);
   const jobVerified = verified(candidate, 'job') ? 1 : 0;
@@ -673,10 +673,8 @@ function analyze(candidate) {
   const meetCount = currentTimeline.filter((ev) => ev.type === 'meet' || ev.type === 'date').length;
   const meetBonus = meetCount >= 3 ? 1.5 : 0;
 
-  // trustScore: 순수 정보 검증 지표 — 직업 확인은 안정성을 크게 의미하므로 별도 가산 + 만남 횟수 보너스(+1.5)
-  const trustScore = clamp(Math.round(verifiedCount * 0.9 + importantVerified * 1.2 + moneyVerified * 1.1 + jobVerified * 2.5 + meetBonus), 0, 15);
-  // realityScore: 행동 일치도만 반영 (jobStability/distanceFit 제거 — conditionScore와 중복)
-  const realityScore = clamp(Math.round((Number(candidate.relation?.present || 5) + Number(candidate.relation?.action || 5)) * 0.75), 0, 10);
+  const trustScore = clamp(Math.round((verifiedCount * 0.9 + importantVerified * 1.2 + moneyVerified * 1.1 + jobVerified * 2.5 + meetBonus) / 2.5), 0, 6);
+  const realityScore = clamp(Math.round(((Number(candidate.relation?.present || 5) + Number(candidate.relation?.action || 5)) * 0.75) / 2.5), 0, 4);
   const greenScore = (candidate.green || []).reduce((sum, label) => sum + (greenFlags.find((item) => item.label === label)?.score || 0), 0);
   const yellowScore = (candidate.yellow || []).reduce((sum, label) => sum + (yellowFlags.find((item) => item.label === label)?.score || 0), 0);
   const redList = candidate.red || [];
@@ -702,20 +700,20 @@ function analyze(candidate) {
   const totalScore = clamp(Math.min(preScore, scoreCap), 0, 100);
   
   const hardRun = redList.some((label) => redFlags.find((item) => item.label === label)?.hardRun);
-  const lowVerify = verifiedCount <= 1 && conditionScore >= 24;
+  const lowVerify = verifiedCount <= 1 && conditionScore >= 6;
   let verdict = '더 만나며 관찰';
   let color = 'blue';
 
-  if (hardRun || totalScore < 40) {
+  if (hardRun || totalScore < 10) {
     verdict = '정리 권장';
     color = 'red';
-  } else if (lowVerify || (conditionScore >= 28 && trustScore <= 5)) {
+  } else if (lowVerify || (conditionScore >= 7 && trustScore <= 2)) {
     verdict = '조건 확인 필요';
     color = 'orange';
-  } else if (totalScore >= 80 || (totalScore >= 75 && trustScore >= 8)) {
+  } else if (totalScore >= 70 || (totalScore >= 60 && trustScore >= 4)) {
     verdict = '계속 만나도 좋음';
     color = 'green';
-  } else if (relationScore < 16 || Number(candidate.relation?.comfort || 10) <= 3) {
+  } else if (relationScore < 5 || Number(candidate.relation?.comfort || 10) <= 3) {
     verdict = '감정 투입 보류';
     color = 'amber';
   }
@@ -804,9 +802,9 @@ function getDisplayReport(candidate, report) {
   const copy = generateHeroCopy(report);
 
   // 모든 등록 후보에 대하여 동일하고 무결하게 정량 분석 점수를 기반으로 4대 지표 환산 계산 (100점 백분율 스케일업)
-  const relationVal = Math.round((report.relationScore / 30) * 100) || 50;
-  const trustVal = Math.round((report.trustScore / 15) * 100) || 50;
-  const conditionVal = Math.round((report.conditionScore / 40) * 100) || 50;
+  const relationVal = Math.round((report.relationScore / 10) * 100) || 50;
+  const trustVal = Math.round((report.trustScore / 6) * 100) || 50;
+  const conditionVal = Math.round((report.conditionScore / 10) * 100) || 50;
   const riskVal = Math.max(15, Math.min(95, Math.round(100 - report.totalScore))) || 50;
 
   // 기존 comments 리스트에서 정량 계산된 추가 사유(예: capReason, flowScore) 등이 소실되지 않도록 정교한 배열 머지 수행
@@ -955,27 +953,6 @@ function candidateMarkdown(candidate, report) {
       }).join('\n\n')
     : '기록 없음';
 
-  const quickNotesHistory = (candidate.quickNotes || []).length
-    ? candidate.quickNotes.map((note) => {
-        const dateStr = new Date(note.createdAt).toISOString().replace('T', ' ').slice(0, 16);
-        const lines = [
-          `### ${dateStr}`,
-          note.summary ? `- 한 줄 메모: ${note.summary}` : '',
-          note.good ? `- 좋았던 점: ${note.good}` : '',
-          note.concern ? `- 찝찝했던 점: ${note.concern}` : '',
-          note.nextCheck ? `- 다음 확인점: ${note.nextCheck}` : ''
-        ].filter(Boolean);
-        return lines.join('\n');
-      }).join('\n\n')
-    : '기록 없음';
-
-  const observationChecksMarkdown = (candidate.observationChecks || []).length
-    ? candidate.observationChecks.map(item => {
-        const opt = checkStatusOptions.find(o => o.value === (item.status || 'unchecked'));
-        const statusLabel = opt ? opt.label : '미확인';
-        return `- [${statusLabel}] ${item.text}`;
-      }).join('\n')
-    : '기록 없음';
 
   const fixedObservationItemsMarkdown = (candidate.fixedObservationItems || []).length
     ? candidate.fixedObservationItems.map(item => `- ${item.text}`).join('\n')
@@ -991,9 +968,7 @@ function candidateMarkdown(candidate, report) {
     `- 판정: ${report.verdict}`,
     `- 요약: ${report.label}`,
     `- 코멘트: ${report.comments[0]}`,
-    '',
-    '## 2. 빠른 기록 히스토리',
-    quickNotesHistory,
+
     '',
     '## 3. 기본 프로필',
     `- 이름/별명: ${candidate.name || '미확인'}`,
@@ -1023,7 +998,7 @@ function candidateMarkdown(candidate, report) {
 
     `- 주거 형태: ${candidate.housing || '미확인'}`,
     `- 흡연/음주: ${candidate.smoking || '미확인'} / ${candidate.drinking || '미확인'}`,
-    `- 점수 합계: 조건 ${report.conditionScore}/40 | 대화/태도 ${report.relationScore}/30 | 정보확인 ${report.trustScore}/15 | 지속가능성 ${report.realityScore}/10`,
+    `- 점수 합계: 조건 ${report.conditionScore}/10 | 대화/태도 ${report.relationScore}/10 | 정보확인 ${report.trustScore}/6 | 지속가능성 ${report.realityScore}/4`,
     '',
     '## 8. 플래그 (관찰된 신호)',
     `- 🟢 그린플래그: ${(candidate.green || []).join(' / ') || '없음'}`,
@@ -1033,10 +1008,7 @@ function candidateMarkdown(candidate, report) {
     '## 9. 타임라인 (관계 흐름 기록)',
     timelines,
     '',
-    '## 10. 관찰 검증 리스트',
-    observationChecksMarkdown,
-    '',
-    '## 11. 배경 정보 리스트',
+    '## 10. 배경 정보 리스트',
     fixedObservationItemsMarkdown,
     '',
     '---',
@@ -2066,23 +2038,6 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
       </div>
 
       <Card className="accordion">
-        <button type="button" onClick={() => setOpen(open === 'quicknote' ? '' : 'quicknote')}>
-          <div><b>빠른 기록 Quick Note</b><span>한 줄 메모, 좋았던 점, 다음에 확인할 점</span></div>
-          <em>{open === 'quicknote' ? '닫기' : '열기'}</em>
-        </button>
-        {open === 'quicknote' && (
-          <div className="accordionBody">
-            <div className="formStack">
-              <Field label="한 줄 메모" value={form.quickNoteSummary || ''} onChange={(v) => update('quickNoteSummary', v)} placeholder="최근의 전반적인 감상을 짧게 적어보세요." />
-              <Field label="좋았던 점" textarea value={form.quickNoteGood || ''} onChange={(v) => update('quickNoteGood', v)} placeholder="만남이나 연락 과정에서 긍정적이었던 부분" />
-              <Field label="찝찝했던 점" textarea value={form.quickNoteConcern || ''} onChange={(v) => update('quickNoteConcern', v)} placeholder="마음에 걸리거나 명확히 짚고 넘어가야 할 부분" />
-              <Field label="다음에 확인할 점" textarea value={form.quickNoteNextCheck || ''} onChange={(v) => update('quickNoteNextCheck', v)} placeholder="다음 소통에서 눈여겨봐야 할 점" />
-            </div>
-          </div>
-        )}
-      </Card>
-
-      <Card className="accordion">
         <button type="button" onClick={() => setOpen(open === 'profile' ? '' : 'profile')}>
           <div><b>프로필 & 유형</b><span>캐릭터, 이름, 인간 유형 태그</span></div>
           <em>{open === 'profile' ? '닫기' : '열기'}</em>
@@ -2273,14 +2228,6 @@ function AddCandidate({ initialCandidate, onSave, onCancel }) {
           <FlagGroup title="옐로우플래그" color="amber" items={yellowFlags} selected={form.yellow} toggle={(label) => toggleList('yellow', label)}/>
           <FlagGroup title="레드플래그" color="red" items={redFlags} selected={form.red} toggle={(label) => toggleList('red', label)}/>
           
-          <div className="sectionDivider" style={{ margin: '24px 0' }} />
-          <div className="sectionLabel" style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-1)', marginBottom: '12px' }}>빠른 기록 Quick Note</div>
-          <div className="formStack">
-            <Field label="한 줄 메모" value={form.quickNoteSummary || ''} onChange={(v) => update('quickNoteSummary', v)} placeholder="최근의 감상을 짧게 적어보세요." />
-            <Field label="좋았던 점" textarea value={form.quickNoteGood || ''} onChange={(v) => update('quickNoteGood', v)} placeholder="좋았던 부분" />
-            <Field label="찝찝했던 점" textarea value={form.quickNoteConcern || ''} onChange={(v) => update('quickNoteConcern', v)} placeholder="마음에 걸리는 부분" />
-            <Field label="다음에 확인할 점" textarea value={form.quickNoteNextCheck || ''} onChange={(v) => update('quickNoteNextCheck', v)} placeholder="다음 만남에서 확인할 점" />
-          </div>
 
           <div className="sectionDivider" style={{ margin: '24px 0' }} />
           <ObservationSection 
@@ -3200,106 +3147,6 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
                   </div>
                 </DetailAccordion>
               
-                <DetailAccordion title="빠른 기록 히스토리" subtitle="날짜 기반 한줄평 및 관찰 메모 누적 기록" defaultOpen={true}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {!isAddingQuickMemo && (
-                      <button 
-                        className="primary" 
-                        style={{ width: '100%', padding: '12px', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}
-                        onClick={() => setIsAddingQuickMemo(true)}
-                      >
-                        + 새로운 빠른 기록 작성
-                      </button>
-                    )}
-
-                    {isAddingQuickMemo && (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: 'var(--surface)', padding: '14px', borderRadius: '12px', border: '1px solid var(--divider)', boxShadow: 'var(--shadow-sm)' }}>
-                        <Field label="한 줄 메모" value={quickMemoForm.summary} onChange={(v) => setQuickMemoForm(p => ({...p, summary: v}))} placeholder="오늘 있었던 일을 짧게 요약하세요." />
-                        <Field label="좋았던 점" textarea value={quickMemoForm.good} onChange={(v) => setQuickMemoForm(p => ({...p, good: v}))} placeholder="소소하게나마 마음에 든 점" rows={2} />
-                        <Field label="찝찝했던 점" textarea value={quickMemoForm.concern} onChange={(v) => setQuickMemoForm(p => ({...p, concern: v}))} placeholder="약간 걸리는 기분이나 신호" rows={2} />
-                        <Field label="다음 확인점" textarea value={quickMemoForm.nextCheck} onChange={(v) => setQuickMemoForm(p => ({...p, nextCheck: v}))} placeholder="다음에 스치듯 관찰해 볼 포인트" rows={2} />
-                        <div className="twoButtons" style={{ marginTop: '4px' }}>
-                          <button onClick={() => setIsAddingQuickMemo(false)}>취소</button>
-                          <button className="primary" onClick={handleSaveInlineQuickMemo}>⚡️ 기록 누적</button>
-                        </div>
-                      </div>
-                    )}
-
-                    {(candidate.quickNotes || []).length === 0 ? (
-                      <div style={{ padding: '20px', background: 'var(--bg)', borderRadius: '10px', color: 'var(--text-3)', fontSize: '13px', textAlign: 'center' }}>
-                        아직 누적된 빠른 기록이 없습니다.<br/>목록의 📝 버튼을 통해 가볍게 남겨보세요.
-                      </div>
-                    ) : (
-                      candidate.quickNotes.map((note) => {
-                        const isEditing = editingNoteId === note.id;
-                        return (
-                          <div 
-                            key={note.id} 
-                            style={{ 
-                              background: 'var(--bg)', 
-                              padding: '14px', 
-                              borderRadius: '10px', 
-                              fontSize: '13px', 
-                              border: isEditing ? '1px solid var(--blue-border)' : '1px solid rgba(0,0,0,0.03)',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: '8px',
-                              cursor: isEditing ? 'default' : 'pointer',
-                              transition: 'all 0.15s ease'
-                            }}
-                            onClick={() => { if (!isEditing) startEditNote(note); }}
-                            title={isEditing ? "" : "클릭하여 이 기록 즉시 수정/삭제"}
-                          >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--divider)', paddingBottom: '6px', pointerEvents: 'auto' }}>
-                              <span style={{ color: 'var(--blue)', fontSize: '11px', fontWeight: 700 }}>
-                                ⚡️ {new Date(note.createdAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                              </span>
-                              {!isEditing && (
-                                <button 
-                                  onClick={(e) => { e.stopPropagation(); handleDeleteQuickNote(note.id); }}
-                                  style={{ border: 'none', background: 'none', color: 'var(--red)', fontSize: '11px', fontWeight: 600, cursor: 'pointer', padding: 0 }}
-                                >
-                                  삭제
-                                </button>
-                              )}
-                            </div>
-                            
-                            {isEditing ? (
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '4px' }} onClick={(e) => e.stopPropagation()}>
-                                <Field label="한 줄 메모" value={editingNoteForm.summary} onChange={(v) => setEditingNoteForm(p => ({...p, summary: v}))} placeholder="한 줄 요약" />
-                                <Field label="좋았던 점" textarea value={editingNoteForm.good} onChange={(v) => setEditingNoteForm(p => ({...p, good: v}))} placeholder="좋았던 점" rows={2} />
-                                <Field label="찝찝했던 점" textarea value={editingNoteForm.concern} onChange={(v) => setEditingNoteForm(p => ({...p, concern: v}))} placeholder="찝찝했던 점" rows={2} />
-                                <Field label="다음 확인점" textarea value={editingNoteForm.nextCheck} onChange={(v) => setEditingNoteForm(p => ({...p, nextCheck: v}))} placeholder="다음 확인" rows={2} />
-                                <div className="twoButtons" style={{ marginTop: '4px' }}>
-                                  <button onClick={() => setEditingNoteId(null)}>취소</button>
-                                  <button className="primary" onClick={() => handleUpdateQuickNote(note.id)}>변경 저장</button>
-                                </div>
-                              </div>
-                            ) : (
-                              <>
-                                {note.summary && <p style={{ margin: '4px 0 0 0', color: 'var(--text-1)', fontWeight: 700, fontSize: '13.5px' }}>“{note.summary}”</p>}
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '12.5px', borderTop: note.summary ? '1px dashed rgba(0,0,0,0.05)' : 'none', paddingTop: note.summary ? '8px' : '0' }}>
-                                  {note.good && <div style={{ color: 'var(--text-body)' }}><b style={{ color: 'var(--green)', marginRight: '4px' }}>🟢 좋았던 점:</b> {note.good}</div>}
-                                  {note.concern && <div style={{ color: 'var(--text-body)' }}><b style={{ color: 'var(--red)', marginRight: '4px' }}>🟠 찝찝했던 점:</b> {note.concern}</div>}
-                                  {note.nextCheck && <div style={{ color: 'var(--text-body)' }}><b style={{ color: 'var(--blue)', marginRight: '4px' }}>👀 다음 확인:</b> {note.nextCheck}</div>}
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                </DetailAccordion>
-
-                <DetailAccordion title="관찰 검증 리스트" subtitle="다음 만남에서 확인할 체크리스트 및 Pass/Fail 기록" defaultOpen={true}>
-                  <DynamicListSection 
-                    items={candidate.observationChecks || []}
-                    type="check"
-                    onChange={(newArr) => updateField(candidate.id, 'observationChecks', newArr)}
-                  />
-                </DetailAccordion>
-
                 <DetailAccordion title="배경 정보 리스트" subtitle="성향, 가치관 및 변하지 않는 히스토리" defaultOpen={true}>
                   <DynamicListSection 
                     items={candidate.fixedObservationItems || []}
