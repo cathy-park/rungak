@@ -3,9 +3,20 @@ import { getDaysAgo, rankCandidates } from '../../utils/helpers';
 import { analyze } from '../../utils/scoring/analyzeCandidate';
 import { VERDICT_EMOJI } from '../../utils/scoring/verdictRules';
 import { Card, Avatar, Badge, Icon, FloatingAdd } from '../ui/CommonUI';
-export function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo, toggleFriendStamp }) {
+export function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo, toggleFriendStamp, openCompare }) {
   const [heroIdx, setHeroIdx] = useState(0);
   const carouselTrackRef = React.useRef(null);
+  
+  const [compareMode, setCompareMode] = useState(false);
+  const [selectedForCompare, setSelectedForCompare] = useState([]);
+
+  const toggleCompare = (c) => {
+    setSelectedForCompare(prev => {
+      if (prev.find(item => item.id === c.id)) return prev.filter(item => item.id !== c.id);
+      if (prev.length >= 2) return [prev[1], c];
+      return [...prev, c];
+    });
+  };
 
   const handleCarouselScroll = () => {
     if (!carouselTrackRef.current) return;
@@ -61,6 +72,22 @@ export function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMem
     };
   }
 
+  // 1,2,3등 왕관 렌더링 함수
+  const renderRankCrown = (idx) => {
+    const colors = ['#F59E0B', '#9CA3AF', '#D97706']; // 금, 은, 동
+    if (idx > 2) return null;
+    return (
+      <div style={{ position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))' }}>
+          <path d="M4 19h16v2H4v-2zm1-2l2-10 4 4 3-8 3 8 4-4 2 10H5z" fill={colors[idx]} />
+          <circle cx="7" cy="5" r="1.5" fill={colors[idx]} />
+          <circle cx="12" cy="3" r="1.5" fill={colors[idx]} />
+          <circle cx="17" cy="5" r="1.5" fill={colors[idx]} />
+        </svg>
+      </div>
+    );
+  };
+
   return <>
     {/* 거친 스탬프를 위한 브라우저 전역 SVG 필터 선언 */}
     <svg width="0" height="0" style={{ position: 'absolute', pointerEvents: 'none' }} aria-hidden="true">
@@ -82,7 +109,7 @@ export function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMem
         <div className="hero-track" style={{ padding: '0 18px', justifyContent: 'center' }}>
           <div className="hero-slide verdict-default" style={{ flex: '1', maxWidth: '440px', scrollSnapAlign: 'center' }}>
             <div className="heroEmpty">
-              <Avatar candidate={emptyCandidate} size="lg" />
+              <Avatar candidate={{}} size="lg" />
               <h3 style={{ fontSize: '17px', fontWeight: 800, margin: '10px 0 4px', color: 'var(--text-1)' }}>기록된 후보가 없어요</h3>
               <p style={{ fontSize: '13.5px', color: 'var(--text-2)', marginBottom: '14px', textAlign: 'center', wordBreak: 'keep-all' }}>새 후보를 추가하고 점수를 분석해보세요.</p>
               <button className="heroCTA" onClick={goAdd}>첫 후보 기록하기</button>
@@ -243,9 +270,28 @@ export function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMem
 
     {/* ── 후보 목록 ── */}
     <section className="list">
-      <div className="sectionTitle">
-        <h2>후보 목록</h2>
-        <span>{candidates.length}명</span>
+      <div className="sectionTitle" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+          <h2>후보 목록</h2>
+          <span>{candidates.length}명</span>
+        </div>
+        {candidates.length >= 2 && (
+          <button 
+            onClick={() => {
+              setCompareMode(!compareMode);
+              setSelectedForCompare([]);
+            }}
+            style={{ 
+              fontSize: '12px', padding: '5px 12px', borderRadius: '16px', 
+              border: compareMode ? '1px solid var(--blue)' : '1px solid var(--border)', 
+              background: compareMode ? '#EFF6FF' : '#fff', 
+              color: compareMode ? 'var(--blue)' : 'var(--text-body)', 
+              fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' 
+            }}
+          >
+            {compareMode ? '취소' : '비교하기'}
+          </button>
+        )}
       </div>
       {candidates.map((candidate) => {
         const cName = candidate.name || '무명의 후보';
@@ -266,9 +312,19 @@ export function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMem
         const meetCountStr = meetCount > 0 ? ` · 만남 ${meetCount}회` : '';
         const lastContactStr = lastContactAgo ? ` (${lastContactAgo})` : '';
 
+        const isSelectedForCompare = selectedForCompare.some(item => item.id === candidate.id);
+        const handleCardClick = () => {
+          if (compareMode) toggleCompare(candidate);
+          else openCandidate(candidate);
+        };
+
         return (
           <div key={candidate.id} className="candidateCardWrap">
-            <button className={`candidateCard2 verdict-${cColor} card-${isDanger ? 'danger' : 'normal'} ${candidate.friendStamp ? 'card-friend' : ''}`} onClick={() => openCandidate(candidate)}>
+            <button 
+              className={`candidateCard2 verdict-${cColor} card-${isDanger ? 'danger' : 'normal'} ${candidate.friendStamp ? 'card-friend' : ''}`} 
+              onClick={handleCardClick}
+              style={compareMode && isSelectedForCompare ? { outline: '2px solid var(--blue)', outlineOffset: '2px', backgroundColor: '#EFF6FF' } : {}}
+            >
               <Avatar candidate={candidate} size="sm" />
               <div className="candidateCard2Body">
                 <div className="candidateCard2NameRow">
@@ -285,26 +341,25 @@ export function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMem
               </div>
               
               <div className="candidateCard2Right">
-                <span className={`candidateCard2Score scoreText-${cColor}`}>{cScore}<small>점</small></span>
+                {compareMode ? (
+                  <div style={{ width: '24px', height: '24px', borderRadius: '50%', border: isSelectedForCompare ? 'none' : '2px solid var(--border)', background: isSelectedForCompare ? 'var(--blue)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {isSelectedForCompare && <Icon type="lucide-check" color="#fff" size={14} />}
+                  </div>
+                ) : (
+                  <span className={`candidateCard2Score scoreText-${cColor}`}>{cScore}<small>점</small></span>
+                )}
               </div>
 
               {isDanger && (
                 <div className="rungakStamp" aria-hidden="true" style={{ filter: 'url(#rungak-grunge)' }}>
                   <svg width="120" height="120" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    {/* 바깥 거친 이중 테두리 원 */}
                     <circle cx="50" cy="50" r="44" stroke="#E11D48" strokeWidth="3" strokeDasharray="320" style={{ opacity: 0.9 }} />
                     <circle cx="50" cy="50" r="39" stroke="#E11D48" strokeWidth="1.2" strokeDasharray="4 4" style={{ opacity: 0.8 }} />
-                    
-                    {/* 플라스크 캐릭터 */}
                     <path d="M44 28h12M47 28v6L36 50a4 4 0 003.5 6h21a4 4 0 003.5-6L53 34v-6" stroke="#E11D48" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
                     <circle cx="46" cy="42" r="1.5" fill="#E11D48" />
                     <circle cx="54" cy="42" r="1.5" fill="#E11D48" />
                     <path d="M47 47q3 1.5 6 0" stroke="#E11D48" strokeWidth="1.5" strokeLinecap="round" />
-                    
-                    {/* 런각! 굵은 텍스트 */}
                     <text x="50" y="75" fill="#E11D48" fontSize="15" fontWeight="900" textAnchor="middle" fontFamily="'Noto Sans KR', sans-serif" letterSpacing="0.08em">런각!</text>
-                    
-                    {/* 반짝이 데코 */}
                     <path d="M26 38l1.5 2.5L30 39l-2.5-1.5L26 38zM74 38l1.5-2.5L72 34l-1 2.5L74 38z" fill="#E11D48" />
                     <path d="M22 62h3v3h-3zM76 60h2v2h-2z" fill="#E11D48" />
                   </svg>
@@ -313,41 +368,43 @@ export function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMem
               {candidate.friendStamp && (
                 <div className="friendStamp" aria-hidden="true" style={{ filter: 'url(#rungak-grunge)' }}>
                   <svg width="120" height="120" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    {/* 바깥 거친 이중 테두리 원 */}
                     <circle cx="50" cy="50" r="44" stroke="#16A34A" strokeWidth="3" strokeDasharray="320" style={{ opacity: 0.9 }} />
                     <circle cx="50" cy="50" r="39" stroke="#16A34A" strokeWidth="1.2" strokeDasharray="4 4" style={{ opacity: 0.8 }} />
-                    
-                    {/* 두 명의 친구 캐릭터 */}
-                    {/* 왼쪽 사람 */}
                     <circle cx="40" cy="38" r="7" stroke="#16A34A" strokeWidth="2" fill="none" />
                     <circle cx="37" cy="36" r="1.5" fill="#16A34A" />
                     <circle cx="43" cy="36" r="1.5" fill="#16A34A" />
                     <path d="M37 40 Q40 43 43 40" stroke="#16A34A" strokeWidth="1.5" strokeLinecap="round" />
-                    
-                    {/* 오른쪽 사람 */}
                     <circle cx="60" cy="38" r="7" stroke="#16A34A" strokeWidth="2" fill="none" />
                     <circle cx="57" cy="36" r="1.5" fill="#16A34A" />
                     <circle cx="63" cy="36" r="1.5" fill="#16A34A" />
                     <path d="M57 40 Q60 43 63 40" stroke="#16A34A" strokeWidth="1.5" strokeLinecap="round" />
-                    
-                    {/* 어깨동무 라인 */}
                     <path d="M47 42 Q50 38 53 42" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" />
-                    
-                    {/* 친구! 굵은 텍스트 */}
                     <text x="50" y="75" fill="#16A34A" fontSize="15" fontWeight="900" textAnchor="middle" fontFamily="'Noto Sans KR', sans-serif" letterSpacing="0.08em">친구!</text>
-                    
-                    {/* 반짝이 데코 */}
                     <path d="M26 38l1.5 2.5L30 39l-2.5-1.5L26 38zM74 38l1.5-2.5L72 34l-1 2.5L74 38z" fill="#16A34A" />
                     <path d="M22 62h3v3h-3zM76 60h2v2h-2z" fill="#16A34A" />
                   </svg>
                 </div>
               )}
             </button>
-
           </div>
         );
       })}
     </section>
+
+    {compareMode && selectedForCompare.length === 2 && (
+      <div style={{ position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)', zIndex: 100 }}>
+        <button 
+          onClick={() => {
+            openCompare(selectedForCompare);
+            setCompareMode(false);
+            setSelectedForCompare([]);
+          }}
+          style={{ background: 'var(--blue)', color: '#fff', padding: '14px 24px', borderRadius: '30px', fontWeight: 700, fontSize: '15px', boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+        >
+          📊 2명 비교하기
+        </button>
+      </div>
+    )}
     </main>
   </>;
 }

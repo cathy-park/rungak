@@ -42,10 +42,13 @@ import { StepTitle, CharacterPicker, ProfileFields, CoreConditions, LifeInfo, Re
 import { TimelineSection } from './components/domain/TimelineSection';
 import { EditableMemoSection, QuickMemoModal, DynamicListSection, PopoverMenu, DetailModal } from './components/domain/DetailModal';
 import { Info, GuideModal } from './components/domain/GuideModal';
+import { CompareModal } from './components/domain/CompareModal';
+
 export default function App() {
   const [tab, setTab] = useState('home');
   const [appConfirm, setAppConfirm] = useState(null);
   const [toast, setToast] = useState(null);
+  const [comparingCandidates, setComparingCandidates] = useState(null);
 
   // 파비콘 및 웹 탭바 아이콘을 8px 곡률로 정교하게 동적 깎아주는 효과
   useEffect(() => {
@@ -446,5 +449,5 @@ export default function App() {
     setToast({ message: '실시간 동기화가 해제되었습니다.', type: 'info' });
   }
 
-  return <div className="app"><div className="phone"><main>{tab === 'home' && <Home candidates={viewModel.rankedCandidates} openCandidate={setSelected} goAdd={() => { setEditing(null); setTab('add'); }} openGuide={() => setGuideOpen(true)} openQuickMemo={setQuickMemoCandidate} toggleFriendStamp={(candidate) => updateCandidateField(candidate.id, 'friendStamp', !candidate.friendStamp)}/>} {tab === 'add' && <AddCandidate initialCandidate={editing} onSave={save} onCancel={() => { setEditing(null); setTab('home'); }}/>}</main>{tab === 'home' && <FloatingAdd onClick={() => { setEditing(null); setTab('add'); }}/>} {selected && <DetailModal candidate={selected} close={() => setSelected(null)} edit={startEdit} remove={remove} saveTimeline={saveTimeline} updateField={updateCandidateField}/>} {quickMemoCandidate && <QuickMemoModal candidate={quickMemoCandidate} close={() => setQuickMemoCandidate(null)} onSave={addQuickMemo} />} {guideOpen && <GuideModal close={() => setGuideOpen(false)} onExport={exportData} onImport={importData} onSyncUpload={generateAndUploadData} onSyncDownload={downloadDataByCode} activeSyncCode={activeSyncCode} onDisconnectSync={disconnectSync}/>} {appConfirm && <ConfirmModal {...appConfirm} />} {toast && <Toast {...toast} onDone={() => setToast(null)} />}</div></div>;
+  return <div className="app"><div className="phone"><main>{tab === 'home' && <Home candidates={viewModel.rankedCandidates} openCandidate={setSelected} goAdd={() => { setEditing(null); setTab('add'); }} openGuide={() => setGuideOpen(true)} openQuickMemo={setQuickMemoCandidate} toggleFriendStamp={(candidate) => updateCandidateField(candidate.id, 'friendStamp', !candidate.friendStamp)} openCompare={setComparingCandidates}/>} {tab === 'add' && <AddCandidate initialCandidate={editing} onSave={save} onCancel={() => { setEditing(null); setTab('home'); }}/>}</main>{tab === 'home' && <FloatingAdd onClick={() => { setEditing(null); setTab('add'); }}/>} {selected && <DetailModal candidate={selected} close={() => setSelected(null)} edit={startEdit} remove={remove} saveTimeline={saveTimeline} updateField={updateCandidateField}/>} {quickMemoCandidate && <QuickMemoModal candidate={quickMemoCandidate} close={() => setQuickMemoCandidate(null)} onSave={addQuickMemo} />} {comparingCandidates && <CompareModal candidates={comparingCandidates} close={() => setComparingCandidates(null)} />} {guideOpen && <GuideModal close={() => setGuideOpen(false)} onExport={exportData} onImport={importData} onSyncUpload={generateAndUploadData} onSyncDownload={downloadDataByCode} activeSyncCode={activeSyncCode} onDisconnectSync={disconnectSync}/>} {appConfirm && <ConfirmModal {...appConfirm} />} {toast && <Toast {...toast} onDone={() => setToast(null)} />}</div></div>;
 }
