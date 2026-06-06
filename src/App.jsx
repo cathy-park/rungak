@@ -161,6 +161,15 @@ const signalOptions = [
   { code: 'goodHumor', label: '유머 코드가 맞음', score: 2, tone: 'green' },
   { code: 'respectBoundary', label: '선과 경계를 존중함', score: 3, tone: 'green' },
   { code: 'acceptDifference', label: '다름을 흥미롭게 수용함', score: 2, tone: 'green' },
+  { code: 'praise', label: '칭찬과 격려를 자주 함', score: 2, tone: 'green' },
+  { code: 'listen', label: '경청하는 태도/리액션 좋음', score: 2, tone: 'green' },
+  { code: 'passion', label: '일이나 삶에 대한 열정이 보임', score: 2, tone: 'green' },
+  { code: 'economy', label: '안정적인 경제관념', score: 3, tone: 'green' },
+  { code: 'prepare', label: '약속/데이트 코스를 주도적으로 준비함', score: 2, tone: 'green' },
+  { code: 'friendly', label: '가족이나 주변인에게 다정함', score: 2, tone: 'green' },
+  { code: 'crisis', label: '위기 상황에서 대처가 침착함', score: 3, tone: 'green' },
+  { code: 'respectPace', label: '작은 스킨십이나 속도를 존중함', score: 3, tone: 'green' },
+  { code: 'admitMistake', label: '자신의 실수나 부족함을 인정함', score: 3, tone: 'green' },
   
   // 🔴 부정 신호
   { code: 'mismatch', label: '말과 행동 불일치', score: -3, tone: 'amber' },
@@ -178,6 +187,15 @@ const signalOptions = [
   { code: 'moneyBorrow', label: '돈 빌림 뉘앙스', score: -10, tone: 'red' },
   { code: 'emotionalTrash', label: '감정 쓰레기통 취급', score: -8, tone: 'red' },
   { code: 'blameOthers', label: '남 탓/상황 탓 반복', score: -6, tone: 'red' },
+  { code: 'phoneOften', label: '대화 중 딴짓/폰 자주 봄', score: -2, tone: 'amber' },
+  { code: 'judgeOthers', label: '타인을 함부로 평가하고 비난함', score: -4, tone: 'orange' },
+  { code: 'showOff', label: '허세가 심하고 과시욕이 강함', score: -3, tone: 'amber' },
+  { code: 'cheap', label: '데이트 비용에 유독 인색함', score: -3, tone: 'orange' },
+  { code: 'anger', label: '분노 조절이 안 됨/욱하는 성질', score: -8, tone: 'red' },
+  { code: 'obsessive', label: '지나친 집착이나 의존성', score: -5, tone: 'red' },
+  { code: 'violent', label: '폭력적인 언행이나 제스처', score: -10, tone: 'red' },
+  { code: 'onlySkinship', label: '은근히 스킨십만 유도함', score: -4, tone: 'orange' },
+  { code: 'fakeApology', label: '사과할 때 진정성이 없음/핑계 댐', score: -4, tone: 'orange' },
 ];
 
 // ─── 인간 유형 태그 ───────────────────────────────────
@@ -2291,6 +2309,8 @@ function TimelineSection({ candidate, report, saveTimeline }) {
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState({ date: todayValue(), type: 'date', feeling: 'neutral', notes: '', signals: [] });
   const [confirmDel, setConfirmDel] = useState(null);
+  const [posOpen, setPosOpen] = useState(true);
+  const [negOpen, setNegOpen] = useState(true);
   const currentTimeline = candidate.dateTimeline || candidate.timeline || [];
   const events = [...currentTimeline].sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
   const tone = report.flowScore > 0 ? 'green' : report.flowScore < 0 ? 'red' : 'gray';
@@ -2377,25 +2397,49 @@ function TimelineSection({ candidate, report, saveTimeline }) {
           <p className="hint">줄바꿈은 블릿으로 정리돼요. 키워드는 참고 후보로만 보여줘요.</p>
           <div className="signalSections">
             <div className="signalGroup positiveGroup">
-              <div className="signalGroupTitle tone-green">🟢 긍정 신호 (+)</div>
-              <div className="signalWrap">
-                {signalOptions.filter(s => s.score > 0).map((signal) => (
-                  <button key={signal.code} type="button" className={draft.signals.includes(signal.code) ? `tone-${signal.tone}` : ''} onClick={() => toggle(signal.code)}>
-                    +{signal.score} {signal.label}
-                  </button>
-                ))}
-              </div>
+              <button 
+                type="button" 
+                onClick={() => setPosOpen(!posOpen)} 
+                className="signalGroupTitle" 
+                style={{ background: 'none', border: 'none', padding: 0, boxShadow: 'none', color: 'var(--green)', display: 'flex', alignItems: 'center', cursor: 'pointer', margin: 0 }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '20px', height: '20px', marginRight: '4px', transition: 'transform 0.2s', transform: posOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+                🟢 긍정 신호 (+)
+              </button>
+              {posOpen && (
+                <div className="signalWrap" style={{ marginTop: '12px' }}>
+                  {signalOptions.filter(s => s.score > 0).map((signal) => (
+                    <button key={signal.code} type="button" className={draft.signals.includes(signal.code) ? `tone-${signal.tone}` : ''} onClick={() => toggle(signal.code)}>
+                      +{signal.score} {signal.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             
             <div className="signalGroup negativeGroup">
-              <div className="signalGroupTitle tone-red">🔴 부정 신호 (-)</div>
-              <div className="signalWrap">
-                {signalOptions.filter(s => s.score < 0).map((signal) => (
-                  <button key={signal.code} type="button" className={draft.signals.includes(signal.code) ? `tone-${signal.tone}` : ''} onClick={() => toggle(signal.code)}>
-                    {signal.score} {signal.label}
-                  </button>
-                ))}
-              </div>
+              <button 
+                type="button" 
+                onClick={() => setNegOpen(!negOpen)} 
+                className="signalGroupTitle" 
+                style={{ background: 'none', border: 'none', padding: 0, boxShadow: 'none', color: 'var(--red)', display: 'flex', alignItems: 'center', cursor: 'pointer', margin: 0 }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '20px', height: '20px', marginRight: '4px', transition: 'transform 0.2s', transform: negOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+                🔴 부정 신호 (-)
+              </button>
+              {negOpen && (
+                <div className="signalWrap" style={{ marginTop: '12px' }}>
+                  {signalOptions.filter(s => s.score < 0).map((signal) => (
+                    <button key={signal.code} type="button" className={draft.signals.includes(signal.code) ? `tone-${signal.tone}` : ''} onClick={() => toggle(signal.code)}>
+                      {signal.score} {signal.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
           {suggestedSignals(draft.notes).length > 0 && (
@@ -3063,7 +3107,6 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
               { id: 'summary', label: '요약', icon: '📊' },
               { id: 'spec', label: '조건', icon: '⚖️' },
               { id: 'chat', label: '대화·정서', icon: '💬' },
-              { id: 'observe', label: '관찰', icon: '🔍' },
               { id: 'record', label: '기록', icon: '📖' }
             ].map(t => {
               const isActive = activeTab === t.id;
@@ -3144,10 +3187,10 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
                   </div>
 
                   <div className="miniGrid" style={{ marginTop: '10px' }}>
-                    <MiniScore label="조건/스펙" value={report.conditionScore} max={40} />
-                    <MiniScore label="대화/태도" value={report.relationScore} max={30} />
-                    <MiniScore label="정보확인" value={report.trustScore} max={15} />
-                    <MiniScore label="지속가능성" value={report.realityScore} max={10} />
+                    <MiniScore label="조건/스펙" value={report.conditionScore} max={10} />
+                    <MiniScore label="대화/태도" value={report.relationScore} max={10} />
+                    <MiniScore label="정보확인" value={report.trustScore} max={6} />
+                    <MiniScore label="지속가능성" value={report.realityScore} max={4} />
                     <MiniScore label="플래그가산" value={report.bonusPenalty} />
                     <MiniScore label="만남흐름" value={report.flowScore} />
                   </div>
@@ -3158,54 +3201,7 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
               </>
             )}
 
-            {/* 2) 관찰 탭 */}
-            {activeTab === 'observe' && (
-              <>
-                {/* 요약 탭에서 이동된 관계 에너지 및 플래그 섹션 */}
-                <DetailAccordion title="관계 에너지 방향" subtitle="이 관계가 나에게 유발하는 에너지" defaultOpen={true}>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                    {(candidate.energyTags || []).map(id => {
-                      const tag = energyTagOptions.find(t => t.id === id);
-                      return tag ? <Badge key={id} color={tag.tone}>{tag.emoji} {tag.label}</Badge> : null;
-                    })}
-                    {(!candidate.energyTags || candidate.energyTags.length === 0) && (
-                      <span style={{ fontSize: '12.5px', color: 'var(--text-3)' }}>지정된 에너지 태그가 없습니다.</span>
-                    )}
-                  </div>
-                </DetailAccordion>
 
-                <DetailAccordion title="플래그 (관찰된 신호)" subtitle="그린/옐로우/레드 플래그 모아보기" defaultOpen={true}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div>
-                      <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--green)', marginBottom: '6px' }}>🟢 그린 플래그</div>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                        {(candidate.green || []).length > 0 ? candidate.green.map(f => <Badge key={f} color="green">{f}</Badge>) : <span style={{ fontSize: '12px', color: 'var(--text-3)' }}>기록 없음</span>}
-                      </div>
-                    </div>
-                    <div style={{ borderTop: '1px solid var(--divider)', paddingTop: '10px' }}>
-                      <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--amber)', marginBottom: '6px' }}>🟡 옐로우 플래그</div>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                        {(candidate.yellow || []).length > 0 ? candidate.yellow.map(f => <Badge key={f} color="amber">{f}</Badge>) : <span style={{ fontSize: '12px', color: 'var(--text-3)' }}>기록 없음</span>}
-                      </div>
-                    </div>
-                    <div style={{ borderTop: '1px solid var(--divider)', paddingTop: '10px' }}>
-                      <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--red)', marginBottom: '6px' }}>🔴 레드 플래그</div>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                        {(candidate.red || []).length > 0 ? candidate.red.map(f => <Badge key={f} color="red">{f}</Badge>) : <span style={{ fontSize: '12px', color: 'var(--text-3)' }}>기록 없음</span>}
-                      </div>
-                    </div>
-                  </div>
-                </DetailAccordion>
-              
-                <DetailAccordion title="배경 정보 리스트" subtitle="성향, 가치관 및 변하지 않는 히스토리" defaultOpen={true}>
-                  <DynamicListSection 
-                    items={candidate.fixedObservationItems || []}
-                    type="fixed"
-                    onChange={(newArr) => updateField(candidate.id, 'fixedObservationItems', newArr)}
-                  />
-                </DetailAccordion>
-              </>
-            )}
 
             {/* 3) 대화·정서 탭 */}
             {activeTab === 'chat' && (
@@ -3395,9 +3391,9 @@ function DetailModal({ candidate, close, edit, remove, saveTimeline, updateField
                   ) : (
                     <>
                       <div className="scoreGrid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '14px' }}>
-                        <ScoreCard title="조건/스펙" value={report.conditionScore} max={40} desc="키·돈·직업처럼 확인 가능한 조건" />
-                        <ScoreCard title="정보 확인도" value={report.trustScore} max={15} desc="말로 들은 정보가 확인됐는지" />
-                        <ScoreCard title="지속 가능성" value={report.realityScore} max={10} desc="거리·생활 리듬·현실 행동" />
+                        <ScoreCard title="조건/스펙" value={report.conditionScore} max={10} desc="키·돈·직업처럼 확인 가능한 조건" />
+                        <ScoreCard title="정보 확인도" value={report.trustScore} max={6} desc="말로 들은 정보가 확인됐는지" />
+                        <ScoreCard title="지속 가능성" value={report.realityScore} max={4} desc="거리·생활 리듬·현실 행동" />
                       </div>
                       <div className="infoGrid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginBottom: '14px' }}>
                         <Info label="키" value={candidate.height ? `${candidate.height}cm` : '미확인'} checked={verified(candidate, 'height')} />
