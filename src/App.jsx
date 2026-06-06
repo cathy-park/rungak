@@ -554,7 +554,7 @@ function timelineScore(timeline = [], redFlagsList = []) {
     if (code === 'gaslighting' && hasGaslighting) return sum;
     return sum - Math.min(4, (count - 1) * 2);
   }, 0);
-  return clamp(base + repeatPenalty, -6, 6);
+  return clamp(base + repeatPenalty, -50, 50);
 }
 function suggestedSignals(notes = '') {
   const text = String(notes).toLowerCase();
