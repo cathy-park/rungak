@@ -731,7 +731,7 @@ function analyze(candidate) {
   const bonusPenalty = clamp(greenScore + yellowScore + redScore, -18, 10);
   const flowScore = timelineScore(currentTimeline, redList);
   const preScore = Math.round(conditionScore + relationScore + trustScore + realityScore + bonusPenalty + flowScore);
-  const totalScore = clamp(Math.min(preScore, scoreCap), 0, 100);
+  const totalScore = Math.min(preScore, scoreCap);
   
   const hardRun = redList.some((label) => redFlags.find((item) => item.label === label)?.hardRun);
   const lowVerify = verifiedCount <= 1 && conditionScore >= 6;
