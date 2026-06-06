@@ -1,12 +1,20 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { checkStatusOptions, signalOptions } from '../../utils/scoring/scoreOptions';
+import { createPortal } from 'react-dom';
+import { X, MoreVertical, Trash2 } from 'lucide-react';
+import { 
+  checkStatusOptions, signalOptions, personalityTypeTags, energyTagOptions, 
+  emotionalBondItems, relationItems, greenFlags, yellowFlags, redFlags 
+} from '../../utils/scoring/scoreOptions';
 import { 
   getDaysAgo, migrateTextToItems, bulletLines, getDisplayReport, generateHeroSummary,
-  scoreTone, scoreLevel, candidateMarkdown, optLabel, getScoreStatusLabel, getReverseScoreStatusLabel
+  scoreTone, scoreLevel, candidateMarkdown, optLabel, getScoreStatusLabel, getReverseScoreStatusLabel,
+  normalizeCandidate
 } from '../../utils/helpers';
+import { analyze } from '../../utils/scoring/analyzeCandidate';
 import { VERDICT_EMOJI } from '../../utils/scoring/verdictRules';
-import { Chevron, Avatar, Badge, Card, Field, BulletTextarea, Toggle, Icon, ConfirmModal, Toast, MiniScore, ScoreCard, DetailAccordion } from '../ui/CommonUI';
+import { Chevron, Avatar, Badge, Card, Field, SelectField, BulletTextarea, Toggle, Icon, ConfirmModal, Toast, MiniScore, ScoreCard, DetailAccordion } from '../ui/CommonUI';
 import { TimelineSection } from './TimelineSection';
+import { TagPickerGroup, EmotionalBondSliders, RelationSliders, ObservationSection, PersonalityTagPicker, FlagGroup } from './CandidateForm';
 export function EditableMemoSection({ value, onSave, placeholder }) {
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState(value || '');
