@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { timelineTypeOptions, feelingOptions, signalOptions } from '../../utils/scoring/scoreOptions';
-import { todayValue } from '../../utils/helpers';
-import { Card, SelectField, Field, Icon } from '../ui/CommonUI';
+import { todayValue, bulletLines, optLabel } from '../../utils/helpers';
+import { suggestedSignals, signalByCode } from '../../utils/scoring/timelineScore';
+import { Card, SelectField, Field, Icon, Badge, ConfirmModal } from '../ui/CommonUI';
 export function TimelineSection({ candidate, report, saveTimeline }) {
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState(null);
