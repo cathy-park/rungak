@@ -714,7 +714,7 @@ function analyze(candidate) {
   } else if (totalScore >= 40) {
     color = 'amber';
     verdict = '조건 확인 필요';
-  } else if (totalScore >= 25) {
+  } else if (totalScore >= 10) {
     color = 'orange';
     verdict = '감정 투입 보류';
   } else {
