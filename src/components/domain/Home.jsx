@@ -4,9 +4,11 @@ import { analyze, calcAge, verified } from '../../utils/scoring/analyzeCandidate
 import { VERDICT_EMOJI } from '../../utils/scoring/verdictRules';
 import { Card, Avatar, Badge, Icon, Header, FloatingAdd } from '../ui/CommonUI';
 import { Check } from 'lucide-react';
+import { IndicatorModal } from './IndicatorModal';
 
 export function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMemo, toggleFriendStamp, openCompare }) {
   const [heroIdx, setHeroIdx] = useState(0);
+  const [activeIndicator, setActiveIndicator] = useState(null);
   const carouselTrackRef = React.useRef(null);
   
   const [compareMode, setCompareMode] = useState(false);
@@ -205,8 +207,8 @@ export function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMem
                   </div>
 
                   {/* 4대 지표 카드 */}
-                  <div className="heroIndicatorGrid">
-                    <div className="heroIndicatorCard indicator-green">
+                    <div className="heroIndicatorGrid">
+                    <div className="heroIndicatorCard indicator-green" onClick={() => setActiveIndicator({ type: 'relation', candidate: cand, report })}>
                       <span className="heroIndicatorLabel">관계 안정도</span>
                       <div className="heroIndicatorValueRow">
                         <span className="heroIndicatorIcon">
@@ -215,7 +217,7 @@ export function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMem
                         <span className="heroIndicatorValue">{m.relation}</span>
                       </div>
                     </div>
-                    <div className="heroIndicatorCard indicator-blue">
+                    <div className="heroIndicatorCard indicator-blue" onClick={() => setActiveIndicator({ type: 'trust', candidate: cand, report })}>
                       <span className="heroIndicatorLabel">신뢰 흐름</span>
                       <div className="heroIndicatorValueRow">
                         <span className="heroIndicatorIcon">
@@ -224,7 +226,7 @@ export function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMem
                         <span className="heroIndicatorValue">{m.trust}</span>
                       </div>
                     </div>
-                    <div className="heroIndicatorCard indicator-orange">
+                    <div className="heroIndicatorCard indicator-orange" onClick={() => setActiveIndicator({ type: 'condition', candidate: cand, report })}>
                       <span className="heroIndicatorLabel">조건 적합도</span>
                       <div className="heroIndicatorValueRow">
                         <span className="heroIndicatorIcon">
@@ -233,7 +235,7 @@ export function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMem
                         <span className="heroIndicatorValue">{m.condition}</span>
                       </div>
                     </div>
-                    <div className="heroIndicatorCard indicator-red">
+                    <div className="heroIndicatorCard indicator-red" onClick={() => setActiveIndicator({ type: 'risk', candidate: cand, report })}>
                       <span className="heroIndicatorLabel">런각 위험도</span>
                       <div className="heroIndicatorValueRow">
                         <span className="heroIndicatorIcon">
@@ -407,6 +409,15 @@ export function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMem
         </button>
       </div>
     )}
+
+      {activeIndicator && (
+        <IndicatorModal
+          type={activeIndicator.type}
+          candidate={activeIndicator.candidate}
+          report={activeIndicator.report}
+          close={() => setActiveIndicator(null)}
+        />
+      )}
     </main>
   </>;
 }

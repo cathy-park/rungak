@@ -22,19 +22,28 @@ export function CompareModal({ candidates, close }) {
     );
   };
 
-  const renderBarRow = (label, valA, valB, max) => {
+  const renderBarRow = (label, valA, valB, max, inverse = false) => {
     const pctA = Math.max(0, Math.min(100, (valA / max) * 100));
     const pctB = Math.max(0, Math.min(100, (valB / max) * 100));
     
-    const colorA = valA > valB ? 'var(--blue)' : valA === valB ? 'var(--text-3)' : '#9CA3AF';
-    const colorB = valB > valA ? 'var(--green)' : valB === valA ? 'var(--text-3)' : '#9CA3AF';
+    let colorA = valA > valB ? 'var(--blue)' : valA === valB ? 'var(--text-3)' : '#9CA3AF';
+    let colorB = valB > valA ? 'var(--green)' : valB === valA ? 'var(--text-3)' : '#9CA3AF';
+    let weightA = valA >= valB;
+    let weightB = valB >= valA;
+
+    if (inverse) {
+      colorA = valA < valB ? 'var(--blue)' : valA === valB ? 'var(--text-3)' : 'var(--red)';
+      colorB = valB < valA ? 'var(--green)' : valB === valA ? 'var(--text-3)' : 'var(--red)';
+      weightA = valA <= valB;
+      weightB = valB <= valA;
+    }
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         <div style={{ textAlign: 'center', fontSize: '12px', fontWeight: 700, color: 'var(--text-2)', marginBottom: '8px', letterSpacing: '-0.02em' }}>{label}</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '14px', fontWeight: 800, color: valA >= valB ? 'var(--text-1)' : 'var(--text-3)' }}>{valA}</span>
+            <span style={{ fontSize: '14px', fontWeight: 800, color: weightA ? 'var(--text-1)' : 'var(--text-3)' }}>{valA}</span>
             <div style={{ width: '100%', height: '10px', background: 'var(--divider)', borderRadius: '5px', overflow: 'hidden', display: 'flex', justifyContent: 'flex-end' }}>
               <div style={{ height: '100%', width: `${pctA}%`, background: colorA, borderRadius: '5px', transition: 'width 0.5s ease-out' }} />
             </div>
@@ -44,7 +53,7 @@ export function CompareModal({ candidates, close }) {
             <div style={{ width: '100%', height: '10px', background: 'var(--divider)', borderRadius: '5px', overflow: 'hidden' }}>
               <div style={{ height: '100%', width: `${pctB}%`, background: colorB, borderRadius: '5px', transition: 'width 0.5s ease-out' }} />
             </div>
-            <span style={{ fontSize: '14px', fontWeight: 800, color: valB >= valA ? 'var(--text-1)' : 'var(--text-3)' }}>{valB}</span>
+            <span style={{ fontSize: '14px', fontWeight: 800, color: weightB ? 'var(--text-1)' : 'var(--text-3)' }}>{valB}</span>
           </div>
         </div>
       </div>
@@ -110,6 +119,7 @@ export function CompareModal({ candidates, close }) {
               {renderBarRow('조건 적합도', A.conditionScore, B.conditionScore, 10)}
               {renderBarRow('관계 안정도', A.relationScore, B.relationScore, 10)}
               {renderBarRow('신뢰 흐름', A.trustScore, B.trustScore, 6)}
+              {renderBarRow('런각 위험도', redFlagsA.length, redFlagsB.length, 5, true)}
               {renderFlowBarRow(A.flowScore, B.flowScore)}
             </div>
           </Card>
