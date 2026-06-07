@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { bulletLines, scoreLevel } from '../../utils/helpers';
 import { STATUS_THEMES, VERDICT_EMOJI } from '../../utils/scoring/verdictRules';
 import { characters, AVATAR_BASE } from '../../utils/scoring/scoreOptions';
+import { ChevronUp, ChevronDown } from 'lucide-react';
 export function Chevron({ isOpen }) {
   return (
     <svg 

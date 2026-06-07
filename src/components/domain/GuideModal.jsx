@@ -1,5 +1,6 @@
-import React from 'react';
-import { Card, Icon, ScoreRule } from '../ui/CommonUI';
+import React, { useState } from 'react';
+import { Card, Icon, ScoreRule, Badge } from '../ui/CommonUI';
+import { X } from 'lucide-react';
 export function Info({ label, value, checked }) {
   return <div className="info"><small>{label}</small><b>{value}</b>{checked && <Badge color="green">확인됨</Badge>}</div>;
 }

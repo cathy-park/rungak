@@ -57,7 +57,7 @@ export function CompareModal({ candidates, close }) {
     const colorB = valB > 0 ? 'var(--green)' : valB < 0 ? 'var(--red)' : 'var(--text-3)';
     
     return (
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
         <div style={{ textAlign: 'center', fontSize: '12px', fontWeight: 700, color: 'var(--text-2)', marginBottom: '8px', letterSpacing: '-0.02em' }}>타임라인 흐름 (Flow)</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--surface)', padding: '12px', borderRadius: '12px' }}>
           <div style={{ flex: 1, textAlign: 'center', fontSize: '16px', fontWeight: 800, color: colorA }}>
@@ -93,7 +93,7 @@ export function CompareModal({ candidates, close }) {
         <div style={{ marginTop: '24px' }}>
           <h2 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-1)', marginBottom: '12px', paddingLeft: '4px' }}>핵심 지표 대조</h2>
           <Card>
-            <div style={{ marginTop: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingTop: '8px', paddingBottom: '8px' }}>
               {renderBarRow('기초 조건', A.conditionScore, B.conditionScore, 10)}
               {renderBarRow('관계성', A.relationScore, B.relationScore, 10)}
               {renderBarRow('신뢰/검증', A.trustScore, B.trustScore, 6)}
