@@ -71,6 +71,16 @@ export function CompareModal({ candidates, close }) {
       </div>
     );
   };
+  const getHeroCardStyle = (color) => {
+    const styles = {
+      green: { background: 'linear-gradient(180deg, #F0FDF4 0%, #FFFFFF 100%)', borderColor: '#BBF7D0' },
+      blue: { background: 'linear-gradient(180deg, #EFF6FF 0%, #FFFFFF 100%)', borderColor: '#BFDBFE' },
+      amber: { background: 'linear-gradient(180deg, #FFFBEB 0%, #FFFFFF 100%)', borderColor: '#FDE68A' },
+      orange: { background: 'linear-gradient(180deg, #FFF7ED 0%, #FFFFFF 100%)', borderColor: '#FED7AA' },
+      red: { background: 'linear-gradient(180deg, #FEF2F2 0%, #FFFFFF 100%)', borderColor: '#FECACA' }
+    };
+    return styles[color] || styles.blue;
+  };
 
   return (
     <div className="sheetBackdrop" onClick={close} style={{ zIndex: 9999 }}>
@@ -84,10 +94,10 @@ export function CompareModal({ candidates, close }) {
         <main className="sheetBody" style={{ padding: '24px 20px', paddingBottom: '100px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '24px' }}>
         {/* 프로필 비교 */}
         <div style={{ display: 'flex', gap: '16px' }}>
-          <Card style={{ flex: 1, margin: 0, padding: '20px 12px' }}>
+          <Card style={{ flex: 1, margin: 0, padding: '20px 12px', ...getHeroCardStyle(A.color) }}>
             {renderCandidateHero(A)}
           </Card>
-          <Card style={{ flex: 1, margin: 0, padding: '20px 12px' }}>
+          <Card style={{ flex: 1, margin: 0, padding: '20px 12px', ...getHeroCardStyle(B.color) }}>
             {renderCandidateHero(B)}
           </Card>
         </div>
