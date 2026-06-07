@@ -51,13 +51,13 @@ export const religionOptions = ['미확인', '무교', '기독교', '천주교',
 export const goalOptions = ['미확인', '진지한 연애', '결혼 전제', '가벼운 만남', '천천히 알아가기', '비공개'];
 
 export const timelineTypeOptions = [
-  { value: 'meet', label: '만남' },
-  { value: 'date', label: '데이트' },
-  { value: 'call', label: '통화' },
-  { value: 'message', label: '카톡/메시지' },
-  { value: 'conflict', label: '갈등' },
-  { value: 'verified', label: '정보 확인' },
-  { value: 'etc', label: '기타' },
+  { value: 'meet', label: '☕️ 만남' },
+  { value: 'date', label: '🍷 데이트' },
+  { value: 'call', label: '📞 통화' },
+  { value: 'message', label: '💬 카톡/메시지' },
+  { value: 'conflict', label: '⚡️ 갈등' },
+  { value: 'verified', label: '🔍 정보 확인' },
+  { value: 'etc', label: '📌 기타' },
 ];
 export const feelingOptions = [
   { value: 'good', label: '좋았음' },
