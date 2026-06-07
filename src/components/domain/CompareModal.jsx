@@ -73,14 +73,15 @@ export function CompareModal({ candidates, close }) {
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'var(--bg)', zIndex: 9999 }}>
-      <header className="header" style={{ position: 'sticky', top: 0, zIndex: 10, background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(8px)', borderBottom: '1px solid var(--divider)' }}>
-        <button className="iconBtn" onClick={close}><ChevronLeft /></button>
-        <h1 className="headerTitle" style={{ fontSize: '16px' }}>후보 비교 분석</h1>
-        <div style={{ width: 40 }} />
-      </header>
-      
-      <main style={{ padding: '24px 20px', paddingBottom: '100px', overflowY: 'auto', height: 'calc(100vh - 56px)' }}>
+    <div className="sheetBackdrop" onClick={close} style={{ zIndex: 9999 }}>
+      <div className="sheet" onClick={(e) => e.stopPropagation()} style={{ height: '90vh', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
+        <header className="header" style={{ position: 'sticky', top: 0, zIndex: 10, background: 'rgba(255,255,255,0.98)', backdropFilter: 'blur(8px)', borderBottom: '1px solid var(--divider)', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '24px 24px 0 0' }}>
+          <button className="iconBtn" onClick={close}><ChevronLeft /></button>
+          <h1 className="headerTitle" style={{ fontSize: '16px', margin: 0 }}>후보 비교 분석</h1>
+          <div style={{ width: 32 }} />
+        </header>
+        
+        <main className="sheetBody" style={{ padding: '24px 20px', paddingBottom: '100px', overflowY: 'auto', flex: 1 }}>
         {/* 프로필 비교 */}
         <div style={{ display: 'flex', gap: '16px', marginBottom: '40px' }}>
           {renderCandidateHero(A)}
@@ -93,9 +94,9 @@ export function CompareModal({ candidates, close }) {
           <h2 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-1)', marginBottom: '12px', paddingLeft: '4px' }}>핵심 지표 대조</h2>
           <Card>
             <div style={{ marginTop: '16px' }}>
-              {renderBarRow('기초 조건', A.conditionScore, B.conditionScore, 30)}
-              {renderBarRow('관계성', A.relationScore, B.relationScore, 20)}
-              {renderBarRow('신뢰/검증', A.trustScore, B.trustScore, 20)}
+              {renderBarRow('기초 조건', A.conditionScore, B.conditionScore, 10)}
+              {renderBarRow('관계성', A.relationScore, B.relationScore, 10)}
+              {renderBarRow('신뢰/검증', A.trustScore, B.trustScore, 6)}
               {renderFlowBarRow(A.flowScore, B.flowScore)}
             </div>
           </Card>
@@ -203,8 +204,8 @@ export function CompareModal({ candidates, close }) {
             }
           </p>
         </div>
-
       </main>
+      </div>
     </div>
   );
 }

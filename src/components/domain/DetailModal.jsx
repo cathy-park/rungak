@@ -3,14 +3,15 @@ import { createPortal } from 'react-dom';
 import { X, MoreVertical, Trash2 } from 'lucide-react';
 import { 
   checkStatusOptions, signalOptions, personalityTypeTags, energyTagOptions, 
-  emotionalBondItems, relationItems, greenFlags, yellowFlags, redFlags 
+  emotionalBondItems, relationItems, greenFlags, yellowFlags, redFlags,
+  statusTypeKeys, getStatusLabel, assetOptions, incomeOptions, smokingOptions, drinkingOptions
 } from '../../utils/scoring/scoreOptions';
 import { 
   getDaysAgo, migrateTextToItems, bulletLines, getDisplayReport, generateHeroSummary,
   scoreTone, scoreLevel, candidateMarkdown, optLabel, getScoreStatusLabel, getReverseScoreStatusLabel,
   normalizeCandidate
 } from '../../utils/helpers';
-import { analyze } from '../../utils/scoring/analyzeCandidate';
+import { analyze, recommendJobStability, verified, optionLabel } from '../../utils/scoring/analyzeCandidate';
 import { VERDICT_EMOJI } from '../../utils/scoring/verdictRules';
 import { Chevron, Avatar, Badge, Card, Field, SelectField, BulletTextarea, Toggle, Icon, ConfirmModal, Toast, MiniScore, ScoreCard, DetailAccordion } from '../ui/CommonUI';
 import { TimelineSection } from './TimelineSection';

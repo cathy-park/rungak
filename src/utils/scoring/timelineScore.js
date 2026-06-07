@@ -5,7 +5,14 @@ export function clamp(value, min, max) {
 }
 
 export function signalByCode(code) {
-  return signalOptions.find((item) => item.code === code);
+  const base = signalOptions.find((s) => s.code === code);
+  if (base) return base;
+  try {
+    const customSignals = JSON.parse(localStorage.getItem('customSignals')) || [];
+    return customSignals.find((s) => s.code === code);
+  } catch {
+    return undefined;
+  }
 }
 
 const flagToSignalMap = {

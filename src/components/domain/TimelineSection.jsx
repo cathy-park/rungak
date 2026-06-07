@@ -10,12 +10,42 @@ export function TimelineSection({ candidate, report, saveTimeline }) {
   const [confirmDel, setConfirmDel] = useState(null);
   const [posOpen, setPosOpen] = useState(true);
   const [negOpen, setNegOpen] = useState(true);
+  
+  const [customSignals, setCustomSignals] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('customSignals')) || []; }
+    catch { return []; }
+  });
+
   const currentTimeline = candidate.dateTimeline || candidate.timeline || [];
   const events = [...currentTimeline].sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
   const tone = report.flowScore > 0 ? 'green' : report.flowScore < 0 ? 'red' : 'gray';
 
   function update(key, value) { setDraft((prev) => ({ ...prev, [key]: value })); }
   function toggle(code) { setDraft((prev) => ({ ...prev, signals: prev.signals.includes(code) ? prev.signals.filter((item) => item !== code) : [...prev.signals, code] })); }
+  
+  function addCustomSignal(tone) {
+    const label = prompt(`새로운 ${tone === 'green' ? '긍정' : '부정'} 신호의 내용을 입력해주세요.`);
+    if (!label) return;
+    const newSignal = { code: 'custom_' + Date.now(), label, score: tone === 'green' ? 1 : -1, tone, custom: true };
+    const next = [...customSignals, newSignal];
+    setCustomSignals(next);
+    localStorage.setItem('customSignals', JSON.stringify(next));
+    toggle(newSignal.code);
+  }
+
+  function deleteCustomSignal(code, e) {
+    e.stopPropagation();
+    if (!confirm('직접 추가하신 이 신호를 삭제하시겠습니까?')) return;
+    const next = customSignals.filter(s => s.code !== code);
+    setCustomSignals(next);
+    localStorage.setItem('customSignals', JSON.stringify(next));
+    if (draft.signals.includes(code)) {
+      setDraft((prev) => ({ ...prev, signals: prev.signals.filter((item) => item !== code) }));
+    }
+  }
+
+  const allSignalOptions = [...signalOptions, ...customSignals];
+
   
   function startEdit(event) {
     setDraft({ ...event });
@@ -109,11 +139,15 @@ export function TimelineSection({ candidate, report, saveTimeline }) {
               </button>
               {posOpen && (
                 <div className="signalWrap" style={{ marginTop: '12px' }}>
-                  {signalOptions.filter(s => s.score > 0).map((signal) => (
-                    <button key={signal.code} type="button" className={draft.signals.includes(signal.code) ? `tone-${signal.tone}` : ''} onClick={() => toggle(signal.code)}>
+                  {allSignalOptions.filter(s => s.score > 0).map((signal) => (
+                    <button key={signal.code} type="button" className={draft.signals.includes(signal.code) ? `tone-${signal.tone}` : ''} onClick={() => toggle(signal.code)} style={{ position: 'relative' }}>
                       +{signal.score} {signal.label}
+                      {signal.custom && (
+                        <span onClick={(e) => deleteCustomSignal(signal.code, e)} style={{ marginLeft: '4px', opacity: 0.5, cursor: 'pointer', padding: '0 4px' }}>✕</span>
+                      )}
                     </button>
                   ))}
+                  <button type="button" onClick={() => addCustomSignal('green')} style={{ background: 'var(--green-light)', color: 'var(--green)', border: '1px dashed var(--green-border)' }}>+ 내용 추가</button>
                 </div>
               )}
             </div>
@@ -132,11 +166,15 @@ export function TimelineSection({ candidate, report, saveTimeline }) {
               </button>
               {negOpen && (
                 <div className="signalWrap" style={{ marginTop: '12px' }}>
-                  {signalOptions.filter(s => s.score < 0).map((signal) => (
-                    <button key={signal.code} type="button" className={draft.signals.includes(signal.code) ? `tone-${signal.tone}` : ''} onClick={() => toggle(signal.code)}>
+                  {allSignalOptions.filter(s => s.score < 0).map((signal) => (
+                    <button key={signal.code} type="button" className={draft.signals.includes(signal.code) ? `tone-${signal.tone}` : ''} onClick={() => toggle(signal.code)} style={{ position: 'relative' }}>
                       {signal.score} {signal.label}
+                      {signal.custom && (
+                        <span onClick={(e) => deleteCustomSignal(signal.code, e)} style={{ marginLeft: '4px', opacity: 0.5, cursor: 'pointer', padding: '0 4px' }}>✕</span>
+                      )}
                     </button>
                   ))}
+                  <button type="button" onClick={() => addCustomSignal('red')} style={{ background: 'var(--red-light)', color: 'var(--red-text)', border: '1px dashed var(--red-border)' }}>+ 내용 추가</button>
                 </div>
               )}
             </div>
