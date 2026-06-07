@@ -103,7 +103,7 @@ export function getDisplayReport(candidate, report) {
   const relationVal = Math.round((report.relationScore / 10) * 100) || 50;
   const trustVal = Math.round((report.trustScore / 6) * 100) || 50;
   const conditionVal = Math.round((report.conditionScore / 10) * 100) || 50;
-  const riskVal = `${(raw.red || []).length}건`;
+  const riskVal = `${(candidate.red || []).length}건`;
 
   // 기존 comments 리스트에서 정량 계산된 추가 사유(예: capReason, flowScore) 등이 소실되지 않도록 정교한 배열 머지 수행
   const baseComments = [copy.body];
