@@ -532,7 +532,7 @@ export function DetailModal({ candidate, close, edit, remove, saveTimeline, upda
         ref={sheetRef}
         onScroll={handleScroll}
         onClick={(e) => e.stopPropagation()}
-        style={{ position: 'relative', overflowY: 'auto' }}
+        style={{ position: 'relative', overflowY: 'auto', height: '92vh' }}
       >
         {/* ── Compact Sticky Header ── */}
         <div style={{
