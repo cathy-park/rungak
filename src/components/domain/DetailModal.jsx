@@ -17,6 +17,33 @@ import { Chevron, Avatar, Badge, Card, Field, SelectField, BulletTextarea, Toggl
 import { Info } from './GuideModal';
 import { TimelineSection } from './TimelineSection';
 import { TagPickerGroup, EmotionalBondSliders, RelationSliders, ObservationSection, PersonalityTagPicker, FlagGroup } from './CandidateForm';
+
+function VerifyToggle({ verifiedObj, fieldKey, onChange }) {
+  const isVerified = verifiedObj?.[fieldKey];
+  return (
+    <button 
+      type="button"
+      className={`verify ${isVerified ? 'on' : ''}`}
+      style={{
+        borderRadius: '980px',
+        background: isVerified ? 'var(--green-light)' : 'var(--surface)',
+        color: isVerified ? 'var(--green)' : 'var(--text-2)',
+        border: '1px solid var(--divider)',
+        padding: '7px 12px',
+        fontSize: '11px',
+        fontWeight: 700,
+        whiteSpace: 'nowrap',
+        cursor: 'pointer',
+        alignSelf: 'flex-end',
+        marginBottom: '4px'
+      }}
+      onClick={() => onChange(fieldKey, !isVerified)}
+    >
+      {isVerified ? '인증됨' : '미인증'}
+    </button>
+  );
+}
+
 export function EditableMemoSection({ value, onSave, placeholder }) {
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState(value || '');
@@ -873,35 +900,18 @@ export function DetailModal({ candidate, close, edit, remove, saveTimeline, upda
                       <Field label="나이" type="number" value={sectionForm.age} onChange={(v) => setSectionForm(p => ({...p, age: v}))} />
                       <Field label="생년월일" value={sectionForm.birthDate} onChange={(v) => setSectionForm(p => ({...p, birthDate: v}))} />
                       <Field label="MBTI" value={sectionForm.mbti} onChange={(v) => setSectionForm(p => ({...p, mbti: v}))} />
-                      <div style={{ display: 'flex', alignItems: 'flex-end', gap: '12px' }}>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                         <div style={{ flex: 1 }}>
                           <Field label="직업" value={sectionForm.job} onChange={(v) => setSectionForm(p => ({...p, job: v, jobStability: recommendJobStability(v)}))} />
                         </div>
-                        <button
-                          type="button"
-                          className={`verify ${sectionForm.verified?.job ? 'on' : ''}`}
-                          style={{
-                            borderRadius: '980px',
-                            background: sectionForm.verified?.job ? 'var(--green-light)' : 'var(--surface)',
-                            color: sectionForm.verified?.job ? 'var(--green)' : 'var(--text-2)',
-                            border: '1px solid var(--divider)',
-                            padding: '7px 12px',
-                            fontSize: '11px',
-                            fontWeight: 700,
-                            whiteSpace: 'nowrap',
-                            cursor: 'pointer',
-                            alignSelf: 'flex-end',
-                            marginBottom: '4px'
-                          }}
-                          onClick={() => setSectionForm(p => ({
-                            ...p,
-                            verified: { ...p.verified, job: !p.verified?.job }
-                          }))}
-                        >
-                          {sectionForm.verified?.job ? '인증됨' : '미인증'}
-                        </button>
+                        <VerifyToggle verifiedObj={sectionForm.verified} fieldKey="job" onChange={(k, v) => setSectionForm(p => ({...p, verified: {...p.verified, [k]: v}}))} />
                       </div>
-                      <Field label="거주지" value={sectionForm.location} onChange={(v) => setSectionForm(p => ({...p, location: v}))} />
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <div style={{ flex: 1 }}>
+                          <Field label="거주지" value={sectionForm.location} onChange={(v) => setSectionForm(p => ({...p, location: v}))} />
+                        </div>
+                        <VerifyToggle verifiedObj={sectionForm.verified} fieldKey="location" onChange={(k, v) => setSectionForm(p => ({...p, verified: {...p.verified, [k]: v}}))} />
+                      </div>
                       <Field label="첫인상 메모" textarea value={sectionForm.memo} onChange={(v) => setSectionForm(p => ({...p, memo: v}))} rows={3} />
                       <div className="twoButtons" style={{ marginTop: '10px' }}>
                         <button onClick={cancelSectionEdit}>취소</button>
@@ -947,15 +957,35 @@ export function DetailModal({ candidate, close, edit, remove, saveTimeline, upda
                 <DetailAccordion title="조건/스펙" subtitle="키, 돈, 주거 형태 등 하드웨어 점수" defaultOpen={true} onEdit={() => startSectionEdit('condition')}>
                   {editingSection === 'condition' ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      <Field label="키 (cm)" type="number" value={sectionForm.height} onChange={(v) => setSectionForm(p => ({...p, height: v}))} />
-                      <SelectField label="자산" value={sectionForm.asset} onChange={(v) => setSectionForm(p => ({...p, asset: v}))}>
-                        {assetOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                      </SelectField>
-                      <SelectField label="연봉" value={sectionForm.income} onChange={(v) => setSectionForm(p => ({...p, income: v}))}>
-                        {incomeOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                      </SelectField>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <div style={{ flex: 1 }}>
+                          <Field label="키 (cm)" type="number" value={sectionForm.height} onChange={(v) => setSectionForm(p => ({...p, height: v}))} />
+                        </div>
+                        <VerifyToggle verifiedObj={sectionForm.verified} fieldKey="height" onChange={(k, v) => setSectionForm(p => ({...p, verified: {...p.verified, [k]: v}}))} />
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <div style={{ flex: 1 }}>
+                          <SelectField label="자산" value={sectionForm.asset} onChange={(v) => setSectionForm(p => ({...p, asset: v}))}>
+                            {assetOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                          </SelectField>
+                        </div>
+                        <VerifyToggle verifiedObj={sectionForm.verified} fieldKey="asset" onChange={(k, v) => setSectionForm(p => ({...p, verified: {...p.verified, [k]: v}}))} />
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <div style={{ flex: 1 }}>
+                          <SelectField label="연봉" value={sectionForm.income} onChange={(v) => setSectionForm(p => ({...p, income: v}))}>
+                            {incomeOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                          </SelectField>
+                        </div>
+                        <VerifyToggle verifiedObj={sectionForm.verified} fieldKey="income" onChange={(k, v) => setSectionForm(p => ({...p, verified: {...p.verified, [k]: v}}))} />
+                      </div>
 
-                      <Field label="주거형태" value={sectionForm.housing} onChange={(v) => setSectionForm(p => ({...p, housing: v}))} />
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <div style={{ flex: 1 }}>
+                          <Field label="주거형태" value={sectionForm.housing} onChange={(v) => setSectionForm(p => ({...p, housing: v}))} />
+                        </div>
+                        <VerifyToggle verifiedObj={sectionForm.verified} fieldKey="housing" onChange={(k, v) => setSectionForm(p => ({...p, verified: {...p.verified, [k]: v}}))} />
+                      </div>
                       <SelectField label="흡연" value={sectionForm.smoking} onChange={(v) => setSectionForm(p => ({...p, smoking: v}))}>
                         {smokingOptions.map(o => <option key={o} value={o}>{o}</option>)}
                       </SelectField>

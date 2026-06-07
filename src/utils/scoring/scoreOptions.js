@@ -281,7 +281,7 @@ export const coreRelationKeys = ['logic', 'present', 'action', 'emotion', 'care'
 export const coreRelationItems = relationItems.filter((item) => coreRelationKeys.includes(item.key));
 export const moreRelationItems = relationItems.filter((item) => !coreRelationKeys.includes(item.key));
 
-export const verifiedKeys = ['birthDate', 'job', 'location', 'height', 'asset', 'income', 'education', 'housing', 'car'];
+export const verifiedKeys = ['job', 'location', 'height', 'asset', 'income', 'housing'];
 export const defaultRelation = Object.fromEntries(relationItems.map((item) => [item.key, 5]));
 export const defaultEmotionalBond = Object.fromEntries(emotionalBondItems.map(i => [i.key, 5]));
 
