@@ -13,7 +13,7 @@ export function CompareModal({ candidates, close }) {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
         <Avatar candidate={c} size="xl" />
         <h3 style={{ fontSize: '18px', fontWeight: 800, margin: '12px 0 4px', color: 'var(--text-1)' }}>{c.name || '이름 없음'}</h3>
-        <span className={`badge-${c.color}`} style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 700, marginBottom: '8px', display: 'inline-block' }}>{c.verdict}</span>
+        <span className={`heroStatusBadge badge-${c.color}`} style={{ marginBottom: '8px' }}>{c.verdict}</span>
         <p style={{ fontSize: '13px', color: 'var(--text-2)' }}>{age}세 · {job}</p>
         <div style={{ marginTop: '8px', fontSize: '24px', fontWeight: 900, color: `var(--${c.color === 'default' ? 'blue' : c.color})` }}>
           {c.finalScore}<small style={{ fontSize: '12px', fontWeight: 600 }}>점</small>
@@ -107,9 +107,9 @@ export function CompareModal({ candidates, close }) {
           <h2 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-1)', marginBottom: '12px', paddingLeft: '4px' }}>핵심 지표 대조</h2>
           <Card style={{ margin: 0 }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', paddingTop: '8px', paddingBottom: '8px' }}>
-              {renderBarRow('기초 조건', A.conditionScore, B.conditionScore, 10)}
-              {renderBarRow('관계성', A.relationScore, B.relationScore, 10)}
-              {renderBarRow('신뢰/검증', A.trustScore, B.trustScore, 6)}
+              {renderBarRow('조건 적합도', A.conditionScore, B.conditionScore, 10)}
+              {renderBarRow('관계 안정도', A.relationScore, B.relationScore, 10)}
+              {renderBarRow('신뢰 흐름', A.trustScore, B.trustScore, 6)}
               {renderFlowBarRow(A.flowScore, B.flowScore)}
             </div>
           </Card>
@@ -164,7 +164,7 @@ export function CompareModal({ candidates, close }) {
 
         {/* 치명적 플래그 비교 */}
         <div>
-          <h2 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-1)', marginBottom: '12px', paddingLeft: '4px' }}>치명적 플래그 (Red Flags)</h2>
+          <h2 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-1)', marginBottom: '12px', paddingLeft: '4px' }}>런각 위험도 (Red Flags)</h2>
           <Card style={{ margin: 0 }}>
             <div style={{ display: 'flex', gap: '16px', marginTop: '4px' }}>
               <div style={{ flex: 1 }}>
