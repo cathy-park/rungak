@@ -208,7 +208,7 @@ export function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMem
 
                   {/* 4대 지표 카드 */}
                     <div className="heroIndicatorGrid">
-                    <div className="heroIndicatorCard indicator-green" onClick={() => setActiveIndicator({ type: 'relation', candidate: cand, report })}>
+                    <div className="heroIndicatorCard indicator-green" onClick={(e) => { e.stopPropagation(); setActiveIndicator({ type: 'relation', candidate, report }); }}>
                       <span className="heroIndicatorLabel">관계 안정도</span>
                       <div className="heroIndicatorValueRow">
                         <span className="heroIndicatorIcon">
@@ -217,7 +217,7 @@ export function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMem
                         <span className="heroIndicatorValue">{m.relation}</span>
                       </div>
                     </div>
-                    <div className="heroIndicatorCard indicator-blue" onClick={() => setActiveIndicator({ type: 'trust', candidate: cand, report })}>
+                    <div className="heroIndicatorCard indicator-blue" onClick={(e) => { e.stopPropagation(); setActiveIndicator({ type: 'trust', candidate, report }); }}>
                       <span className="heroIndicatorLabel">신뢰 흐름</span>
                       <div className="heroIndicatorValueRow">
                         <span className="heroIndicatorIcon">
@@ -226,7 +226,7 @@ export function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMem
                         <span className="heroIndicatorValue">{m.trust}</span>
                       </div>
                     </div>
-                    <div className="heroIndicatorCard indicator-orange" onClick={() => setActiveIndicator({ type: 'condition', candidate: cand, report })}>
+                    <div className="heroIndicatorCard indicator-orange" onClick={(e) => { e.stopPropagation(); setActiveIndicator({ type: 'condition', candidate, report }); }}>
                       <span className="heroIndicatorLabel">조건 적합도</span>
                       <div className="heroIndicatorValueRow">
                         <span className="heroIndicatorIcon">
@@ -235,7 +235,7 @@ export function Home({ candidates, openCandidate, goAdd, openGuide, openQuickMem
                         <span className="heroIndicatorValue">{m.condition}</span>
                       </div>
                     </div>
-                    <div className="heroIndicatorCard indicator-red" onClick={() => setActiveIndicator({ type: 'risk', candidate: cand, report })}>
+                    <div className="heroIndicatorCard indicator-red" onClick={(e) => { e.stopPropagation(); setActiveIndicator({ type: 'risk', candidate, report }); }}>
                       <span className="heroIndicatorLabel">런각 위험도</span>
                       <div className="heroIndicatorValueRow">
                         <span className="heroIndicatorIcon">

@@ -119,7 +119,7 @@ export function CompareModal({ candidates, close }) {
               {renderBarRow('조건 적합도', A.conditionScore, B.conditionScore, 10)}
               {renderBarRow('관계 안정도', A.relationScore, B.relationScore, 10)}
               {renderBarRow('신뢰 흐름', A.trustScore, B.trustScore, 6)}
-              {renderBarRow('런각 위험도', redFlagsA.length, redFlagsB.length, 5, true)}
+              {renderBarRow('런각 위험도', (A.red || []).length, (B.red || []).length, 5, true)}
               {renderFlowBarRow(A.flowScore, B.flowScore)}
             </div>
           </Card>
