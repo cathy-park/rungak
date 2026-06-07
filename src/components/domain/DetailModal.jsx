@@ -522,6 +522,8 @@ export function DetailModal({ candidate, close, edit, remove, saveTimeline, upda
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
           borderBottom: '1px solid var(--divider)',
+          borderTopLeftRadius: '24px',
+          borderTopRightRadius: '24px',
           boxShadow: '0 1px 6px rgba(0,0,0,0.06)',
           boxSizing: 'border-box',
           width: '100%'

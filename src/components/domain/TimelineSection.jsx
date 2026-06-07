@@ -145,14 +145,14 @@ export function TimelineSection({ candidate, report, saveTimeline }) {
               {posOpen && (
                 <div className="signalWrap" style={{ marginTop: '12px' }}>
                   {allSignalOptions.filter(s => s.score > 0).map((signal) => (
-                    <button key={signal.code} type="button" className={draft.signals.includes(signal.code) ? `tone-${signal.tone}` : ''} onClick={() => toggle(signal.code)} style={{ position: 'relative' }}>
+                    <button key={signal.code} type="button" className={draft.signals.includes(signal.code) ? `tone-${signal.tone}` : ''} onClick={() => toggle(signal.code)} style={{ position: 'relative', color: signal.custom && !draft.signals.includes(signal.code) ? 'var(--blue)' : undefined, fontWeight: signal.custom ? 700 : undefined }}>
                       +{signal.score} {signal.label}
                       {signal.custom && (
                         <span onClick={(e) => deleteCustomSignal(signal.code, e)} style={{ marginLeft: '4px', opacity: 0.5, cursor: 'pointer', padding: '0 4px' }}>✕</span>
                       )}
                     </button>
                   ))}
-                  <button type="button" onClick={() => addCustomSignal('green')} style={{ background: 'transparent', color: 'var(--green)', border: '1px dashed var(--green-border)', opacity: 0.8 }}>+ 내용 추가</button>
+                  <button type="button" onClick={() => addCustomSignal('green')} style={{ background: 'transparent', color: 'var(--text-3)', border: '1px dashed var(--border)', fontSize: '13px' }}>+ 직접 내용 추가</button>
                 </div>
               )}
             </div>
@@ -172,14 +172,14 @@ export function TimelineSection({ candidate, report, saveTimeline }) {
               {negOpen && (
                 <div className="signalWrap" style={{ marginTop: '12px' }}>
                   {allSignalOptions.filter(s => s.score < 0).map((signal) => (
-                    <button key={signal.code} type="button" className={draft.signals.includes(signal.code) ? `tone-${signal.tone}` : ''} onClick={() => toggle(signal.code)} style={{ position: 'relative' }}>
+                    <button key={signal.code} type="button" className={draft.signals.includes(signal.code) ? `tone-${signal.tone}` : ''} onClick={() => toggle(signal.code)} style={{ position: 'relative', color: signal.custom && !draft.signals.includes(signal.code) ? 'var(--blue)' : undefined, fontWeight: signal.custom ? 700 : undefined }}>
                       {signal.score} {signal.label}
                       {signal.custom && (
                         <span onClick={(e) => deleteCustomSignal(signal.code, e)} style={{ marginLeft: '4px', opacity: 0.5, cursor: 'pointer', padding: '0 4px' }}>✕</span>
                       )}
                     </button>
                   ))}
-                  <button type="button" onClick={() => addCustomSignal('red')} style={{ background: 'transparent', color: 'var(--red)', border: '1px dashed var(--red-border)', opacity: 0.8 }}>+ 내용 추가</button>
+                  <button type="button" onClick={() => addCustomSignal('red')} style={{ background: 'transparent', color: 'var(--text-3)', border: '1px dashed var(--border)', fontSize: '13px' }}>+ 직접 내용 추가</button>
                 </div>
               )}
             </div>
