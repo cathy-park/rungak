@@ -1,7 +1,7 @@
 import React from 'react';
 import { X } from 'lucide-react';
-import { relationItems } from '../../utils/scoring/scoreOptions';
-import { verifiedKeys, verified } from '../../utils/scoring/analyzeCandidate';
+import { relationItems, verifiedKeys } from '../../utils/scoring/scoreOptions';
+import { verified } from '../../utils/scoring/analyzeCandidate';
 
 export function IndicatorModal({ type, candidate, report, close }) {
   let title = '';
