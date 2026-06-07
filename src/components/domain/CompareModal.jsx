@@ -83,7 +83,7 @@ export function CompareModal({ candidates, close }) {
         
         <main className="sheetBody" style={{ padding: '24px 20px', paddingBottom: '100px', overflowY: 'auto', flex: 1 }}>
         {/* 프로필 비교 */}
-        <div style={{ display: 'flex', gap: '16px', marginBottom: '40px' }}>
+        <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
           {renderCandidateHero(A)}
           <div style={{ width: '1px', background: 'var(--divider)' }} />
           {renderCandidateHero(B)}
@@ -103,7 +103,7 @@ export function CompareModal({ candidates, close }) {
         </div>
 
         {/* 최근 타임라인 추세 */}
-        <div style={{ marginTop: '32px' }}>
+        <div style={{ marginTop: '24px' }}>
           <h2 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-1)', marginBottom: '12px', paddingLeft: '4px' }}>최근 타임라인 추세</h2>
           <Card>
             <div style={{ display: 'flex', gap: '16px', marginTop: '4px' }}>
@@ -150,7 +150,7 @@ export function CompareModal({ candidates, close }) {
         </div>
 
         {/* 치명적 플래그 비교 */}
-        <div style={{ marginTop: '32px' }}>
+        <div style={{ marginTop: '24px' }}>
           <h2 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-1)', marginBottom: '12px', paddingLeft: '4px' }}>치명적 플래그 (Red Flags)</h2>
           <Card>
             <div style={{ display: 'flex', gap: '16px', marginTop: '4px' }}>
@@ -186,7 +186,7 @@ export function CompareModal({ candidates, close }) {
         </div>
 
         {/* 시스템 조언 */}
-        <div style={{ marginTop: '32px', background: 'var(--blue-light)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(37, 99, 235, 0.1)' }}>
+        <div style={{ marginTop: '24px', background: 'var(--blue-light)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(37, 99, 235, 0.1)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
             <span style={{ fontSize: '18px' }}>💡</span>
             <h3 style={{ fontSize: '14px', fontWeight: 800, color: 'var(--blue)' }}>런각 연구소 시스템 소견</h3>

@@ -14,6 +14,7 @@ import {
 import { analyze, recommendJobStability, verified, optionLabel } from '../../utils/scoring/analyzeCandidate';
 import { VERDICT_EMOJI } from '../../utils/scoring/verdictRules';
 import { Chevron, Avatar, Badge, Card, Field, SelectField, BulletTextarea, Toggle, Icon, ConfirmModal, Toast, MiniScore, ScoreCard, DetailAccordion } from '../ui/CommonUI';
+import { Info } from './GuideModal';
 import { TimelineSection } from './TimelineSection';
 import { TagPickerGroup, EmotionalBondSliders, RelationSliders, ObservationSection, PersonalityTagPicker, FlagGroup } from './CandidateForm';
 export function EditableMemoSection({ value, onSave, placeholder }) {
