@@ -26,7 +26,12 @@ export function TimelineSection({ candidate, report, saveTimeline }) {
   function addCustomSignal(tone) {
     const label = prompt(`새로운 ${tone === 'green' ? '긍정' : '부정'} 신호의 내용을 입력해주세요.`);
     if (!label) return;
-    const newSignal = { code: 'custom_' + Date.now(), label, score: tone === 'green' ? 1 : -1, tone, custom: true };
+    const defaultScore = tone === 'green' ? '1' : '-1';
+    const scoreInput = prompt(`이 신호의 점수를 입력해주세요. (예: ${tone === 'green' ? '1, 2, 3' : '-1, -2, -3'})`, defaultScore);
+    if (scoreInput === null) return;
+    const score = parseInt(scoreInput, 10);
+    if (isNaN(score)) return alert('올바른 숫자를 입력해주세요.');
+    const newSignal = { code: 'custom_' + Date.now(), label, score, tone, custom: true };
     const next = [...customSignals, newSignal];
     setCustomSignals(next);
     localStorage.setItem('customSignals', JSON.stringify(next));
@@ -147,7 +152,7 @@ export function TimelineSection({ candidate, report, saveTimeline }) {
                       )}
                     </button>
                   ))}
-                  <button type="button" onClick={() => addCustomSignal('green')} style={{ background: 'var(--green-light)', color: 'var(--green)', border: '1px dashed var(--green-border)' }}>+ 내용 추가</button>
+                  <button type="button" onClick={() => addCustomSignal('green')} style={{ background: 'transparent', color: 'var(--green)', border: '1px dashed var(--green-border)', opacity: 0.8 }}>+ 내용 추가</button>
                 </div>
               )}
             </div>
@@ -174,7 +179,7 @@ export function TimelineSection({ candidate, report, saveTimeline }) {
                       )}
                     </button>
                   ))}
-                  <button type="button" onClick={() => addCustomSignal('red')} style={{ background: 'var(--red-light)', color: 'var(--red-text)', border: '1px dashed var(--red-border)' }}>+ 내용 추가</button>
+                  <button type="button" onClick={() => addCustomSignal('red')} style={{ background: 'transparent', color: 'var(--red)', border: '1px dashed var(--red-border)', opacity: 0.8 }}>+ 내용 추가</button>
                 </div>
               )}
             </div>

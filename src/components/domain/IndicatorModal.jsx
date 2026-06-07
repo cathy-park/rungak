@@ -32,8 +32,8 @@ export function IndicatorModal({ type, candidate, report, close }) {
   }
 
   return (
-    <div className="sheetOverlay" onClick={close} style={{ zIndex: 10000 }}>
-      <div className="sheetContent" onClick={e => e.stopPropagation()} style={{ padding: '24px', background: 'var(--bg)', borderRadius: '24px 24px 0 0', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <div className="sheetBackdrop" onClick={close} style={{ zIndex: 10000 }}>
+      <div className="sheet" onClick={e => e.stopPropagation()} style={{ padding: '24px', background: 'var(--bg)', borderRadius: '24px 24px 0 0', display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '80vh' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '8px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -60,7 +60,7 @@ export function IndicatorModal({ type, candidate, report, close }) {
           {type === 'condition' && report.rows.map((r, i) => (
             <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: '14px', color: 'var(--text-2)', fontWeight: 600 }}>{r.label}</span>
-              <span style={{ fontSize: '14px', color: 'var(--text-1)', fontWeight: 800 }}>{r.raw || '-'} <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>/ {r.max}</span></span>
+              <span style={{ fontSize: '14px', color: 'var(--text-1)', fontWeight: 800 }}>{typeof r.raw === 'number' ? parseFloat(r.raw.toFixed(1)) : (r.raw || '-')} <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>/ {r.max}</span></span>
             </div>
           ))}
 
