@@ -30,7 +30,7 @@ export function CompareModal({ candidates, close }) {
     const colorB = valB > valA ? 'var(--green)' : valB === valA ? 'var(--text-3)' : '#9CA3AF';
 
     return (
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
         <div style={{ textAlign: 'center', fontSize: '12px', fontWeight: 700, color: 'var(--text-2)', marginBottom: '8px', letterSpacing: '-0.02em' }}>{label}</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '8px' }}>
@@ -81,19 +81,19 @@ export function CompareModal({ candidates, close }) {
           <div style={{ width: 32 }} />
         </header>
         
-        <main className="sheetBody" style={{ padding: '24px 20px', paddingBottom: '100px', overflowY: 'auto', flex: 1 }}>
+        <main className="sheetBody" style={{ padding: '24px 20px', paddingBottom: '100px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '24px' }}>
         {/* 프로필 비교 */}
-        <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', gap: '16px' }}>
           {renderCandidateHero(A)}
           <div style={{ width: '1px', background: 'var(--divider)' }} />
           {renderCandidateHero(B)}
         </div>
 
         {/* 핵심 지표 비교 */}
-        <div style={{ marginTop: '24px' }}>
+        <div>
           <h2 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-1)', marginBottom: '12px', paddingLeft: '4px' }}>핵심 지표 대조</h2>
-          <Card>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingTop: '8px', paddingBottom: '8px' }}>
+          <Card style={{ margin: 0 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', paddingTop: '8px', paddingBottom: '8px' }}>
               {renderBarRow('기초 조건', A.conditionScore, B.conditionScore, 10)}
               {renderBarRow('관계성', A.relationScore, B.relationScore, 10)}
               {renderBarRow('신뢰/검증', A.trustScore, B.trustScore, 6)}
@@ -103,9 +103,9 @@ export function CompareModal({ candidates, close }) {
         </div>
 
         {/* 최근 타임라인 추세 */}
-        <div style={{ marginTop: '24px' }}>
+        <div>
           <h2 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-1)', marginBottom: '12px', paddingLeft: '4px' }}>최근 타임라인 추세</h2>
-          <Card>
+          <Card style={{ margin: 0 }}>
             <div style={{ display: 'flex', gap: '16px', marginTop: '4px' }}>
               <div style={{ flex: 1 }}>
                 <div style={{ background: 'var(--surface)', padding: '16px', borderRadius: '16px', fontSize: '13px', color: 'var(--text-2)', height: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -150,9 +150,9 @@ export function CompareModal({ candidates, close }) {
         </div>
 
         {/* 치명적 플래그 비교 */}
-        <div style={{ marginTop: '24px' }}>
+        <div>
           <h2 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-1)', marginBottom: '12px', paddingLeft: '4px' }}>치명적 플래그 (Red Flags)</h2>
-          <Card>
+          <Card style={{ margin: 0 }}>
             <div style={{ display: 'flex', gap: '16px', marginTop: '4px' }}>
               <div style={{ flex: 1 }}>
                 {A.red && A.red.length > 0 ? (
@@ -186,7 +186,7 @@ export function CompareModal({ candidates, close }) {
         </div>
 
         {/* 시스템 조언 */}
-        <div style={{ marginTop: '24px', background: 'var(--blue-light)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(37, 99, 235, 0.1)' }}>
+        <div style={{ background: 'var(--blue-light)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(37, 99, 235, 0.1)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
             <span style={{ fontSize: '18px' }}>💡</span>
             <h3 style={{ fontSize: '14px', fontWeight: 800, color: 'var(--blue)' }}>런각 연구소 시스템 소견</h3>
