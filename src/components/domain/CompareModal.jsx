@@ -84,9 +84,12 @@ export function CompareModal({ candidates, close }) {
         <main className="sheetBody" style={{ padding: '24px 20px', paddingBottom: '100px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '24px' }}>
         {/* 프로필 비교 */}
         <div style={{ display: 'flex', gap: '16px' }}>
-          {renderCandidateHero(A)}
-          <div style={{ width: '1px', background: 'var(--divider)' }} />
-          {renderCandidateHero(B)}
+          <Card style={{ flex: 1, margin: 0, padding: '20px 12px' }}>
+            {renderCandidateHero(A)}
+          </Card>
+          <Card style={{ flex: 1, margin: 0, padding: '20px 12px' }}>
+            {renderCandidateHero(B)}
+          </Card>
         </div>
 
         {/* 핵심 지표 비교 */}
