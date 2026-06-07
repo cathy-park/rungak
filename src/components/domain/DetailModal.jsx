@@ -591,6 +591,8 @@ export function DetailModal({ candidate, close, edit, remove, saveTimeline, upda
           alignItems: 'start',
           padding: '18px 16px 16px',
           background: 'var(--bg)',
+          borderTopLeftRadius: '24px',
+          borderTopRightRadius: '24px',
           overflow: 'visible'
         }}>
           {/* 액션 버튼 — absolute로 공간 점유 없이 우상단 고정 */}
@@ -931,7 +933,7 @@ export function DetailModal({ candidate, close, edit, remove, saveTimeline, upda
                         </div>
                         <div style={{ padding: '10px', border: '1px solid var(--divider)', borderRadius: '10px', background: 'var(--bg)' }}>
                           <small style={{ fontSize: '10px', color: 'var(--text-3)', display: 'block' }}>생년월일</small>
-                          <b style={{ fontSize: '13px', color: 'var(--text-1)' }}>{candidate.birthDate || '미확인'}</b>
+                          <b style={{ fontSize: '13px', color: 'var(--text-1)' }}>{candidate.birthDate || '미확인'}{verified(candidate, 'birthDate') ? ' ✅' : ''}</b>
                         </div>
                         <div style={{ padding: '10px', border: '1px solid var(--divider)', borderRadius: '10px', background: 'var(--bg)' }}>
                           <small style={{ fontSize: '10px', color: 'var(--text-3)', display: 'block' }}>MBTI</small>
@@ -943,7 +945,7 @@ export function DetailModal({ candidate, close, edit, remove, saveTimeline, upda
                         </div>
                         <div style={{ padding: '10px', border: '1px solid var(--divider)', borderRadius: '10px', background: 'var(--bg)' }}>
                           <small style={{ fontSize: '10px', color: 'var(--text-3)', display: 'block' }}>거주지</small>
-                          <b style={{ fontSize: '13px', color: 'var(--text-1)' }}>{candidate.location || '미확인'}</b>
+                          <b style={{ fontSize: '13px', color: 'var(--text-1)' }}>{candidate.location || '미확인'}{verified(candidate, 'location') ? ' ✅' : ''}</b>
                         </div>
                       </div>
                       <div style={{ padding: '12px', background: 'var(--surface)', border: '1px solid var(--divider)', borderRadius: '10px' }}>
