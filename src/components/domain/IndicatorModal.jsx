@@ -71,16 +71,29 @@ export function IndicatorModal({ type, candidate, report, close }) {
             </div>
           ))}
 
-          {type === 'trust' && verifiedKeys.map((key, i) => (
-            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '14px', color: 'var(--text-2)', fontWeight: 600 }}>
-                {key === 'height' ? '키' : key === 'job' ? '직업' : key === 'income' ? '연봉' : key === 'asset' ? '자산' : key === 'smoking' ? '흡연' : key === 'drinking' ? '음주' : key === 'religion' ? '종교' : key === 'divorce' ? '결혼/이혼력' : '기타'} 검증
-              </span>
-              <span style={{ fontSize: '14px', fontWeight: 800, color: verified(candidate, key) ? 'var(--blue)' : 'var(--text-3)' }}>
-                {verified(candidate, key) ? '검증 완료' : '미검증'}
-              </span>
-            </div>
-          ))}
+          {type === 'trust' && verifiedKeys.map((key, i) => {
+            const labelMap = {
+              birthDate: '나이/생일',
+              job: '직업',
+              location: '거주지',
+              height: '키',
+              asset: '자산',
+              income: '연봉',
+              education: '학력',
+              housing: '주거/부동산',
+              car: '차량'
+            };
+            return (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '14px', color: 'var(--text-2)', fontWeight: 600 }}>
+                  {labelMap[key] || '기타'} 검증
+                </span>
+                <span style={{ fontSize: '14px', fontWeight: 800, color: verified(candidate, key) ? 'var(--blue)' : 'var(--text-3)' }}>
+                  {verified(candidate, key) ? '검증 완료' : '미검증'}
+                </span>
+              </div>
+            );
+          })}
         </div>
         
         <button className="primaryButton" onClick={close} style={{ marginTop: '16px', padding: '16px', borderRadius: '16px' }}>확인</button>
